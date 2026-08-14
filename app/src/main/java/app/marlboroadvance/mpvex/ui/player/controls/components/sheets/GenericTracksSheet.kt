@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components.sheets
 
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
@@ -32,14 +35,18 @@ fun <T> GenericTracksSheet(
   tracks: ImmutableList<T>,
   onDismissRequest: () -> Unit,
   modifier: Modifier = Modifier,
+  lazyListState: LazyListState? = null,
+  customMaxWidth: androidx.compose.ui.unit.Dp? = null,
   header: @Composable () -> Unit = {},
   track: @Composable (T) -> Unit = {},
   footer: @Composable () -> Unit = {},
 ) {
-  PlayerSheet(onDismissRequest) {
+  val listState = lazyListState ?: rememberLazyListState()
+  
+  PlayerSheet(onDismissRequest, customMaxWidth = customMaxWidth) {
     Column(modifier) {
       header()
-      LazyColumn {
+      LazyColumn(state = listState) {
         items(tracks) {
           track(it)
         }
@@ -94,11 +101,11 @@ fun AddTrackRow(
 @Composable
 fun getTrackTitle(
   track: TrackNode,
-  allTracks: ImmutableList<TrackNode>,
 ): String {
   // Handle external subtitles
   if (track.isSubtitle && track.external == true && track.externalFilename != null) {
-    val fileName = track.externalFilename.substringAfterLast("/")
+    val decoded = Uri.decode(track.externalFilename)
+    val fileName = decoded.substringAfterLast("/")
     return stringResource(R.string.player_sheets_track_title_wo_lang, track.id, fileName)
   }
 

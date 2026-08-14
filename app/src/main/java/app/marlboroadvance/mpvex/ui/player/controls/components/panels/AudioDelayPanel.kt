@@ -4,19 +4,24 @@ package app.marlboroadvance.mpvex.ui.player.controls.components.panels
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -35,33 +40,45 @@ fun AudioDelayPanel(
   modifier: Modifier = Modifier,
 ) {
   val preferences = koinInject<AudioPreferences>()
-
-  ConstraintLayout(
-    modifier =
-      modifier
-        .fillMaxSize()
-        .padding(MaterialTheme.spacing.medium),
+  
+  DraggablePanel(
+    modifier = modifier,
+    header = {
+      AudioDelayCardTitle(onClose = onDismissRequest)
+    }
   ) {
-    val delayControlCard = createRef()
-
     val delay by MPVLib.propDouble["audio-delay"].collectAsState()
+    val delayFloat by remember { derivedStateOf { (delay ?: 0.0).toFloat() } }
+
     DelayCard(
-      delayMs = ((delay ?: 0.0) * 1000).roundToInt(),
+      delay = delayFloat,
       onDelayChange = {
-        val delayInSeconds = it / 1000.0
+        val delayInSeconds = it.toDouble()
         MPVLib.setPropertyDouble("audio-delay", delayInSeconds)
       },
-      onApply = { preferences.defaultAudioDelay.set(((delay ?: 0.0) * 1000).roundToInt()) },
+      onApply = { preferences.defaultAudioDelay.set((delayFloat * 1000).roundToInt()) },
       onReset = { MPVLib.setPropertyDouble("audio-delay", 0.0) },
-      title = { AudioDelayCardTitle(onClose = onDismissRequest) },
       delayType = DelayType.Audio,
-      modifier =
-        Modifier.constrainAs(delayControlCard) {
-          top.linkTo(parent.top)
-          end.linkTo(parent.end)
-        },
     )
   }
+}
+
+// Ensure the AudioDelayPanel also uses the content version as DraggablePanel wraps it
+@Composable
+fun DelayCard(
+    delay: Float,
+    onDelayChange: (Float) -> Unit,
+    onApply: () -> Unit,
+    onReset: () -> Unit,
+    delayType: DelayType,
+) {
+    DelayCardContent(
+        delay = delay,
+        onDelayChange = onDelayChange,
+        onApply = onApply,
+        onReset = onReset,
+        delayType = delayType
+    )
 }
 
 @Composable
@@ -69,9 +86,21 @@ fun AudioDelayCardTitle(
   onClose: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
-  Text(
-    stringResource(R.string.player_sheets_audio_delay_card_title),
-    style = MaterialTheme.typography.titleLarge,
-    modifier = modifier,
-  )
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier = modifier
+      .fillMaxWidth()
+      .padding(horizontal = MaterialTheme.spacing.medium)
+      .padding(top = MaterialTheme.spacing.small),
+  ) {
+    Text(
+      stringResource(R.string.player_sheets_audio_delay_card_title),
+      style = MaterialTheme.typography.titleLarge,
+    )
+    Spacer(Modifier.weight(1f))
+    IconButton(onClick = onClose) {
+      Icon(Icons.Default.Close, null, modifier = Modifier.size(32.dp))
+    }
+  }
 }

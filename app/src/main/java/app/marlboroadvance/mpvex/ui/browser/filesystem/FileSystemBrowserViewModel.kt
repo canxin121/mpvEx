@@ -13,8 +13,12 @@ import app.marlboroadvance.mpvex.preferences.BrowserPreferences
 import app.marlboroadvance.mpvex.repository.MediaFileRepository
 import app.marlboroadvance.mpvex.ui.browser.base.BaseBrowserViewModel
 import app.marlboroadvance.mpvex.utils.media.MediaLibraryEvents
+import app.marlboroadvance.mpvex.utils.media.MetadataRetrieval
 import app.marlboroadvance.mpvex.utils.sort.SortUtils
+import app.marlboroadvance.mpvex.utils.storage.FolderViewScanner
+import app.marlboroadvance.mpvex.utils.storage.TreeViewScanner
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,7 +46,12 @@ class FileSystemBrowserViewModel(
   // Similar to Fossify's root/home folder detection
   private val STORAGE_ROOTS_MARKER = "__STORAGE_ROOTS__"
 
+  // Home directory - the top-most directory we can navigate to (set once on init)
+  // This prevents navigation errors when the app opens to a specific storage volume
+  private var homeDirectory: String? = null
+
   // Current directory path - corresponds to Fossify's currentPath
+  // If initialPath is null, we'll determine it after checking storage volumes
   private val _currentPath = MutableStateFlow(initialPath ?: STORAGE_ROOTS_MARKER)
   val currentPath: StateFlow<String> = _currentPath.asStateFlow()
 
@@ -71,13 +80,13 @@ class FileSystemBrowserViewModel(
   private val _breadcrumbs = MutableStateFlow<List<PathComponent>>(emptyList())
   val breadcrumbs: StateFlow<List<PathComponent>> = _breadcrumbs.asStateFlow()
 
-  // Whether we're at the storage root level
+  // Whether we're at the home directory (top-most allowed directory)
   // Similar to Fossify's check for home folder or root
   val isAtRoot: StateFlow<Boolean> =
     MutableStateFlow(initialPath == null).apply {
       viewModelScope.launch {
         _currentPath.collect { path ->
-          value = path == STORAGE_ROOTS_MARKER
+          value = path == STORAGE_ROOTS_MARKER || path == homeDirectory
         }
       }
     }
@@ -103,14 +112,37 @@ class FileSystemBrowserViewModel(
   }
 
   init {
-    // Load initial directory - similar to Fossify's openPath() in onCreate
-    loadCurrentDirectory()
+    // If no initial path was specified, check storage volumes and navigate accordingly
+    if (initialPath == null) {
+      viewModelScope.launch(Dispatchers.IO) {
+        val roots = MediaFileRepository.getStorageRoots(getApplication())
+        if (roots.size == 1) {
+          // Only one storage volume, navigate directly to it and set as home
+          val singleRoot = roots.first()
+          homeDirectory = singleRoot.path
+          Log.d(TAG, "Single storage volume found, setting as home: ${singleRoot.path}")
+          _currentPath.value = singleRoot.path
+        } else {
+          // Multiple roots - home is the storage roots view
+          homeDirectory = null
+        }
+        // If multiple roots or none, stay at STORAGE_ROOTS_MARKER
+        loadCurrentDirectory()
+      }
+    } else {
+      // Specific path provided - set it as home directory
+      homeDirectory = initialPath
+      Log.d(TAG, "Initial path provided, setting as home: $initialPath")
+      // Load initial directory - similar to Fossify's openPath() in onCreate
+      loadCurrentDirectory()
+    }
 
     // Refresh on global media library changes
     // Similar to Fossify's media scan completion listener
     viewModelScope.launch(Dispatchers.IO) {
       MediaLibraryEvents.changes.collectLatest {
-        Log.d(TAG, "Media library changed, refreshing current directory")
+        // Clear cache when media library changes
+        MediaFileRepository.clearCache()
         loadCurrentDirectory()
       }
     }
@@ -137,9 +169,78 @@ class FileSystemBrowserViewModel(
    * Equivalent to Fossify's refreshFragment() callback
    */
   override fun refresh() {
-    Log.d(TAG, "Refreshing current directory: ${_currentPath.value}")
-    // Don't reset the flag on refresh, only on navigation
-    loadCurrentDirectory()
+    Log.d(TAG, "Hard refreshing current directory: ${_currentPath.value}")
+    
+    // Set loading state
+    _isLoading.value = true
+    
+    // Clear all caches to force fresh data from filesystem
+    MediaFileRepository.clearCache()
+    FolderViewScanner.clearCache()
+    TreeViewScanner.clearCache()
+    
+    // Trigger media scan to ensure MediaStore is up-to-date
+    triggerMediaScan()
+    
+    // Wait for MediaStore to update, then reload
+    viewModelScope.launch(Dispatchers.IO) {
+      delay(1500) // Give MediaStore time to index
+      loadCurrentDirectory()
+    }
+  }
+  
+  /**
+   * Trigger a media scan for the current directory
+   */
+  private fun triggerMediaScan() {
+    try {
+      val path = _currentPath.value
+      
+      // Skip if we're at storage roots marker
+      if (path == STORAGE_ROOTS_MARKER) {
+        return
+      }
+      
+      val folder = File(path)
+      
+      if (folder.exists() && folder.isDirectory) {
+        // Scan all video files in the folder
+        val videoFiles = folder.listFiles { file ->
+          file.isFile && file.extension.lowercase() in listOf(
+            "mp4", "mkv", "avi", "mov", "wmv", "flv", "webm", "m4v", "3gp", "mpg", "mpeg", "ts", "m2ts"
+          )
+        }
+        
+        if (!videoFiles.isNullOrEmpty()) {
+          val filePaths = videoFiles.map { it.absolutePath }.toTypedArray()
+          
+          android.media.MediaScannerConnection.scanFile(
+            getApplication(),
+            filePaths,
+            null, // Let MediaScanner detect MIME types
+          ) { scanPath, uri ->
+            Log.d(TAG, "Media scan completed for: $scanPath -> $uri")
+          }
+          
+          Log.d(TAG, "Triggered media scan for ${filePaths.size} files in: $path")
+        } else {
+          Log.d(TAG, "No video files found in folder: $path")
+        }
+      } else {
+        // Fallback to scanning external storage root
+        val externalStorage = android.os.Environment.getExternalStorageDirectory()
+        android.media.MediaScannerConnection.scanFile(
+          getApplication(),
+          arrayOf(externalStorage.absolutePath),
+          null,
+        ) { scanPath, uri ->
+          Log.d(TAG, "Media scan completed for: $scanPath -> $uri")
+        }
+        Log.d(TAG, "Triggered media scan for: ${externalStorage.absolutePath}")
+      }
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to trigger media scan", e)
+    }
   }
 
   /**
@@ -147,47 +248,6 @@ class FileSystemBrowserViewModel(
    */
   fun setItemsWereDeletedOrMoved() {
     _itemsWereDeletedOrMoved.value = true
-  }
-
-  /**
-   * Navigate to a specific path
-   * Similar to Fossify's openPath() method
-   */
-  fun navigateTo(path: String) {
-    Log.d(TAG, "Navigating to: $path")
-    _currentPath.value = path
-    // Reset the flag when navigating to a new directory (not back)
-    _itemsWereDeletedOrMoved.value = false
-    loadCurrentDirectory()
-  }
-
-  /**
-   * Navigate up one level in the directory hierarchy
-   * Based on Fossify's breadcrumbClicked() and back navigation logic
-   */
-  fun navigateUp() {
-    val current = _currentPath.value
-
-    if (current == STORAGE_ROOTS_MARKER) {
-      // Already at root, nowhere to go
-      Log.d(TAG, "Already at storage roots, cannot navigate up")
-      return
-    }
-
-    val parent = File(current).parent
-
-    // Don't reset the flag when navigating back - let the refresh check if folder is empty
-
-    if (parent != null && parent != current) {
-      Log.d(TAG, "Navigating up from $current to $parent")
-      _currentPath.value = parent
-      loadCurrentDirectory()
-    } else {
-      // Go back to storage roots view
-      Log.d(TAG, "Navigating to storage roots from $current")
-      _currentPath.value = STORAGE_ROOTS_MARKER
-      loadCurrentDirectory()
-    }
   }
 
   /**
@@ -219,6 +279,8 @@ class FileSystemBrowserViewModel(
     // Set flag if any deletions were successful
     if (successCount > 0) {
       _itemsWereDeletedOrMoved.value = true
+      // Notify that media library has changed
+      MediaLibraryEvents.notifyChanged()
     }
 
     Log.d(TAG, "Folder deletion complete: $successCount success, $failureCount failed")
@@ -281,12 +343,10 @@ class FileSystemBrowserViewModel(
           Log.d(TAG, "Breadcrumbs updated: ${_breadcrumbs.value.size} components")
 
           // Get hidden files preference
-          val showHiddenFiles = appearancePreferences.showHiddenFiles.get()
-
           // Scan directory - equivalent to Fossify's getRegularItemsOf()
           // Always show only videos (showAllFileTypes = false)
           MediaFileRepository
-            .scanDirectory(getApplication(), path, showAllFileTypes = false, showHiddenFiles)
+            .scanDirectory(getApplication(), path, showAllFileTypes = false)
             .onSuccess { items ->
               // Get previous count for this path
               val previousCount = itemCountByPath[path] ?: 0
@@ -309,9 +369,42 @@ class FileSystemBrowserViewModel(
               val videoCount = items.filterIsInstance<FileSystemItem.VideoFile>().size
               Log.d(TAG, "Loaded directory: $path with $folderCount folders, $videoCount videos")
 
+              // Enrich videos with metadata if chips are enabled
+              val enrichedItems = if (MetadataRetrieval.isVideoMetadataNeeded(browserPreferences)) {
+                Log.d(TAG, "Metadata chips enabled, enriching $videoCount videos")
+                val videoFiles = items.filterIsInstance<FileSystemItem.VideoFile>()
+                val videos = videoFiles.map { it.video }
+                val enrichedVideos = MetadataRetrieval.enrichVideosIfNeeded(
+                  context = getApplication(),
+                  videos = videos,
+                  browserPreferences = browserPreferences,
+                  metadataCache = metadataCache
+                )
+                
+                // Replace videos in items with enriched versions
+                val enrichedVideoMap = enrichedVideos.associateBy { it.id }
+                items.map { item ->
+                  when (item) {
+                    is FileSystemItem.VideoFile -> {
+                      val enrichedVideo = enrichedVideoMap[item.video.id]
+                      if (enrichedVideo != null) {
+                        item.copy(video = enrichedVideo)
+                      } else {
+                        item
+                      }
+                    }
+                    else -> item
+                  }
+                }
+              } else {
+                items
+              }
+
+              _unsortedItems.value = enrichedItems
+
               // Load playback info for videos
               // Similar to Fossify's playback state tracking
-              loadPlaybackInfo(items)
+              loadPlaybackInfo(enrichedItems)
             }.onFailure { error ->
               _error.value = error.message
               _unsortedItems.value = emptyList()

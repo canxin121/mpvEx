@@ -32,6 +32,7 @@ import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import me.zhanghai.compose.preference.SliderPreference
 import me.zhanghai.compose.preference.SwitchPreference
 import org.koin.compose.koinInject
+import kotlin.math.roundToInt
 
 @Serializable
 object PlayerPreferencesScreen : Screen {
@@ -113,15 +114,33 @@ object PlayerPreferencesScreen : Screen {
               
               PreferenceDivider()
               
+              val autoplayNextVideo by preferences.autoplayNextVideo.collectAsState()
+              SwitchPreference(
+                value = autoplayNextVideo,
+                onValueChange = preferences.autoplayNextVideo::set,
+                title = { Text(text = "Autoplay next video") },
+                summary = {
+                  Text(
+                    text = if (autoplayNextVideo)
+                      "Automatically play next video when current ends"
+                    else
+                      "Stay on current video when it ends",
+                    color = MaterialTheme.colorScheme.outline,
+                  )
+                },
+              )
+              
+              PreferenceDivider()
+              
               val playlistMode by preferences.playlistMode.collectAsState()
               SwitchPreference(
                 value = playlistMode,
                 onValueChange = preferences.playlistMode::set,
-                title = { Text(text = "Playlist Mode") },
-                summary = { 
+                title = { Text(text = "Enable next/previous navigation") },
+                summary = {
                   Text(
                     text = if (playlistMode)
-                      "Automatically enable next/previous navigation for all videos in folder"
+                      "Show next/previous buttons for all videos in folder"
                     else
                       "Play videos individually (select multiple for playlist)",
                     color = MaterialTheme.colorScheme.outline,
@@ -130,12 +149,45 @@ object PlayerPreferencesScreen : Screen {
               )
               
               PreferenceDivider()
-              
+
               val rememberBrightness by preferences.rememberBrightness.collectAsState()
               SwitchPreference(
                 value = rememberBrightness,
                 onValueChange = preferences.rememberBrightness::set,
                 title = { Text(text = stringResource(R.string.pref_player_remember_brightness)) },
+              )
+
+              PreferenceDivider()
+
+              val autoPiPOnNavigation by preferences.autoPiPOnNavigation.collectAsState()
+              SwitchPreference(
+                value = autoPiPOnNavigation,
+                onValueChange = preferences.autoPiPOnNavigation::set,
+                title = { Text("Auto Picture-in-Picture") },
+                summary = {
+                  Text(
+                    text = "Automatically enter PIP mode when pressing home or back",
+                    color = MaterialTheme.colorScheme.outline,
+                  )
+                },
+              )
+
+              PreferenceDivider()
+
+              val keepScreenOnWhenPaused by preferences.keepScreenOnWhenPaused.collectAsState()
+              SwitchPreference(
+                value = keepScreenOnWhenPaused,
+                onValueChange = preferences.keepScreenOnWhenPaused::set,
+                title = { Text("Keep screen on when paused") },
+                summary = {
+                  Text(
+                    text = if (keepScreenOnWhenPaused)
+                      "Screen stays awake while video is paused"
+                    else
+                      "Screen can turn off while video is paused",
+                    color = MaterialTheme.colorScheme.outline,
+                  )
+                },
               )
             }
           }
@@ -146,24 +198,6 @@ object PlayerPreferencesScreen : Screen {
           
           item {
             PreferenceCard {
-              val horizontalSeekGesture by preferences.horizontalSeekGesture.collectAsState()
-              SwitchPreference(
-                value = horizontalSeekGesture,
-                onValueChange = preferences.horizontalSeekGesture::set,
-                title = { Text(stringResource(R.string.pref_player_gestures_seek)) },
-              )
-              
-              PreferenceDivider()
-              
-              val showSeekbarWhenSeeking by preferences.showSeekBarWhenSeeking.collectAsState()
-              SwitchPreference(
-                value = showSeekbarWhenSeeking,
-                onValueChange = preferences.showSeekBarWhenSeeking::set,
-                title = { Text(stringResource(R.string.pref_player_show_seekbar_when_seeking)) },
-              )
-              
-              PreferenceDivider()
-              
               val showDoubleTapOvals by preferences.showDoubleTapOvals.collectAsState()
               SwitchPreference(
                 value = showDoubleTapOvals,
@@ -187,6 +221,25 @@ object PlayerPreferencesScreen : Screen {
                 value = usePreciseSeeking,
                 onValueChange = preferences.usePreciseSeeking::set,
                 title = { Text(stringResource(R.string.pref_player_use_precise_seeking)) },
+              )
+              
+              PreferenceDivider()
+              
+              val customSkipDuration by preferences.customSkipDuration.collectAsState()
+              SliderPreference(
+                value = customSkipDuration.toFloat(),
+                onValueChange = { preferences.customSkipDuration.set(it.roundToInt()) },
+                title = { Text(stringResource(R.string.pref_player_custom_skip_duration_title)) },
+                valueRange = 5f..180f,
+                summary = {
+                   val summaryText = stringResource(R.string.pref_player_custom_skip_duration_summary)
+                   Text(
+                     "$summaryText ($customSkipDuration s)",
+                     color = MaterialTheme.colorScheme.outline,
+                   )
+                },
+                onSliderValueChange = { preferences.customSkipDuration.set(it.roundToInt()) },
+                sliderValue = customSkipDuration.toFloat(),
               )
             }
           }
@@ -220,6 +273,34 @@ object PlayerPreferencesScreen : Screen {
                 value = pinchToZoomGesture,
                 onValueChange = preferences.pinchToZoomGesture::set,
                 title = { Text(stringResource(R.string.pref_player_gestures_pinch_to_zoom)) },
+              )
+              
+              PreferenceDivider()
+              
+              val horizontalSwipeToSeek by preferences.horizontalSwipeToSeek.collectAsState()
+              SwitchPreference(
+                value = horizontalSwipeToSeek,
+                onValueChange = preferences.horizontalSwipeToSeek::set,
+                title = { Text(stringResource(R.string.pref_player_gestures_horizontal_swipe_to_seek)) },
+              )
+              
+              PreferenceDivider()
+              
+              val horizontalSwipeSensitivity by preferences.horizontalSwipeSensitivity.collectAsState()
+              SliderPreference(
+                value = horizontalSwipeSensitivity,
+                onValueChange = { preferences.horizontalSwipeSensitivity.set(it.toFixed(3)) },
+                title = { Text(stringResource(R.string.pref_player_gestures_horizontal_swipe_sensitivity)) },
+                valueRange = 0.020f..0.1f,
+                summary = {
+                  val sensitivityPercent = (horizontalSwipeSensitivity * 1000).toInt()
+                  Text(
+                    "Current: ${sensitivityPercent}/100 (${if (sensitivityPercent < 30) "Low" else if (sensitivityPercent < 55) "Medium" else "High"})",
+                    color = MaterialTheme.colorScheme.outline,
+                  )
+                },
+                onSliderValueChange = { preferences.horizontalSwipeSensitivity.set(it.toFixed(3)) },
+                sliderValue = horizontalSwipeSensitivity,
               )
               
               PreferenceDivider()
@@ -264,7 +345,7 @@ object PlayerPreferencesScreen : Screen {
           item {
             PreferenceSectionHeader(title = stringResource(R.string.pref_player_controls))
           }
-          
+
           item {
             PreferenceCard {
               val allowGesturesInPanels by preferences.allowGesturesInPanels.collectAsState()
@@ -309,6 +390,15 @@ object PlayerPreferencesScreen : Screen {
                 value = showSystemStatusBar,
                 onValueChange = preferences.showSystemStatusBar::set,
                 title = { Text(stringResource(R.string.pref_player_display_show_status_bar)) },
+              )
+
+              PreferenceDivider()
+
+              val showSystemNavigationBar by preferences.showSystemNavigationBar.collectAsState()
+              SwitchPreference(
+                value = showSystemNavigationBar,
+                onValueChange = preferences.showSystemNavigationBar::set,
+                title = { Text("Show navigation bar with controls") },
               )
               
               PreferenceDivider()

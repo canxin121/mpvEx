@@ -2,6 +2,7 @@ package app.marlboroadvance.mpvex.utils.media
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import app.marlboroadvance.mpvex.BuildConfig
@@ -70,8 +71,20 @@ object MediaUtils {
 
         is String -> {
           if (source.isBlank()) return
-          val parsedUri = source.toUri()
-          parsedUri.scheme?.let { parsedUri } ?: "file://$source".toUri()
+          // Handle file paths with # characters properly
+          if (source.startsWith("/") || source.startsWith("file://")) {
+            // It's a local file path - create URI safely
+            val filePath = if (source.startsWith("file://")) {
+              source.removePrefix("file://")
+            } else {
+              source
+            }
+            Uri.fromFile(java.io.File(filePath))
+          } else {
+            // It's likely a network URI - parse normally
+            val parsedUri = source.toUri()
+            parsedUri.scheme?.let { parsedUri } ?: "file://$source".toUri()
+          }
         }
 
         is android.net.Uri -> source
@@ -141,16 +154,28 @@ object MediaUtils {
       return
     }
 
-    fun toSharableUri(v: Video): android.net.Uri =
+    fun toSharableUri(v: Video): android.net.Uri? =
       v.uri.takeIf { it.scheme.equals("content", true) } ?: run {
-        FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", File(v.path))
+        try {
+          FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", File(v.path))
+        } catch (e: IllegalArgumentException) {
+          android.util.Log.e("MediaUtils", "FileProvider failed for ${v.path}: ${e.message}")
+          null
+        } catch (e: Exception) {
+          android.util.Log.e("MediaUtils", "Failed to generate URI for ${v.path}", e)
+          null
+        }
       }
 
-    val uris = videos.map { toSharableUri(it) }
+    val uris = videos.mapNotNull { toSharableUri(it) }
 
     if (uris.isEmpty()) {
-      android.util.Log.w("MediaUtils", "Cannot share: no valid URIs generated")
+      android.util.Log.w("MediaUtils", "Cannot share: no valid URIs generated for any videos")
       return
+    }
+
+    if (uris.size < videos.size) {
+      android.util.Log.w("MediaUtils", "Only ${uris.size}/${videos.size} videos could be shared")
     }
 
     val intent =
@@ -167,7 +192,7 @@ object MediaUtils {
         Intent(Intent.ACTION_SEND_MULTIPLE).apply {
           type = "video/*"
           putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
-          putExtra(Intent.EXTRA_SUBJECT, "Sharing ${videos.size} videos")
+          putExtra(Intent.EXTRA_SUBJECT, "Sharing ${uris.size} videos")
           val clip = android.content.ClipData.newRawUri(videos.first().displayName, uris.first())
           uris.drop(1).forEach { u -> clip.addItem(android.content.ClipData.Item(u)) }
           clipData = clip
@@ -178,7 +203,7 @@ object MediaUtils {
     context.startActivity(
       Intent.createChooser(
         intent,
-        if (videos.size == 1) "Share video" else "Share ${videos.size} videos",
+        if (uris.size == 1) "Share video" else "Share ${uris.size} videos",
       ),
     )
   }

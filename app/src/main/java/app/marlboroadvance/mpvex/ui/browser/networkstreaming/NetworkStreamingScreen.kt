@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -62,7 +62,10 @@ import app.marlboroadvance.mpvex.ui.browser.states.EmptyState
 import app.marlboroadvance.mpvex.ui.preferences.PreferencesScreen
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
 import app.marlboroadvance.mpvex.utils.media.MediaUtils
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import org.koin.compose.koinInject
+import app.marlboroadvance.mpvex.preferences.FolderViewMode
 
 @Serializable
 object NetworkStreamingScreen : Screen {
@@ -76,16 +79,20 @@ object NetworkStreamingScreen : Screen {
 
     val connections by viewModel.connections.collectAsState()
     val connectionStatuses by viewModel.connectionStatuses.collectAsState()
+    val browserPreferences = koinInject<app.marlboroadvance.mpvex.preferences.BrowserPreferences>()
     var showAddSheet by remember { mutableStateOf(false) }
     var editingConnection by remember { mutableStateOf<NetworkConnection?>(null) }
+    val navigationBarHeight = app.marlboroadvance.mpvex.ui.browser.LocalNavigationBarHeight.current
 
     // LazyList state for scroll tracking
-    val listState = rememberLazyListState()
+    val listState = LazyListState()
 
     // Track scroll direction to show/hide FAB
     var previousFirstVisibleItemIndex by remember { mutableIntStateOf(0) }
     var previousFirstVisibleItemScrollOffset by remember { mutableIntStateOf(0) }
-
+    
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+    
     val isFabVisible by remember {
       derivedStateOf {
         val currentIndex = listState.firstVisibleItemIndex
@@ -108,18 +115,20 @@ object NetworkStreamingScreen : Screen {
     }
 
     Scaffold(
-      topBar = {
-        BrowserTopBar(
-          title = "Network",
-          isInSelectionMode = false,
-          selectedCount = 0,
-          totalCount = 0,
-          onBackClick = null, // No back button for network screen (root tab)
-          onCancelSelection = { },
+        topBar = {
+          BrowserTopBar(
+            title = "Network",
+            isInSelectionMode = false,
+            selectedCount = 0,
+            totalCount = 0,
+            onBackClick = null, // No back button for network screen (root tab)
+            onCancelSelection = { },
           onSortClick = null,
-          onSettingsClick = { backstack.add(PreferencesScreen) },
           // Search functionality disabled for production
           onSearchClick = null,
+          onSettingsClick = {
+            backstack.add(app.marlboroadvance.mpvex.ui.preferences.PreferencesScreen)
+          },
           onDeleteClick = null,
           onRenameClick = null,
           isSingleSelection = false,
@@ -132,16 +141,14 @@ object NetworkStreamingScreen : Screen {
         )
       },
       floatingActionButton = {
+        val navigationBarHeight = app.marlboroadvance.mpvex.ui.browser.LocalNavigationBarHeight.current
         if (isFabVisible) {
-          Box(
-            modifier = Modifier.padding(bottom = 80.dp),
-          ) {
-            ExtendedFloatingActionButton(
-              onClick = { showAddSheet = true },
-              icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-              text = { Text("Add Connection") },
-            )
-          }
+          ExtendedFloatingActionButton(
+            onClick = { showAddSheet = true },
+            icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+            text = { Text("Add Connection") },
+            modifier = Modifier.padding(bottom = navigationBarHeight)
+          )
         }
       },
     ) { padding ->
@@ -150,7 +157,12 @@ object NetworkStreamingScreen : Screen {
         modifier = Modifier
           .fillMaxSize()
           .padding(padding),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
+        contentPadding = PaddingValues(
+          start = 16.dp, 
+          end = 16.dp, 
+          top = 16.dp, 
+          bottom = navigationBarHeight
+        ),
       ) {
           // Section 1: Stream Link
           item {
@@ -183,7 +195,9 @@ object NetworkStreamingScreen : Screen {
                 ),
               ) {
                 Column(
-                  modifier = Modifier.padding(24.dp),
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
                   horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                   Icon(
@@ -227,7 +241,7 @@ object NetworkStreamingScreen : Screen {
                       NetworkBrowserScreen(
                         connectionId = conn.id,
                         connectionName = conn.name,
-                        currentPath = conn.path,
+                        currentPath = "/",  // Always start at root - conn.path is already included in connection
                       ),
                     )
                   }

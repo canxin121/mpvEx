@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -19,11 +20,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -32,24 +36,47 @@ import app.marlboroadvance.mpvex.preferences.AppearancePreferences
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.presentation.Screen
 import app.marlboroadvance.mpvex.repository.NetworkRepository
+import app.marlboroadvance.mpvex.utils.update.UpdateDialog
+import app.marlboroadvance.mpvex.utils.update.UpdateViewModel
 import app.marlboroadvance.mpvex.ui.browser.MainScreen
 import app.marlboroadvance.mpvex.ui.theme.DarkMode
 import app.marlboroadvance.mpvex.ui.theme.MpvexTheme
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
-import kotlinx.coroutines.launch
+import app.marlboroadvance.mpvex.utils.permission.PermissionUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 
+/**
+ * Main entry point for the application
+ */
 class MainActivity : ComponentActivity() {
   private val appearancePreferences by inject<AppearancePreferences>()
   private val networkRepository by inject<NetworkRepository>()
+  
+  // Create a coroutine scope tied to the activity lifecycle
+  private val activityScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+  // Register the ActivityResultLauncher at class level
+  private val mediaAccessLauncher = registerForActivityResult(
+    ActivityResultContracts.StartIntentSenderForResult()
+  ) { result ->
+    PermissionUtils.handleMediaAccessResult(result.resultCode)
+  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    
+    PermissionUtils.setMediaAccessLauncher(mediaAccessLauncher)
 
-    // Register proxy lifecycle observer
+    // Register proxy lifecycle observer for network streaming
     lifecycle.addObserver(app.marlboroadvance.mpvex.ui.browser.networkstreaming.proxy.ProxyLifecycleObserver())
 
     setContent {
+      // Set up theme and edge-to-edge display
       val dark by appearancePreferences.darkMode.collectAsState()
       val isSystemInDarkTheme = isSystemInDarkTheme()
       val isDarkMode = dark == DarkMode.Dark || (dark == DarkMode.System && isSystemInDarkTheme)
@@ -60,34 +87,9 @@ class MainActivity : ComponentActivity() {
         ) { isDarkMode },
       )
 
+      // Auto-connect to saved network connections
       LaunchedEffect(Unit) {
-        // Delay auto-connect to let UI settle first
-        kotlinx.coroutines.delay(500)
-        launch(kotlinx.coroutines.Dispatchers.IO) {
-          try {
-            val autoConnectConnections = networkRepository.getAutoConnectConnections()
-            autoConnectConnections.forEach { connection ->
-              kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                Log.d("MainActivity", "Auto-connecting to: ${connection.name}")
-              }
-              networkRepository.connect(connection)
-                .onSuccess {
-                  kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    Log.d("MainActivity", "Auto-connected successfully: ${connection.name}")
-                  }
-                }
-                .onFailure { e ->
-                  kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    Log.e("MainActivity", "Auto-connect failed for ${connection.name}: ${e.message}")
-                  }
-                }
-            }
-          } catch (e: Exception) {
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-              Log.e("MainActivity", "Error during auto-connect", e)
-            }
-          }
-        }
+        autoConnectToNetworks()
       }
 
       MpvexTheme {
@@ -106,13 +108,68 @@ class MainActivity : ComponentActivity() {
     }
   }
 
+  /**
+   * Auto-connect to network connections that are marked for auto-connection
+   */
+  private suspend fun autoConnectToNetworks() {
+    // Delay auto-connect to let UI settle first
+    kotlinx.coroutines.delay(500)
+    
+    // Use coroutineScope for properly structured concurrency
+    withContext(Dispatchers.IO) {
+      try {
+        val autoConnectConnections = networkRepository.getAutoConnectConnections()
+        autoConnectConnections.forEach { connection ->
+          withContext(Dispatchers.Main) {
+            Log.d("MainActivity", "Auto-connecting to: ${connection.name}")
+          }
+          networkRepository.connect(connection)
+            .onSuccess {
+              withContext(Dispatchers.Main) {
+                Log.d("MainActivity", "Auto-connected successfully: ${connection.name}")
+              }
+            }
+            .onFailure { e ->
+              withContext(Dispatchers.Main) {
+                Log.e("MainActivity", "Auto-connect failed for ${connection.name}: ${e.message}")
+              }
+            }
+        }
+      } catch (e: Exception) {
+        withContext(Dispatchers.Main) {
+          Log.e("MainActivity", "Error during auto-connect", e)
+        }
+      }
+    }
+  }
+
+  /**
+   * Navigator that handles screen transitions and provides shared states
+   */
   @Composable
   fun Navigator() {
     val backstack = rememberNavBackStack(MainScreen)
 
     @Suppress("UNCHECKED_CAST")
     val typedBackstack = backstack as NavBackStack<Screen>
-    CompositionLocalProvider(LocalBackStack provides typedBackstack) {
+
+    val context = LocalContext.current
+    val currentVersion = BuildConfig.VERSION_NAME.replace("-dev", "")
+
+    // Conditionally initialize update feature based on build config
+    val updateViewModel: UpdateViewModel? = if (BuildConfig.ENABLE_UPDATE_FEATURE) {
+      viewModel(context as ComponentActivity)
+    } else {
+      null
+    }
+    val updateState by (updateViewModel?.updateState ?: MutableStateFlow(UpdateViewModel.UpdateState.Idle)).collectAsState()
+    val isDownloading by (updateViewModel?.isDownloading ?: MutableStateFlow(false)).collectAsState()
+    val downloadProgress by (updateViewModel?.downloadProgress ?: MutableStateFlow(0f)).collectAsState()
+
+    // Provide both LocalBackStack and the LazyList/Grid states to all screens
+    CompositionLocalProvider(
+      LocalBackStack provides typedBackstack
+    ) {
       NavDisplay(
         backStack = typedBackstack,
         onBack = { typedBackstack.removeLastOrNull() },
@@ -121,21 +178,19 @@ class MainActivity : ComponentActivity() {
           (
             fadeIn(animationSpec = tween(220)) +
               slideIn(animationSpec = tween(220)) { IntOffset(-it.width / 2, 0) }
-          ) togetherWith
-            (
+          ) togetherWith (
               fadeOut(animationSpec = tween(220)) +
                 slideOut(animationSpec = tween(220)) { IntOffset(it.width / 2, 0) }
-            )
+          )
         },
         transitionSpec = {
           (
             fadeIn(animationSpec = tween(220)) +
               slideIn(animationSpec = tween(220)) { IntOffset(it.width / 2, 0) }
-          ) togetherWith
-            (
+          ) togetherWith (
               fadeOut(animationSpec = tween(220)) +
                 slideOut(animationSpec = tween(220)) { IntOffset(-it.width / 2, 0) }
-            )
+          )
         },
         predictivePopTransitionSpec = {
           (
@@ -145,17 +200,49 @@ class MainActivity : ComponentActivity() {
                 initialScale = .9f,
                 TransformOrigin(-1f, .5f),
               )
-          ) togetherWith
-            (
+          ) togetherWith (
               fadeOut(animationSpec = tween(220)) +
                 scaleOut(
                   animationSpec = tween(220, delayMillis = 30),
                   targetScale = .9f,
                   TransformOrigin(-1f, .5f),
                 )
-            )
+          )
         },
       )
+
+      // Display Update Dialog when appropriate (only if update feature is enabled)
+      if (BuildConfig.ENABLE_UPDATE_FEATURE && updateViewModel != null) {
+        when (updateState) {
+          is UpdateViewModel.UpdateState.Available -> {
+            val release = (updateState as UpdateViewModel.UpdateState.Available).release
+            UpdateDialog(
+              release = release,
+              isDownloading = isDownloading,
+              progress = downloadProgress,
+              actionLabel = if (isDownloading) "Downloading..." else "Download",
+              currentVersion = currentVersion,
+              onDismiss = { updateViewModel.dismiss() },
+              onAction = { updateViewModel.downloadUpdate(release) },
+              onIgnore = { updateViewModel.ignoreVersion(release.tagName.removePrefix("v")) }
+            )
+          }
+          is UpdateViewModel.UpdateState.ReadyToInstall -> {
+            val release = (updateState as UpdateViewModel.UpdateState.ReadyToInstall).release
+            UpdateDialog(
+              release = release,
+              isDownloading = isDownloading,
+              progress = downloadProgress,
+              actionLabel = "Install",
+              currentVersion = currentVersion,
+              onDismiss = { updateViewModel.dismiss() },
+              onAction = { updateViewModel.installUpdate(release) },
+              onIgnore = { updateViewModel.ignoreVersion(release.tagName.removePrefix("v")) }
+            )
+          }
+          else -> {}
+        }
+      }
     }
   }
 }

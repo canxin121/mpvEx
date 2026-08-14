@@ -4,6 +4,7 @@ package app.marlboroadvance.mpvex.presentation.components
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
+import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -20,6 +21,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.sizeIn
@@ -65,18 +68,27 @@ fun PlayerSheet(
   onDismissRequest: () -> Unit,
   modifier: Modifier = Modifier,
   tonalElevation: Dp = 1.dp,
+  customMaxWidth: Dp? = null,
+  customMaxHeight: Dp? = null,
+  surfaceColor: Color? = null,
   content: @Composable () -> Unit,
 ) {
   val scope = rememberCoroutineScope()
   val density = LocalDensity.current
   val latestOnDismissRequest by rememberUpdatedState(onDismissRequest)
-  val maxWidth =
-    if (LocalConfiguration.current.orientation == ORIENTATION_LANDSCAPE) {
-      640.dp
-    } else {
-      420.dp
-    }
-  val maxHeight = LocalConfiguration.current.screenHeightDp.dp * .95f
+  val maxWidth = customMaxWidth ?:
+  if (LocalConfiguration.current.orientation == ORIENTATION_LANDSCAPE) {
+    640.dp
+  } else {
+    420.dp
+  }
+  val isImeVisible = WindowInsets.ime.getBottom(density) > 0
+  val maxHeight = customMaxHeight ?: when {
+    isImeVisible -> LocalConfiguration.current.screenHeightDp.dp
+    LocalConfiguration.current.orientation == ORIENTATION_PORTRAIT ->
+      LocalConfiguration.current.screenHeightDp.dp * .90f
+    else -> LocalConfiguration.current.screenHeightDp.dp
+  }
 
   var backgroundAlpha by remember { mutableFloatStateOf(0f) }
   val alpha by animateFloatAsState(
@@ -150,8 +162,9 @@ fun PlayerSheet(
           ).windowInsetsPadding(
             WindowInsets.systemBars
               .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
-          ),
+          ).imePadding(),
       shape = MaterialTheme.shapes.extraLarge.copy(bottomEnd = ZeroCornerSize, bottomStart = ZeroCornerSize),
+      color = surfaceColor ?: MaterialTheme.colorScheme.surface,
       tonalElevation = tonalElevation,
       content = {
         BackHandler(

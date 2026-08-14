@@ -14,6 +14,7 @@ import app.marlboroadvance.mpvex.database.repository.PlaylistRepository
 import app.marlboroadvance.mpvex.database.repository.VideoMetadataCacheRepository
 import app.marlboroadvance.mpvex.domain.media.model.Video
 import app.marlboroadvance.mpvex.domain.recentlyplayed.repository.RecentlyPlayedRepository
+import app.marlboroadvance.mpvex.utils.permission.PermissionUtils
 
 
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -116,22 +117,29 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
       for ((filePath, timestamp) in standaloneVideos) {
         val entity = allRecentEntities.find { it.filePath == filePath }
 
+        // Check if this is a network URL
         val isNetworkUri = filePath.startsWith("http://", ignoreCase = true) ||
           filePath.startsWith("https://", ignoreCase = true) ||
           filePath.startsWith("rtmp://", ignoreCase = true) ||
           filePath.startsWith("rtsp://", ignoreCase = true)
 
-        // Skip network URIs (streams) as per requirement
-        if (isNetworkUri) {
+        // Skip any kind of streaming playlist entries
+        if (isStreamingPlaylist(filePath)) {
+          // Skip streaming playlist entries
           continue
         }
 
-        // Process local files only
-        val file = File(filePath)
-        val video = if (file.exists()) {
-          createVideoFromFilePath(filePath, file, entity?.videoTitle)
+        val video = if (isNetworkUri) {
+          // For network URLs, create video object directly using parsed title from entity
+          createNetworkVideoFromUrl(filePath, entity?.videoTitle, entity)
         } else {
-          null
+          // For local files, check if they exist
+          val file = File(filePath)
+          if (file.exists()) {
+            createVideoFromFilePath(filePath, file, entity?.videoTitle)
+          } else {
+            null
+          }
         }
 
         if (video != null) {
@@ -229,7 +237,68 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
     }
   }
 
-  // Network video creation function removed as it's no longer used
+  /**
+   * Creates a Video object from a network URL
+   */
+  private fun createNetworkVideoFromUrl(
+    url: String,
+    parsedVideoTitle: String?,
+    entity: RecentlyPlayedEntity?,
+  ): Video {
+    // Extract URI components
+    val uri = Uri.parse(url)
+    
+    // Use parsed title from database if available, otherwise fallback to URI path
+    val videoTitle = parsedVideoTitle ?: uri.lastPathSegment ?: "Stream"
+    val displayName = videoTitle
+    
+    // Use metadata from entity if available
+    val duration = entity?.duration ?: 0L
+    val size = entity?.fileSize ?: 0L
+    val width = entity?.width ?: 0
+    val height = entity?.height ?: 0
+    
+    // Current timestamp for dates (network streams don't have file dates)
+    val dateModified = System.currentTimeMillis() / 1000
+    val dateAdded = dateModified
+    
+    // Use host as bucket ID (grouping by domain)
+    val bucketId = (uri.host ?: "network").hashCode().toString()
+    val bucketDisplayName = uri.host ?: "Network Streams"
+    
+    // Determine mime type based on URL extension, default to generic video
+    val extension = uri.lastPathSegment?.substringAfterLast('.', "")?.lowercase() ?: ""
+    val mimeType = when (extension) {
+      "mp4" -> "video/mp4"
+      "mkv" -> "video/x-matroska"
+      "webm" -> "video/webm"
+      "m3u8" -> "application/x-mpegURL"
+      "m3u" -> "application/x-mpegURL"
+      "mpd" -> "application/dash+xml"
+      else -> "video/*"
+    }
+    
+    return Video(
+      id = url.hashCode().toLong(),
+      title = videoTitle,
+      displayName = displayName,
+      path = url,
+      uri = uri,
+      duration = duration,
+      durationFormatted = formatDuration(duration),
+      size = size,
+      sizeFormatted = formatFileSize(size),
+      dateModified = dateModified,
+      dateAdded = dateAdded,
+      mimeType = mimeType,
+      bucketId = bucketId,
+      bucketDisplayName = bucketDisplayName,
+      width = width,
+      height = height,
+      fps = 0f, // Network videos typically don't have fps metadata stored
+      resolution = formatResolution(width, height),
+    )
+  }
 
   // Basic video creation function removed as it's no longer used
 
@@ -242,21 +311,46 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
     }
   }
 
-  suspend fun deleteVideosFromHistory(videos: List<Video>): Pair<Int, Int> {
+  suspend fun deleteVideosFromHistory(videos: List<Video>, deleteFiles: Boolean = false): Pair<Int, Int> {
     return try {
       var successCount = 0
       var failCount = 0
-      
+
       videos.forEach { video ->
         try {
+          // Delete from history database
           recentlyPlayedRepository.deleteByFilePath(video.path)
+
+          // If deleteFiles is true and it's a local file, delete the actual file
+          if (deleteFiles) {
+            // Check if it's a local file (not a network URL)
+            val isNetworkUri = video.path.startsWith("http://", ignoreCase = true) ||
+              video.path.startsWith("https://", ignoreCase = true) ||
+              video.path.startsWith("rtmp://", ignoreCase = true) ||
+              video.path.startsWith("rtsp://", ignoreCase = true)
+
+            if (!isNetworkUri) {
+              val (deleted, failed) =
+                PermissionUtils.StorageOps.deleteVideos(
+                  getApplication(),
+                  listOf(video),
+                )
+              if (deleted <= 0 || failed > 0) {
+                Log.w("RecentlyPlayedViewModel", "Failed to delete file: ${video.path}")
+                failCount++
+              } else {
+                Log.d("RecentlyPlayedViewModel", "Deleted file: ${video.path}")
+              }
+            }
+          }
+
           successCount++
         } catch (e: Exception) {
           Log.e("RecentlyPlayedViewModel", "Error deleting video from history: ${video.path}", e)
           failCount++
         }
       }
-      
+
       Pair(successCount, failCount)
     } catch (e: Exception) {
       Log.e("RecentlyPlayedViewModel", "Error deleting videos from history", e)
@@ -328,7 +422,49 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
       else -> "${height}p"
     }
   }
+  
+  /**
+   * Checks if a URL is likely a streaming playlist (M3U, HLS, DASH, etc.)
+   * 
+   * @param url The URL to check
+   * @return True if the URL appears to be a streaming playlist
+   */
+  private fun isStreamingPlaylist(url: String): Boolean {
+    val lowerCaseUrl = url.lowercase()
+    
+    // Direct extensions
+    if (lowerCaseUrl.endsWith(".m3u") || 
+        lowerCaseUrl.endsWith(".m3u8") ||
+        lowerCaseUrl.endsWith(".mpd")) {
+      return true
+    }
+    
+    // Common playlist keywords
+    if (lowerCaseUrl.contains("playlist") || 
+        lowerCaseUrl.contains("manifest")) {
+      return true
+    }
+    
+    // Index files with streaming format indicators
+    if (lowerCaseUrl.contains("index") && (
+        lowerCaseUrl.contains(".m3u") ||
+        lowerCaseUrl.contains("hls") ||
+        lowerCaseUrl.contains("dash") ||
+        lowerCaseUrl.contains("mpd"))) {
+      return true
+    }
+    
+    // IPTV and streaming service patterns
+    if (lowerCaseUrl.contains("iptv") ||
+        lowerCaseUrl.contains("channel") && lowerCaseUrl.contains("stream")) {
+      return true
+    }
+    
+    return false
+  }
 
+
+  
   companion object {
     fun factory(application: Application): ViewModelProvider.Factory = viewModelFactory {
       initializer {

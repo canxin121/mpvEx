@@ -101,6 +101,7 @@ fun AspectRatioSheet(
             onClick = { onSelectRatio(ratio.ratio) },
             label = { Text(ratio.label) },
             modifier = Modifier.animateItem(),
+            leadingIcon = null,
           )
         }
       }
@@ -125,6 +126,7 @@ fun AspectRatioSheet(
               selected = currentRatio?.let { abs(it - ratio.ratio) < 0.01 } ?: false,
               onClick = { onSelectRatio(ratio.ratio) },
               label = { Text(ratio.label) },
+              leadingIcon = null,
               trailingIcon = {
                 Icon(
                   Icons.Default.Close,
@@ -250,9 +252,9 @@ private fun AddCustomRatioRow(
       }
     }
 
-    if (errorMessage != null) {
+    errorMessage?.let { msg ->
       Text(
-        text = errorMessage!!,
+        text = msg,
         color = MaterialTheme.colorScheme.error,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.padding(start = MaterialTheme.spacing.small, top = 4.dp),

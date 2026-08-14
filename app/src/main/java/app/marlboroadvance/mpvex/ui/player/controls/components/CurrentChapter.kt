@@ -8,12 +8,15 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
@@ -27,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,34 +50,26 @@ fun CurrentChapter(
   onClick: () -> Unit = {},
 ) {
   val appearancePreferences = koinInject<AppearancePreferences>()
-  val hideBackground by appearancePreferences.hidePlayerButtonsBackground.collectAsState()
 
   Surface(
     modifier =
       modifier
         .height(45.dp)
+        .widthIn(max = 220.dp)
         .clip(RoundedCornerShape(50))
         .clickable(onClick = onClick),
     shape = RoundedCornerShape(50),
     color =
-      if (hideBackground) {
-        Color.Transparent
-      } else {
         MaterialTheme.colorScheme.surfaceContainer.copy(
           alpha = 0.55f,
-        )
-      },
-    contentColor = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
+        ),
+    contentColor = MaterialTheme.colorScheme.onSurface,
     tonalElevation = 0.dp,
     border =
-      if (hideBackground) {
-        null
-      } else {
         BorderStroke(
           1.dp,
           MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-        )
-      },
+        ),
   ) {
     AnimatedContent(
       targetState = chapter,
@@ -95,22 +91,13 @@ fun CurrentChapter(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall),
       ) {
-        Icon(
-          imageVector = Icons.Default.Bookmarks,
-          contentDescription = null,
-          modifier =
-            Modifier
-              .padding(end = MaterialTheme.spacing.extraSmall)
-              .size(20.dp),
-          tint = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
-        )
         Text(
           text = Utils.prettyTime(currentChapter.start.toInt()),
-          fontWeight = FontWeight.ExtraBold,
+          fontFamily = FontFamily.Monospace,
           style = MaterialTheme.typography.bodyMedium,
           maxLines = 1,
           overflow = TextOverflow.Clip,
-          color = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
+          color = MaterialTheme.colorScheme.primary,
         )
         currentChapter.name.let {
           Text(
@@ -118,7 +105,7 @@ fun CurrentChapter(
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyMedium,
             maxLines = 1,
-            color = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
+            color = MaterialTheme.colorScheme.onSurface,
             overflow = TextOverflow.Clip,
           )
           Text(
@@ -127,8 +114,9 @@ fun CurrentChapter(
             style = MaterialTheme.typography.bodyMedium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            fontWeight = FontWeight.Bold,
-            color = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
+            fontFamily = FontFamily.Monospace,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.basicMarquee(),
           )
         }
       }

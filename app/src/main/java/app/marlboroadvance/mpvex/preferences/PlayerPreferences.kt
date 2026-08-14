@@ -1,19 +1,19 @@
+
 package app.marlboroadvance.mpvex.preferences
 
 import app.marlboroadvance.mpvex.preferences.preference.PreferenceStore
 import app.marlboroadvance.mpvex.preferences.preference.getEnum
 import app.marlboroadvance.mpvex.ui.player.PlayerOrientation
+import app.marlboroadvance.mpvex.ui.player.RepeatMode
 import app.marlboroadvance.mpvex.ui.player.VideoAspect
 
 class PlayerPreferences(
   preferenceStore: PreferenceStore,
 ) {
-  val orientation = preferenceStore.getEnum("player_orientation", PlayerOrientation.SensorLandscape)
+  val orientation = preferenceStore.getEnum("player_orientation", PlayerOrientation.Video)
   val invertDuration = preferenceStore.getBoolean("invert_duration")
   val holdForMultipleSpeed = preferenceStore.getFloat("hold_for_multiple_speed", 2f)
   val showDynamicSpeedOverlay = preferenceStore.getBoolean("show_dynamic_speed_overlay", true)
-  val horizontalSeekGesture = preferenceStore.getBoolean("horizontal_seek_gesture", true)
-  val showSeekBarWhenSeeking = preferenceStore.getBoolean("show_seekbar_when_seeking")
   val showDoubleTapOvals = preferenceStore.getBoolean("show_double_tap_ovals", true)
   val showSeekTimeWhileSeeking = preferenceStore.getBoolean("show_seek_time_while_seeking", true)
   val usePreciseSeeking = preferenceStore.getBoolean("use_precise_seeking", false)
@@ -21,10 +21,10 @@ class PlayerPreferences(
   val brightnessGesture = preferenceStore.getBoolean("gestures_brightness", true)
   val volumeGesture = preferenceStore.getBoolean("volume_brightness", true)
   val pinchToZoomGesture = preferenceStore.getBoolean("pinch_to_zoom_gesture", true)
+  val horizontalSwipeToSeek = preferenceStore.getBoolean("horizontal_swipe_to_seek", true)
+  val horizontalSwipeSensitivity = preferenceStore.getFloat("horizontal_swipe_sensitivity", 0.05f)
 
-  val videoAspect = preferenceStore.getEnum("video_aspect", VideoAspect.Fit)
   val customAspectRatios = preferenceStore.getStringSet("custom_aspect_ratios", emptySet())
-  val currentAspectRatio = preferenceStore.getFloat("current_aspect_ratio", -1f)
 
   val defaultSpeed = preferenceStore.getFloat("default_speed", 1f)
   val speedPresets =
@@ -44,14 +44,39 @@ class PlayerPreferences(
 
   val allowGesturesInPanels = preferenceStore.getBoolean("allow_gestures_in_panels")
   val showSystemStatusBar = preferenceStore.getBoolean("show_system_status_bar")
+  val showSystemNavigationBar = preferenceStore.getBoolean("show_system_navigation_bar")
   val reduceMotion = preferenceStore.getBoolean("reduce_motion", true)
   val playerTimeToDisappear = preferenceStore.getInt("player_time_to_disappear", 4000)
 
   val defaultVideoZoom = preferenceStore.getFloat("default_video_zoom", 0f)
+  val panAndZoomEnabled = preferenceStore.getBoolean("pan_and_zoom_enabled", false)
 
   val includeSubtitlesInSnapshot = preferenceStore.getBoolean("include_subtitles_in_snapshot", false)
 
   val playlistMode = preferenceStore.getBoolean("playlist_mode", true)
+  val playlistViewMode = preferenceStore.getBoolean("playlist_view_mode_list", true) // true = list, false = grid
 
   val useWavySeekbar = preferenceStore.getBoolean("use_wavy_seekbar", true)
+
+  val customSkipDuration = preferenceStore.getInt("custom_skip_duration", 90)
+
+  val repeatMode = preferenceStore.getEnum("repeat_mode", RepeatMode.OFF)
+  val shuffleEnabled = preferenceStore.getBoolean("shuffle_enabled", false)
+
+  // New: autoplay next video when current file ends
+  val autoplayNextVideo = preferenceStore.getBoolean("autoplay_next_video", true)
+
+  val autoPiPOnNavigation = preferenceStore.getBoolean("auto_pip_on_navigation", false)
+
+  val keepScreenOnWhenPaused = preferenceStore.getBoolean("keep_screen_on_when_paused", false)
+
+  // Persist aspect ratio setting (default to Fit)
+  val defaultVideoAspect = preferenceStore.getEnum("default_video_aspect", VideoAspect.Fit)
+  val defaultCustomAspectRatio = preferenceStore.getObject(
+    key = "default_custom_aspect_ratio",
+    defaultValue = -1.0,
+    serializer = { it.toString() },
+    deserializer = { it.toDoubleOrNull() ?: -1.0 }
+  )
+
 }

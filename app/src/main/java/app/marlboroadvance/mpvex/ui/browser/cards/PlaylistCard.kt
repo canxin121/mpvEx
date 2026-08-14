@@ -10,6 +10,18 @@ import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.database.entities.PlaylistEntity
 import app.marlboroadvance.mpvex.domain.media.model.VideoFolder
 
+/**
+ * Card for displaying a playlist item
+ * 
+ * @param playlist The playlist entity to display
+ * @param itemCount Number of items in the playlist
+ * @param onClick Action to perform when the card is clicked
+ * @param onLongClick Action to perform when the card is long-pressed
+ * @param onThumbClick Action to perform when the thumbnail is clicked
+ * @param modifier Optional modifier for the card
+ * @param isSelected Whether the card is in a selected state
+ * @param isGridMode Whether the card should display in grid mode
+ */
 @Composable
 fun PlaylistCard(
   playlist: PlaylistEntity,
@@ -19,6 +31,7 @@ fun PlaylistCard(
   onThumbClick: () -> Unit,
   modifier: Modifier = Modifier,
   isSelected: Boolean = false,
+  isGridMode: Boolean = false,
 ) {
   // Convert playlist to VideoFolder format for FolderCard
   val folderModel = VideoFolder(
@@ -33,34 +46,31 @@ fun PlaylistCard(
 
   // Create a custom chip renderer for playlist type
   val customChipRenderer: @Composable () -> Unit = {
-    androidx.compose.foundation.layout.Row {
-      // Add the playlist type chip (Network or Local)
-      val chipText = if (playlist.isM3uPlaylist) "Network" else "Local"
-      
-      // Use Material Design theme colors
-      val materialTheme = androidx.compose.material3.MaterialTheme.colorScheme
-      val (chipColor, chipBgColor) = if (playlist.isM3uPlaylist) {
-        // Network: use tertiary color (usually blue/purple in Material themes)
-        Pair(materialTheme.tertiary, materialTheme.tertiaryContainer)
-      } else {
-        // Local: use primary color (usually brand color in Material themes)
-        Pair(materialTheme.primary, materialTheme.primaryContainer)
-      }
-        
-      androidx.compose.material3.Text(
-        text = chipText,
-        style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
-        modifier = androidx.compose.ui.Modifier
-          .background(
-            chipBgColor,
-            androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-          )
-          .padding(horizontal = 8.dp, vertical = 4.dp),
-        color = chipColor,
-      )
+    // Add the playlist type chip (Network or Local)
+    val chipText = if (playlist.isM3uPlaylist) "Network" else "Local"
+
+    // Use Material Design theme colors
+    val materialTheme = androidx.compose.material3.MaterialTheme.colorScheme
+    val (chipColor, chipBgColor) = if (playlist.isM3uPlaylist) {
+      Pair(materialTheme.tertiary, materialTheme.tertiaryContainer)
+    } else {
+      Pair(materialTheme.primary, materialTheme.primaryContainer)
     }
+
+    androidx.compose.material3.Text(
+      text = chipText,
+      style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+      modifier = Modifier
+        .background(
+          chipBgColor,
+          androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+        )
+        .padding(horizontal = 8.dp, vertical = 4.dp),
+      color = chipColor,
+    )
   }
 
+  // Use the FolderCard component with playlist-specific customizations
   FolderCard(
     folder = folderModel,
     isSelected = isSelected,
@@ -71,6 +81,7 @@ fun PlaylistCard(
     showDateModified = true,
     customIcon = Icons.AutoMirrored.Filled.PlaylistPlay,
     modifier = modifier,
-    customChipContent = customChipRenderer
+    customChipContent = customChipRenderer,
+    isGridMode = isGridMode
   )
 }

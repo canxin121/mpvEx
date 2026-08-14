@@ -1,23 +1,32 @@
 package app.marlboroadvance.mpvex.ui.player.controls
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.preferences.PlayerButton
@@ -36,8 +45,12 @@ fun TopLeftPlayerControlsLandscape(
   mediaTitle: String?,
   hideBackground: Boolean,
   onBackPress: () -> Unit,
+  onOpenSheet: (Sheets) -> Unit,
   viewModel: PlayerViewModel,
 ) {
+  val playlistModeEnabled = viewModel.hasPlaylistSupport()
+  val clickEvent = LocalPlayerButtonsClickEvent.current
+
   Row(
     modifier = Modifier.width(IntrinsicSize.Max),
     verticalAlignment = Alignment.CenterVertically,
@@ -50,54 +63,80 @@ fun TopLeftPlayerControlsLandscape(
       modifier = Modifier.size(45.dp),
     )
 
-    Surface(
-      shape = CircleShape,
-      color =
-        if (hideBackground) {
-          Color.Transparent
-        } else {
-          MaterialTheme.colorScheme.surfaceContainer.copy(
-            alpha = 0.55f,
-          )
-        },
-      contentColor = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
-      tonalElevation = 0.dp,
-      shadowElevation = 0.dp,
-      border =
-        if (hideBackground) {
-          null
-        } else {
-          BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-          )
-        },
-      modifier = Modifier.height(45.dp),
+    val titleInteractionSource = remember { MutableInteractionSource() }
+
+    Box(
+      modifier =
+        Modifier
+          .height(45.dp)
+          .clip(RoundedCornerShape(50))
+          .clickable(
+            enabled = playlistModeEnabled,
+            onClick = {
+              clickEvent()
+              onOpenSheet(Sheets.Playlist)
+            },
+          ),
     ) {
-      Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier =
-          Modifier
-            .padding(
-              start = MaterialTheme.spacing.medium,
-              end = MaterialTheme.spacing.medium,
-              top = MaterialTheme.spacing.small,
-              bottom = MaterialTheme.spacing.small,
-            ),
+      Surface(
+        shape = RoundedCornerShape(50),
+        color =
+          if (hideBackground) {
+            Color.Transparent
+          } else {
+            MaterialTheme.colorScheme.surfaceContainer.copy(
+              alpha = 0.55f,
+            )
+          },
+        contentColor = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+        border =
+          if (hideBackground) {
+            null
+          } else {
+            BorderStroke(
+              1.dp,
+              MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+            )
+          },
       ) {
-        Text(
-          mediaTitle ?: "",
-          maxLines = 1,
-          overflow = TextOverflow.Ellipsis,
-          style = MaterialTheme.typography.bodyMedium,
-          modifier = Modifier.weight(1f, fill = false),
-        )
-        viewModel.getPlaylistInfo()?.let { playlistInfo ->
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall),
+          modifier =
+            Modifier.padding(
+              horizontal = MaterialTheme.spacing.medium,
+              vertical = MaterialTheme.spacing.small,
+            ),
+        ) {
+          viewModel.getPlaylistInfo()?.let { playlistInfo ->
+            Text(
+              text = playlistInfo,
+              textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+              style = MaterialTheme.typography.bodyMedium,
+              maxLines = 1,
+              overflow = TextOverflow.Visible,
+              fontFamily = FontFamily.Monospace,
+              color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+              text = Typography.bullet.toString(),
+              textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+              style = MaterialTheme.typography.bodyMedium,
+              maxLines = 1,
+              color = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
+              overflow = TextOverflow.Clip,
+            )
+          }
           Text(
-            " • $playlistInfo",
+            text = mediaTitle ?: "",
             maxLines = 1,
-            overflow = TextOverflow.Visible,
-            style = MaterialTheme.typography.bodySmall,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.bodyMedium,
+            fontFamily = FontFamily.Monospace,
+            color = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f, fill = false),
           )
         }
       }

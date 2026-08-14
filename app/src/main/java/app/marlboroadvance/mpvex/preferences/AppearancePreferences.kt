@@ -9,8 +9,10 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.preferences.preference.PreferenceStore
 import app.marlboroadvance.mpvex.preferences.preference.getEnum
+import app.marlboroadvance.mpvex.ui.theme.AppTheme
 import app.marlboroadvance.mpvex.ui.theme.DarkMode
 import app.marlboroadvance.mpvex.ui.theme.spacing
 import kotlinx.collections.immutable.ImmutableList
@@ -19,14 +21,14 @@ class AppearancePreferences(
   preferenceStore: PreferenceStore,
 ) {
   val darkMode = preferenceStore.getEnum("dark_mode", DarkMode.System)
-  val materialYou = preferenceStore.getBoolean("material_you", true)
+  val appTheme = preferenceStore.getEnum("app_theme", AppTheme.Dynamic)
   val amoledMode = preferenceStore.getBoolean("amoled_mode", false)
   val unlimitedNameLines = preferenceStore.getBoolean("unlimited_name_lines", false)
   val hidePlayerButtonsBackground = preferenceStore.getBoolean("hide_player_buttons_background", false)
-  val showHiddenFiles = preferenceStore.getBoolean("show_hidden_files", false)
   val showUnplayedOldVideoLabel = preferenceStore.getBoolean("show_unplayed_old_video_label", true)
   val unplayedOldVideoDays = preferenceStore.getInt("unplayed_old_video_days", 7)
-  val seekbarStyle = preferenceStore.getEnum("seekbar_style", SeekbarStyle.Wavy)
+  val showNetworkThumbnails = preferenceStore.getBoolean("show_network_thumbnails", false)
+  val seekbarStyle = preferenceStore.getEnum("seekbar_style", SeekbarStyle.Thick)
 
   val topLeftControls =
     preferenceStore.getString(
@@ -37,7 +39,7 @@ class AppearancePreferences(
   val topRightControls =
     preferenceStore.getString(
       "top_right_controls",
-      "DECODER,AUDIO_TRACK,SUBTITLES,MORE_OPTIONS",
+      "CURRENT_CHAPTER,DECODER,AUDIO_TRACK,SUBTITLES,MORE_OPTIONS",
     )
 
   val bottomRightControls =
@@ -49,13 +51,13 @@ class AppearancePreferences(
   val bottomLeftControls =
     preferenceStore.getString(
       "bottom_left_controls",
-      "LOCK_CONTROLS,SCREEN_ROTATION,PLAYBACK_SPEED,REPEAT_MODE,SHUFFLE,CURRENT_CHAPTER",
+      "BACKGROUND_PLAYBACK,LOCK_CONTROLS,SCREEN_ROTATION,PLAYBACK_SPEED,REPEAT_MODE,SHUFFLE,AB_LOOP",
     )
 
   val portraitBottomControls =
     preferenceStore.getString(
       "portrait_bottom_controls",
-      "SCREEN_ROTATION,DECODER,AUDIO_TRACK,SUBTITLES,BOOKMARKS_CHAPTERS,PLAYBACK_SPEED,REPEAT_MODE,SHUFFLE,VIDEO_ZOOM,FRAME_NAVIGATION,ASPECT_RATIO,PICTURE_IN_PICTURE,LOCK_CONTROLS,MORE_OPTIONS",
+      "SCREEN_ROTATION,DECODER,AUDIO_TRACK,SUBTITLES,BOOKMARKS_CHAPTERS,PLAYBACK_SPEED,BACKGROUND_PLAYBACK,REPEAT_MODE,SHUFFLE,VIDEO_ZOOM,FRAME_NAVIGATION,ASPECT_RATIO,PICTURE_IN_PICTURE,LOCK_CONTROLS,MORE_OPTIONS",
     )
 
   fun parseButtons(

@@ -26,7 +26,7 @@ class SelectionManager<T, ID>(
   private val getId: (T) -> ID,
   private val context: Context,
   private val scope: CoroutineScope,
-  private val onDeleteItems: suspend (List<T>) -> Pair<Int, Int>,
+  private val onDeleteItems: suspend (List<T>, Boolean) -> Pair<Int, Int>,
   private val onRenameItem: (suspend (T, String) -> Result<Unit>)?,
   private val onOperationComplete: () -> Unit,
 ) {
@@ -83,14 +83,18 @@ class SelectionManager<T, ID>(
   /**
    * Delete selected items directly (using MANAGE_EXTERNAL_STORAGE permission)
    */
-  fun deleteSelected() {
+  fun deleteSelected(deleteFiles: Boolean = false) {
     val selected = getSelectedItems()
     if (selected.isEmpty()) return
 
     scope.launch {
       runCatching {
-        onDeleteItems(selected)
-        Toast.makeText(context, "Deleted successfully", Toast.LENGTH_SHORT).show()
+        val (deleted, failed) = onDeleteItems(selected, deleteFiles)
+        if (deleted > 0) {
+          Toast.makeText(context, "Deleted successfully", Toast.LENGTH_SHORT).show()
+        } else if (failed > 0) {
+          Toast.makeText(context, "Failed to delete", Toast.LENGTH_SHORT).show()
+        }
       }.onFailure {
         Toast.makeText(context, "Failed to delete: ${it.message}", Toast.LENGTH_SHORT).show()
       }
@@ -109,8 +113,12 @@ class SelectionManager<T, ID>(
 
     scope.launch {
       runCatching {
-        onRenameItem(item, newName)
-        Toast.makeText(context, "Renamed successfully", Toast.LENGTH_SHORT).show()
+        val result = onRenameItem(item, newName)
+        result.onSuccess {
+          Toast.makeText(context, "Renamed successfully", Toast.LENGTH_SHORT).show()
+        }.onFailure { error ->
+          Toast.makeText(context, "Failed to rename: ${error.message}", Toast.LENGTH_SHORT).show()
+        }
       }.onFailure {
         Toast.makeText(context, "Failed to rename: ${it.message}", Toast.LENGTH_SHORT).show()
       }
@@ -165,7 +173,7 @@ class SelectionManager<T, ID>(
  *
  * @param items List of items to manage selection for
  * @param getId Function to extract ID from an item
- * @param onDeleteItems Callback to delete items
+ * @param onDeleteItems Callback to delete items (includes boolean to delete original files)
  * @param onRenameItem Optional callback to rename an item
  * @param onOperationComplete Callback when an operation completes (to refresh list)
  */
@@ -173,7 +181,7 @@ class SelectionManager<T, ID>(
 fun <T, ID> rememberSelectionManager(
   items: List<T>,
   getId: (T) -> ID,
-  onDeleteItems: suspend (List<T>) -> Pair<Int, Int>,
+  onDeleteItems: suspend (List<T>, Boolean) -> Pair<Int, Int>,
   onRenameItem: (suspend (T, String) -> Result<Unit>)? = null,
   onOperationComplete: () -> Unit = {},
 ): SelectionManager<T, ID> {

@@ -1,8 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
@@ -22,6 +22,9 @@ import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.material.icons.filled.ViewComfy
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,13 +34,22 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +59,9 @@ import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.preferences.AppearancePreferences
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.ui.theme.DarkMode
+import app.marlboroadvance.mpvex.ui.theme.LocalThemeTransitionState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 /**
@@ -63,8 +78,8 @@ fun BrowserTopBar(
   modifier: Modifier = Modifier,
   onBackClick: (() -> Unit)? = null,
   onSortClick: (() -> Unit)? = null,
-  onSettingsClick: (() -> Unit)? = null,
   onSearchClick: (() -> Unit)? = null,
+  onSettingsClick: (() -> Unit)? = null,
   onDeleteClick: (() -> Unit)? = null,
   onRenameClick: (() -> Unit)? = null,
   isSingleSelection: Boolean = false,
@@ -78,6 +93,7 @@ fun BrowserTopBar(
   additionalActions: @Composable RowScope.() -> Unit = { },
   onTitleLongPress: (() -> Unit)? = null,
   useRemoveIcon: Boolean = false,
+  onAddToPlaylistClick: (() -> Unit)? = null,
 ) {
   if (isInSelectionMode) {
     SelectionTopBar(
@@ -96,14 +112,15 @@ fun BrowserTopBar(
       onDeselectAll = onDeselectAll,
       modifier = modifier,
       useRemoveIcon = useRemoveIcon,
+      onAddToPlaylist = onAddToPlaylistClick,
     )
   } else {
     NormalTopBar(
       title = title,
       onBackClick = onBackClick,
       onSortClick = onSortClick,
-      onSettingsClick = onSettingsClick,
       onSearchClick = onSearchClick,
+      onSettingsClick = onSettingsClick,
       additionalActions = additionalActions,
       modifier = modifier,
       onTitleLongPress = onTitleLongPress,
@@ -120,8 +137,8 @@ private fun NormalTopBar(
   title: String,
   onBackClick: (() -> Unit)?,
   onSortClick: (() -> Unit)?,
-  onSettingsClick: (() -> Unit)?,
   onSearchClick: (() -> Unit)?,
+  onSettingsClick: (() -> Unit)?,
   additionalActions: @Composable RowScope.() -> Unit,
   modifier: Modifier = Modifier,
   onTitleLongPress: (() -> Unit)?,
@@ -129,65 +146,66 @@ private fun NormalTopBar(
   val preferences = koinInject<AppearancePreferences>()
   val darkMode by preferences.darkMode.collectAsState()
   val darkTheme = isSystemInDarkTheme()
-  LocalContext.current
+  val themeTransition = LocalThemeTransitionState.current
+  val coroutineScope = rememberCoroutineScope()
+  
+  // Track title bounds for animation position
+  val titleBounds = remember { mutableStateOf(Rect.Zero) }
+  
+  // Helper function to toggle dark mode
+  fun toggleDarkMode() {
+    when (darkMode) {
+      DarkMode.System -> if (darkTheme) {
+        preferences.darkMode.set(DarkMode.Light)
+      } else {
+        preferences.darkMode.set(DarkMode.Dark)
+      }
+      DarkMode.Light -> if (darkTheme) {
+        preferences.darkMode.set(DarkMode.System)
+      } else {
+        preferences.darkMode.set(DarkMode.Dark)
+      }
+      DarkMode.Dark -> if (darkTheme) {
+        preferences.darkMode.set(DarkMode.Light)
+      } else {
+        preferences.darkMode.set(DarkMode.System)
+      }
+    }
+  }
 
   TopAppBar(
+    colors = TopAppBarDefaults.topAppBarColors(
+      containerColor = if (MaterialTheme.colorScheme.background == Color.Black) {
+        Color.Black
+      } else {
+        MaterialTheme.colorScheme.surfaceContainer
+      },
+    ),
     title = {
-      val titleModifier =
-        if (onTitleLongPress != null) {
-          Modifier.combinedClickable(
-            onClick = {
-              when (darkMode) {
-                  DarkMode.System if darkTheme -> {
-                    preferences.darkMode.set(DarkMode.Light)
-                  }
-                  DarkMode.System -> {
-                    preferences.darkMode.set(DarkMode.Dark)
-                  }
-                  DarkMode.Light if darkTheme -> {
-                    preferences.darkMode.set(DarkMode.System)
-                  }
-                  DarkMode.Light -> {
-                    preferences.darkMode.set(DarkMode.Dark)
-                  }
-                  DarkMode.Dark if darkTheme -> {
-                    preferences.darkMode.set(DarkMode.Light)
-                  }
-                  else -> {
-                    preferences.darkMode.set(DarkMode.System)
-                  }
+      val titleModifier = Modifier
+        .onGloballyPositioned { coordinates ->
+          titleBounds.value = coordinates.boundsInWindow()
+        }
+        .pointerInput(onTitleLongPress) {
+          detectTapGestures(
+            onTap = { localOffset ->
+              // Don't allow theme change if animation is in progress
+              if (themeTransition?.isAnimating == true) return@detectTapGestures
+              
+              // Calculate window position for circular reveal
+              val windowOffset = Offset(
+                titleBounds.value.left + localOffset.x,
+                titleBounds.value.top + localOffset.y
+              )
+              themeTransition?.startTransition(windowOffset)
+              // Delay theme change to allow overlay to display first
+              coroutineScope.launch {
+                toggleDarkMode()
               }
             },
-            onLongClick = onTitleLongPress,
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-          )
-        } else {
-          Modifier.combinedClickable(
-            onClick = {
-              when (darkMode) {
-                  DarkMode.System if darkTheme -> {
-                    preferences.darkMode.set(DarkMode.Light)
-                  }
-                  DarkMode.System -> {
-                    preferences.darkMode.set(DarkMode.Dark)
-                  }
-                  DarkMode.Light if darkTheme -> {
-                    preferences.darkMode.set(DarkMode.System)
-                  }
-                  DarkMode.Light -> {
-                    preferences.darkMode.set(DarkMode.Dark)
-                  }
-                  DarkMode.Dark if darkTheme -> {
-                    preferences.darkMode.set(DarkMode.Light)
-                  }
-                  else -> {
-                    preferences.darkMode.set(DarkMode.System)
-                  }
-              }
-            },
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
+            onLongPress = if (onTitleLongPress != null) {
+              { onTitleLongPress() }
+            } else null
           )
         }
 
@@ -238,7 +256,7 @@ private fun NormalTopBar(
           Icon(
             Icons.Filled.Search,
             contentDescription = "Search",
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.secondary,
           )
         }
@@ -249,9 +267,9 @@ private fun NormalTopBar(
           modifier = Modifier.padding(horizontal = 2.dp),
         ) {
           Icon(
-            Icons.AutoMirrored.Filled.Sort,
+            Icons.Default.ViewComfy,
             contentDescription = stringResource(R.string.sort),
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.secondary,
           )
         }
@@ -263,8 +281,8 @@ private fun NormalTopBar(
         ) {
           Icon(
             Icons.Filled.Settings,
-            contentDescription = stringResource(R.string.settings),
-            modifier = Modifier.size(28.dp),
+            contentDescription = "Settings",
+            modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.secondary,
           )
         }
@@ -295,10 +313,18 @@ private fun SelectionTopBar(
   onDeselectAll: (() -> Unit)?,
   modifier: Modifier = Modifier,
   useRemoveIcon: Boolean = false,
+  onAddToPlaylist: (() -> Unit)? = null,
 ) {
   var showDropdown by remember { mutableStateOf(false) }
 
   TopAppBar(
+    colors = TopAppBarDefaults.topAppBarColors(
+      containerColor = if (MaterialTheme.colorScheme.background == Color.Black) {
+        Color.Black
+      } else {
+        MaterialTheme.colorScheme.surfaceContainer
+      },
+    ),
     title = {
       Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -360,7 +386,7 @@ private fun SelectionTopBar(
         Icon(
           Icons.Filled.Close,
           contentDescription = stringResource(R.string.generic_cancel),
-          modifier = Modifier.size(24.dp),
+          modifier = Modifier.size(28.dp),
           tint = MaterialTheme.colorScheme.secondary,
         )
       }
@@ -377,6 +403,21 @@ private fun SelectionTopBar(
             contentDescription = "Play",
             modifier = Modifier.size(28.dp),
             tint = MaterialTheme.colorScheme.primary,
+          )
+        }
+      }
+
+      // Add to Playlist icon (for Play Store builds)
+      if (onAddToPlaylist != null) {
+        IconButton(
+          onClick = onAddToPlaylist,
+          modifier = Modifier.padding(horizontal = 2.dp),
+        ) {
+          Icon(
+            Icons.AutoMirrored.Filled.PlaylistAdd,
+            contentDescription = "Add to Playlist",
+            modifier = Modifier.size(28.dp),
+            tint = MaterialTheme.colorScheme.secondary,
           )
         }
       }
@@ -468,6 +509,6 @@ private fun SelectionTopBar(
         }
       }
     },
-    modifier = modifier,
+    modifier = modifier.clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)),
   )
 }

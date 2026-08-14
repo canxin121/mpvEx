@@ -71,6 +71,14 @@ For testing purposes only
 
 ## Building
 
+### C plugin configuration manifests
+
+C plugins can publish typed configuration fields through a sidecar
+`.mpvex.json` manifest. mpvExtended renders those fields in the plugin settings
+and exports their values as process environment variables before libmpv loads
+the plugin. See [C plugin manifests](docs/c-plugin-manifests.md) for the file
+layout, schema, lifecycle, and compatibility rules.
+
 ### Prerequisites
 
 - JDK 17

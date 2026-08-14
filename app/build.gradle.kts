@@ -211,6 +211,8 @@ dependencies {
   implementation(libs.mediainfo.lib)
   implementation(files("libs/mpv-android-lib-v0.0.1.aar"))
 
+  testImplementation("junit:junit:4.13.2")
+
   // Network protocol libraries
   implementation(libs.smbj)
   implementation(libs.commons.net)

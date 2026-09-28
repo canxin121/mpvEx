@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Keyboard
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -181,6 +182,18 @@ object PlayerControlsPreferencesScreen : Screen {
                 },
               )
               PreferenceIconSummary(buttons = portraitBottomButtons)
+            }
+          }
+
+          item {
+            PreferenceSectionHeader(title = stringResource(R.string.shortcut_settings_title))
+            PreferenceCard {
+              ListItem(
+                headlineContent = { Text(stringResource(R.string.shortcut_settings_title)) },
+                supportingContent = { Text(stringResource(R.string.shortcut_controls_summary)) },
+                leadingContent = { Icon(Icons.Outlined.Keyboard, contentDescription = null) },
+                modifier = Modifier.clickable { backstack.add(ShortcutPreferencesScreen) },
+              )
             }
           }
           

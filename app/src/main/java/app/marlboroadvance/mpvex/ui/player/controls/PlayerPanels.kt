@@ -20,6 +20,7 @@ import app.marlboroadvance.mpvex.ui.player.controls.components.panels.AudioDelay
 import app.marlboroadvance.mpvex.ui.player.controls.components.panels.SubtitleDelayPanel
 import app.marlboroadvance.mpvex.ui.player.controls.components.panels.SubtitleSettingsPanel
 import app.marlboroadvance.mpvex.ui.player.controls.components.panels.VideoSettingsPanel
+import app.marlboroadvance.mpvex.ui.player.controls.components.panels.ShortcutsPanel
 
 @Composable
 fun PlayerPanels(
@@ -52,6 +53,9 @@ fun PlayerPanels(
       }
       Panels.VideoFilters -> {
         VideoSettingsPanel(onDismissRequest)
+      }
+      Panels.Shortcuts -> {
+        ShortcutsPanel(onDismissRequest)
       }
     }
   }

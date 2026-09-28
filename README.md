@@ -80,6 +80,11 @@ and exports their values as process environment variables before libmpv loads
 the plugin. See [C plugin manifests](docs/c-plugin-manifests.md) for the file
 layout, schema, lifecycle, and compatibility rules.
 
+### Mobile input.conf shortcuts
+
+Configure on-screen buttons for mpv key bindings and trigger them from the
+player's More menu or shortcut side panel. See [Mobile shortcuts](docs/mobile-shortcuts.md).
+
 ### Prerequisites
 
 - JDK 17

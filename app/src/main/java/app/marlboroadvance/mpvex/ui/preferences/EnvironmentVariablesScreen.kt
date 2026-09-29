@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -23,16 +24,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState as collectFlowAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.environment.MpvExEnvironment
 import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.plugins.EnvironmentVariablesCodec
@@ -47,9 +51,18 @@ object EnvironmentVariablesScreen : Screen {
   @Composable
   override fun Content() {
     val backStack = LocalBackStack.current
+    val context = LocalContext.current
     val preferences = koinInject<AdvancedPreferences>()
     val encodedVariables by preferences.environmentVariables.collectAsState()
+    val mediaPath by MpvExEnvironment.mediaPath.collectFlowAsState()
     val variables = remember(encodedVariables) { EnvironmentVariablesCodec.decode(encodedVariables) }
+    val builtInValues = MpvExEnvironment.staticValues(context)
+    val builtInVariables = listOf(
+      Triple(MpvExEnvironment.APP_DIR, R.string.environment_variable_app_dir, builtInValues.getValue(MpvExEnvironment.APP_DIR)),
+      Triple(MpvExEnvironment.CONFIG_DIR, R.string.environment_variable_config_dir, builtInValues.getValue(MpvExEnvironment.CONFIG_DIR)),
+      Triple(MpvExEnvironment.CACHE_DIR, R.string.environment_variable_cache_dir, builtInValues.getValue(MpvExEnvironment.CACHE_DIR)),
+      Triple(MpvExEnvironment.MEDIA_PATH, R.string.environment_variable_media_path, mediaPath),
+    )
     // An empty string means a new entry; valid environment names are never empty.
     var editingName by remember { mutableStateOf<String?>(null) }
 
@@ -72,6 +85,31 @@ object EnvironmentVariablesScreen : Screen {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(16.dp),
+          )
+        }
+        item {
+          Text(
+            text = stringResource(R.string.environment_variables_built_in_header),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+          )
+        }
+        items(builtInVariables) { (name, labelRes, value) ->
+          ListItem(
+            overlineContent = { Text(stringResource(labelRes)) },
+            headlineContent = { Text(name) },
+            supportingContent = {
+              SelectionContainer {
+                Text(value ?: stringResource(R.string.environment_variable_media_unavailable))
+              }
+            },
+          )
+        }
+        item {
+          Text(
+            text = stringResource(R.string.environment_variables_custom_header),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
           )
         }
         if (variables.isEmpty()) {
@@ -149,6 +187,7 @@ private fun EnvironmentVariableEditorDialog(
   val nameError = when {
     normalizedName.isEmpty() -> R.string.environment_variable_name_required
     !EnvironmentVariablesCodec.isValidName(normalizedName) -> R.string.environment_variable_name_invalid
+    normalizedName in MpvExEnvironment.reservedNames -> R.string.environment_variable_name_reserved
     normalizedName != originalName && normalizedName in existingNames -> R.string.environment_variable_name_duplicate
     else -> null
   }

@@ -1,6 +1,7 @@
 package app.marlboroadvance.mpvex.plugins
 
 import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.environment.MpvExEnvironment
 import kotlinx.serialization.encodeToString
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -45,6 +46,16 @@ class CPluginManifestTest {
     }
 
     assertTrue(error.message.orEmpty().contains("invalid default"))
+  }
+
+  @Test
+  fun `rejects every built in environment name in plugin manifests`() {
+    MpvExEnvironment.reservedNames.forEach { name ->
+      val error = assertThrows(IllegalArgumentException::class.java) {
+        parseForTest(VALID_MANIFEST.replace("MPVEX_EXAMPLE_SERVER_URL", name), "example.so")
+      }
+      assertTrue(error.message.orEmpty().contains(name))
+    }
   }
 
   @Test
@@ -300,6 +311,29 @@ class CPluginManifestTest {
     )
     assertEquals(mapOf("VALID" to "value"), EnvironmentVariablesCodec.decode(imported))
     assertTrue(EnvironmentVariablesCodec.decode("not JSON").isEmpty())
+  }
+
+  @Test
+  fun `built in names cannot be saved or applied as custom variables`() {
+    val imported = kotlinx.serialization.json.Json.encodeToString(
+      mapOf(MpvExEnvironment.APP_DIR to "/wrong", "CUSTOM" to "value"),
+    )
+    assertEquals(mapOf("CUSTOM" to "value"), EnvironmentVariablesCodec.decode(imported))
+    assertThrows(IllegalArgumentException::class.java) {
+      EnvironmentVariablesCodec.encode(mapOf(MpvExEnvironment.MEDIA_PATH to "/wrong"))
+    }
+
+    val environment = FakeEnvironment()
+    val result = CPluginEnvironmentApplicator.apply(
+      plan = CPluginEnvironmentPlan(emptyList(), emptySet(), emptyList()),
+      previouslyManagedEnvironmentNames = emptySet(),
+      environment = environment,
+      messages = testMessages,
+      userDefinedVariables = mapOf(MpvExEnvironment.CONFIG_DIR to "/wrong", "CUSTOM" to "value"),
+      originalValues = mutableMapOf(),
+    )
+    assertEquals(mapOf("CUSTOM" to "value"), environment.values)
+    assertEquals(setOf("CUSTOM"), result.managedUserEnvironmentNames)
   }
 
   @Test

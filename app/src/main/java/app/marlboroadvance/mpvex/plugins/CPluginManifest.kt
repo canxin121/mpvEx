@@ -1,6 +1,7 @@
 package app.marlboroadvance.mpvex.plugins
 
 import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.environment.MpvExEnvironment
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -148,6 +149,8 @@ object CPluginManifestParser {
       }
       if (!EnvironmentVariablesCodec.isValidName(field.binding.name)) {
         errors += messages.get(R.string.plugin_field_invalid_environment, field.id, field.binding.name)
+      } else if (field.binding.name in MpvExEnvironment.reservedNames) {
+        errors += messages.get(R.string.plugin_field_reserved_environment, field.id, field.binding.name)
       }
       if (field.minimum != null && field.maximum != null && field.minimum > field.maximum) {
         errors += messages.get(R.string.plugin_field_min_exceeds_max, field.id)

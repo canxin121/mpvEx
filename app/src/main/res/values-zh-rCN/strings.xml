@@ -1088,9 +1088,9 @@
     <item quantity="other">尝试 %1$d 次后，仍找不到可用的文件名</item>
   </plurals>
   <string name="environment_variables_title">环境变量</string>
-  <string name="environment_variables_summary">为 mpv 和脚本提供环境变量</string>
-  <string name="environment_variables_description">这些变量可供 mpv、Lua 脚本和 C 插件使用。名称冲突时，以插件自身的设置为准。重新打开播放器即可应用更改；若要更新缩略图服务，请重启应用。</string>
-  <string name="environment_variables_empty">尚未添加环境变量</string>
+  <string name="environment_variables_summary">查看内置变量并管理自定义变量</string>
+  <string name="environment_variables_description">内置变量无法修改。MPVEX_MEDIA_PATH 会随当前加载的媒体更新；没有加载媒体时，该变量会被清除。自定义变量可供 mpv、Lua 脚本和 C 插件使用；名称相同时，以插件设置为准。重新打开播放器可应用自定义变量的更改；若要更新缩略图，请重启应用。</string>
+  <string name="environment_variables_empty">尚未添加自定义变量</string>
   <string name="environment_variables_backup_notice">导出的设置包含这些变量值，请妥善保管备份文件。</string>
   <string name="environment_variable_value_hidden">值已隐藏</string>
   <string name="environment_variable_add">添加变量</string>
@@ -1106,4 +1106,13 @@
   <string name="environment_variable_delete">删除</string>
   <string name="environment_variable_clear_failed">无法清除环境变量“%1$s”</string>
   <string name="environment_variable_set_failed">无法设置环境变量“%1$s”</string>
+  <string name="environment_variables_built_in_header">内置变量</string>
+  <string name="environment_variables_custom_header">自定义变量</string>
+  <string name="environment_variable_app_dir">应用数据目录</string>
+  <string name="environment_variable_config_dir">mpv 配置目录</string>
+  <string name="environment_variable_cache_dir">缓存目录</string>
+  <string name="environment_variable_media_path">当前媒体路径或网址</string>
+  <string name="environment_variable_media_unavailable">未加载媒体</string>
+  <string name="environment_variable_name_reserved">此名称已留给内置变量</string>
+  <string name="plugin_field_reserved_environment">字段 %1$s 使用了保留的环境变量 %2$s</string>
 </resources>

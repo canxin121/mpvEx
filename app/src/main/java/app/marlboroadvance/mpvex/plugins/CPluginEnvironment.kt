@@ -150,7 +150,7 @@ object CPluginEnvironmentApplicator {
     val pluginNames = plan.assignments.mapTo(mutableSetOf()) { it.name }
     val validUserVariables =
       userDefinedVariables.filter { (name, value) ->
-        EnvironmentVariablesCodec.isValidName(name) && EnvironmentVariablesCodec.isValidValue(value)
+        EnvironmentVariablesCodec.isCustomName(name) && EnvironmentVariablesCodec.isValidValue(value)
       }
     val namesToClear =
       (previouslyManagedEnvironmentNames + pluginNames +

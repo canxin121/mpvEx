@@ -38,6 +38,7 @@ import androidx.lifecycle.lifecycleScope
 import app.marlboroadvance.mpvex.database.entities.PlaybackStateEntity
 import app.marlboroadvance.mpvex.databinding.PlayerLayoutBinding
 import app.marlboroadvance.mpvex.domain.playbackstate.repository.PlaybackStateRepository
+import app.marlboroadvance.mpvex.environment.MpvExEnvironment
 import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
 import app.marlboroadvance.mpvex.preferences.AudioPreferences
 import app.marlboroadvance.mpvex.preferences.BrowserPreferences
@@ -343,6 +344,18 @@ class PlayerActivity :
     // OPTIMIZATION: Set volume control stream so hardware buttons control media volume
     volumeControlStream = AudioManager.STREAM_MUSIC
 
+    // Check local files before resolving content URIs, which may open a file descriptor.
+    val initialUri = extractUriFromIntent(intent)
+    if (initialUri != null && isLocalFileMissing(initialUri)) {
+      viewModel.showToast(getString(app.marlboroadvance.mpvex.R.string.toast_file_no_longer_exists))
+      finishAndRemoveTask()
+      return
+    }
+
+    // C plugins can read the initial media path during mpv initialization.
+    // Resolve it once: content URIs may open a file descriptor as a fallback.
+    val initialPlayableUri = getPlayableUri(intent)
+    MpvExEnvironment.setMediaPath(initialPlayableUri)
     setupMPV()
     MediaPlaybackService.createNotificationChannel(this)
     setupAudio()
@@ -394,10 +407,7 @@ class PlayerActivity :
 
     // Only auto-generate playlist from folder if playlist mode is enabled and no playlist_id
     if (playlist.isEmpty() && playlistId == null && playerPreferences.playlistMode.get()) {
-      val path = parsePathFromIntent(intent)
-      if (path != null) {
-        generatePlaylistFromFolder(path)
-      }
+      initialPlayableUri?.let(::generatePlaylistFromFolder)
     }
 
     // Extract fileName early so it's available when video loads
@@ -410,16 +420,7 @@ class PlayerActivity :
     // Set HTTP headers (including referer) BEFORE playing the file
     setHttpHeadersFromExtras(intent.extras)
 
-    // Guard against opening a local file that was deleted (e.g. externally)
-    // before it was launched. Avoids a blank/stuck player with no feedback.
-    val initialUri = extractUriFromIntent(intent)
-    if (initialUri != null && isLocalFileMissing(initialUri)) {
-      viewModel.showToast(getString(app.marlboroadvance.mpvex.R.string.toast_file_no_longer_exists))
-      finishAndRemoveTask()
-      return
-    }
-
-    getPlayableUri(intent)?.let(player::playFile)
+    initialPlayableUri?.let(player::playFile)
 
     // Only set orientation immediately if NOT in Video mode
     // For Video mode, wait for video-params/aspect to become available
@@ -609,6 +610,7 @@ class PlayerActivity :
       }
 
       cleanupMPV()
+      if (!mpvInitialized) MpvExEnvironment.setMediaPath(null)
       cleanupAudio()
       cleanupReceivers()
       releaseMediaSession()
@@ -887,6 +889,8 @@ class PlayerActivity :
     }.onFailure { e ->
       Log.e(TAG, "Error copying MPV config and scripts", e)
     }
+
+    MpvExEnvironment.apply(this)
 
     // NOW initialize MPV - it will find and load the scripts we just copied
     player.initialize(filesDir.path, cacheDir.path)
@@ -1894,7 +1898,9 @@ class PlayerActivity :
     property: String,
     value: String,
   ) {
-    // Currently no String properties are handled
+    if (property == "path" && mpvInitialized && !player.isExiting) {
+      MpvExEnvironment.setMediaPath(value)
+    }
   }
 
   /**
@@ -1904,7 +1910,9 @@ class PlayerActivity :
    * @param property The property name that changed
    */
   internal fun onObserverEvent(property: String) {
-    // Currently no properties use this signature
+    if (property == "path" && mpvInitialized && !player.isExiting) {
+      MpvExEnvironment.setMediaPath(MPVLib.getPropertyString("path"))
+    }
   }
 
   /**
@@ -2580,6 +2588,7 @@ class PlayerActivity :
 
     // Update the intent first so getFileName uses the new intent data
     setIntent(intent)
+    val playableUri = getPlayableUri(intent)
 
     // Check if this intent has playlist information
     val hasPlaylistExtras = intent.hasExtra("playlist_id") ||
@@ -2624,10 +2633,7 @@ class PlayerActivity :
 
     // Auto-generate playlist from folder if playlist mode is enabled and no playlist_id
     if (playlist.isEmpty() && playlistId == null && playerPreferences.playlistMode.get()) {
-      val path = parsePathFromIntent(intent)
-      if (path != null) {
-        generatePlaylistFromFolder(path)
-      }
+      playableUri?.let(::generatePlaylistFromFolder)
     }
 
     // Extract the new fileName before loading the file
@@ -2641,7 +2647,8 @@ class PlayerActivity :
     setHttpHeadersFromExtras(intent.extras)
 
     // Load the new file
-    getPlayableUri(intent)?.let { uri ->
+    playableUri?.let { uri ->
+      MpvExEnvironment.setMediaPath(uri)
       // Avoid blocking UI thread while mpv opens network streams (e.g., HLS).
       lifecycleScope.launch(Dispatchers.Default) {
         MPVLib.command("loadfile", uri)
@@ -3364,6 +3371,7 @@ class PlayerActivity :
 
     // Load the new video
     // Avoid blocking UI thread while mpv opens network streams (e.g., HLS).
+    MpvExEnvironment.setMediaPath(playableUri)
     lifecycleScope.launch(Dispatchers.Default) {
       MPVLib.command("loadfile", playableUri)
     }

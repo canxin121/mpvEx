@@ -82,11 +82,22 @@ layout, schema, lifecycle, and compatibility rules.
 
 ### Environment variables
 
-Add or edit process environment variables in **Settings → Advanced → Environment
-variables**. They are available to mpv, Lua scripts, and C plugins. Selected
-plugin manifest values take priority when a name is shared. Reopen the player
-to apply changes; restart the app to update thumbnail services. Settings
-exports include these values.
+Open **Settings → Advanced → Environment variables** to see the built-in
+variables and their current values:
+
+| Name | Value |
+| --- | --- |
+| `MPVEX_APP_DIR` | This installation's private app data directory. |
+| `MPVEX_CONFIG_DIR` | The internal directory passed to mpv as its configuration directory; user configuration and selected scripts are copied here. |
+| `MPVEX_CACHE_DIR` | The app's private cache directory, also passed to mpv. |
+| `MPVEX_MEDIA_PATH` | The currently loaded media path, URI, or URL. It may be an `fd://` path for media shared through Android storage. It is unset when no media is loaded and changes when the player switches files. |
+
+Built-in names are read-only. They are set before mpv loads scripts and C
+plugins. You can add your own process variables on the same settings page for
+mpv, Lua scripts, and C plugins. A selected plugin manifest value takes
+priority over a custom value with the same name. Reopen the player to apply
+custom changes; restart the app to update thumbnail services. Settings exports
+include custom values.
 
 ### Mobile input.conf shortcuts
 

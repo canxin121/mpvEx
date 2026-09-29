@@ -1101,9 +1101,9 @@
     <item quantity="other">Nach %1$d Versuchen wurde kein freier Dateiname gefunden</item>
   </plurals>
   <string name="environment_variables_title">Umgebungsvariablen</string>
-  <string name="environment_variables_summary">Umgebungsvariablen für mpv und Skripte festlegen</string>
-  <string name="environment_variables_description">Diese Variablen stehen mpv, Lua-Skripten und C-Plugins zur Verfügung. Bei gleichem Namen hat der Wert des Plugins Vorrang. Öffnen Sie den Player erneut, damit Änderungen wirksam werden; starten Sie für Vorschaubilder auch die App neu.</string>
-  <string name="environment_variables_empty">Noch keine Umgebungsvariablen hinzugefügt</string>
+  <string name="environment_variables_summary">Integrierte Variablen anzeigen und eigene verwalten</string>
+  <string name="environment_variables_description">Integrierte Variablen können nicht geändert werden. MPVEX_MEDIA_PATH wird an die geladene Mediendatei angepasst und ist ohne geladenes Medium nicht gesetzt. Eigene Variablen stehen mpv, Lua-Skripten und C-Plugins zur Verfügung. Bei gleichem Namen hat die Plugin-Einstellung Vorrang. Öffnen Sie den Player erneut, um Änderungen an eigenen Variablen zu übernehmen; starten Sie die App neu, um Vorschaubilder zu aktualisieren.</string>
+  <string name="environment_variables_empty">Noch keine eigenen Variablen hinzugefügt</string>
   <string name="environment_variables_backup_notice">Exportierte Einstellungen enthalten diese Werte. Bewahren Sie Sicherungen sicher auf.</string>
   <string name="environment_variable_value_hidden">Wert ausgeblendet</string>
   <string name="environment_variable_add">Variable hinzufügen</string>
@@ -1119,4 +1119,13 @@
   <string name="environment_variable_delete">Löschen</string>
   <string name="environment_variable_clear_failed">Umgebungsvariable „%1$s“ konnte nicht entfernt werden</string>
   <string name="environment_variable_set_failed">Umgebungsvariable „%1$s“ konnte nicht gesetzt werden</string>
+  <string name="environment_variables_built_in_header">Integrierte Variablen</string>
+  <string name="environment_variables_custom_header">Eigene Variablen</string>
+  <string name="environment_variable_app_dir">App-Datenverzeichnis</string>
+  <string name="environment_variable_config_dir">mpv-Konfigurationsverzeichnis</string>
+  <string name="environment_variable_cache_dir">Cache-Verzeichnis</string>
+  <string name="environment_variable_media_path">Pfad oder URL des aktuellen Mediums</string>
+  <string name="environment_variable_media_unavailable">Kein Medium geladen</string>
+  <string name="environment_variable_name_reserved">Dieser Name ist für eine integrierte Variable reserviert</string>
+  <string name="plugin_field_reserved_environment">Feld %1$s verwendet die reservierte Umgebungsvariable %2$s</string>
 </resources>

@@ -22,6 +22,7 @@ import androidx.core.app.ServiceCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
 import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.environment.MpvExEnvironment
 import `is`.xyz.mpv.MPVLib
 import `is`.xyz.mpv.MPVNode
 import app.marlboroadvance.mpvex.preferences.PlayerPreferences
@@ -97,6 +98,7 @@ class MediaPlaybackService :
       MPVLib.observeProperty("media-title", MPVLib.MpvFormat.MPV_FORMAT_STRING)
       MPVLib.observeProperty("metadata/artist", MPVLib.MpvFormat.MPV_FORMAT_STRING)
       MPVLib.observeProperty("time-pos", MPVLib.MpvFormat.MPV_FORMAT_DOUBLE)
+      MPVLib.observeProperty("path", MPVLib.MpvFormat.MPV_FORMAT_STRING)
       Log.d(TAG, "MPV observer registered")
     } catch (e: Exception) {
       Log.e(TAG, "Error registering MPV observer", e)
@@ -367,7 +369,11 @@ class MediaPlaybackService :
 
   // ==================== MPV Event Observers ====================
 
-  override fun eventProperty(property: String) {}
+  override fun eventProperty(property: String) {
+    if (property == "path") {
+      MpvExEnvironment.setMediaPath(MPVLib.getPropertyString("path"))
+    }
+  }
 
   override fun eventProperty(
     property: String,
@@ -399,6 +405,7 @@ class MediaPlaybackService :
         mediaArtist = value
         updateMediaSession()
       }
+      "path" -> MpvExEnvironment.setMediaPath(value)
     }
   }
 
@@ -424,6 +431,7 @@ class MediaPlaybackService :
   override fun event(eventId: Int, data: MPVNode) {
     if (eventId == MPVLib.MpvEvent.MPV_EVENT_SHUTDOWN) {
       Log.d(TAG, "MPV shutdown event received, stopping service")
+      MpvExEnvironment.setMediaPath(null)
       stopSelf()
     }
   }

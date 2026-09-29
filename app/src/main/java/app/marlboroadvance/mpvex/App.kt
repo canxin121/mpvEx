@@ -6,6 +6,7 @@ import app.marlboroadvance.mpvex.database.repository.VideoMetadataCacheRepositor
 import app.marlboroadvance.mpvex.di.DatabaseModule
 import app.marlboroadvance.mpvex.di.FileManagerModule
 import app.marlboroadvance.mpvex.di.PreferencesModule
+import app.marlboroadvance.mpvex.environment.MpvExEnvironment
 import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
 import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentApplicator
 import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentPlan
@@ -62,6 +63,7 @@ class App : Application() {
     advancedPreferences.managedCPluginEnvironmentNames.set(environmentResult.managedEnvironmentNames)
     advancedPreferences.managedUserEnvironmentNames.set(environmentResult.managedUserEnvironmentNames)
     environmentResult.warnings.forEach { warning -> Log.w("App", warning) }
+    MpvExEnvironment.apply(this)
 
     FastThumbnails.initialize(this)
 

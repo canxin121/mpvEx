@@ -1088,9 +1088,9 @@
     <item quantity="other">%1$d 回試しても使用できるファイル名が見つかりませんでした</item>
   </plurals>
   <string name="environment_variables_title">環境変数</string>
-  <string name="environment_variables_summary">mpv やスクリプトで使う環境変数を設定</string>
-  <string name="environment_variables_description">これらの変数は mpv、Lua スクリプト、C プラグインで使用できます。同じ名前の変数がプラグインにも設定されている場合は、プラグイン側の値が優先されます。変更はプレーヤーを開き直すと反映されます。サムネイルにも反映するにはアプリを再起動してください。</string>
-  <string name="environment_variables_empty">環境変数はまだありません</string>
+  <string name="environment_variables_summary">組み込み変数の確認とカスタム変数の管理</string>
+  <string name="environment_variables_description">組み込み変数は変更できません。MPVEX_MEDIA_PATH は読み込んだメディアに合わせて更新され、何も読み込んでいないときは設定されません。カスタム変数は mpv、Lua スクリプト、C プラグインで使用できます。同じ名前をプラグインでも設定している場合は、プラグイン側の値が優先されます。カスタム変数の変更を反映するにはプレーヤーを開き直し、サムネイルにも反映するにはアプリを再起動してください。</string>
+  <string name="environment_variables_empty">カスタム変数はまだありません</string>
   <string name="environment_variables_backup_notice">設定のエクスポートには変数の値も含まれます。バックアップは安全な場所に保管してください。</string>
   <string name="environment_variable_value_hidden">値を非表示</string>
   <string name="environment_variable_add">変数を追加</string>
@@ -1106,4 +1106,13 @@
   <string name="environment_variable_delete">削除</string>
   <string name="environment_variable_clear_failed">環境変数「%1$s」を削除できませんでした</string>
   <string name="environment_variable_set_failed">環境変数「%1$s」を設定できませんでした</string>
+  <string name="environment_variables_built_in_header">組み込み変数</string>
+  <string name="environment_variables_custom_header">カスタム変数</string>
+  <string name="environment_variable_app_dir">アプリのデータフォルダー</string>
+  <string name="environment_variable_config_dir">mpv の設定フォルダー</string>
+  <string name="environment_variable_cache_dir">キャッシュフォルダー</string>
+  <string name="environment_variable_media_path">現在のメディアのパスまたは URL</string>
+  <string name="environment_variable_media_unavailable">メディアが読み込まれていません</string>
+  <string name="environment_variable_name_reserved">この名前は組み込み変数に予約されています</string>
+  <string name="plugin_field_reserved_environment">フィールド %1$s で予約済みの環境変数 %2$s が使用されています</string>
 </resources>

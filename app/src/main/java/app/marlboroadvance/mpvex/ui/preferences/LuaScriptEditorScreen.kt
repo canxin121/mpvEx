@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
@@ -93,12 +95,12 @@ data class LuaScriptEditorScreen(
                   it.isDirectory && it.name?.equals("scripts", ignoreCase = true) == true
               } ?: tree
 
-              val scriptFile = checkNotNull(scriptsDir.findFile(scriptName)) { "Script file not found" }
+              val scriptFile = checkNotNull(scriptsDir.findFile(scriptName)) { localizedString(R.string.ui_script_not_found) }
               checkNotNull(context.contentResolver.openInputStream(scriptFile.uri)) {
-                "Could not read $scriptName"
+                localizedString(R.string.ui_could_not_read_script, scriptName)
               }.bufferedReader().use { it.readText() }
             } else {
-              error("MPV configuration directory is unavailable")
+              error(localizedString(R.string.ui_mpv_directory_unavailable))
             }
           }
         }
@@ -106,7 +108,7 @@ data class LuaScriptEditorScreen(
           scriptContent = content
           hasUnsavedChanges = false
         }.onFailure { error ->
-          Toast.makeText(context, "Failed to load: ${error.message}", Toast.LENGTH_LONG).show()
+          Toast.makeText(context, localizedString(R.string.ui_failed_to_load_1_s, error.message), Toast.LENGTH_LONG).show()
         }
       }
     }
@@ -116,7 +118,7 @@ data class LuaScriptEditorScreen(
       val finalFileName = if (typedName.endsWith(".lua", ignoreCase = true) ||
         typedName.endsWith(".js", ignoreCase = true)) typedName else "$typedName.$extension"
       if (!isSafeScriptFileName(finalFileName)) {
-        Toast.makeText(context, "Enter a valid script file name", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, localizedString(R.string.ui_enter_a_valid_script_file_name), Toast.LENGTH_SHORT).show()
         return
       }
 
@@ -124,7 +126,7 @@ data class LuaScriptEditorScreen(
         try {
           if (mpvConfStorageLocation.isBlank()) {
             withContext(Dispatchers.Main) {
-              Toast.makeText(context, "No storage location set", Toast.LENGTH_LONG).show()
+              Toast.makeText(context, localizedString(R.string.ui_no_storage_location_set), Toast.LENGTH_LONG).show()
             }
             return@launch
           }
@@ -132,7 +134,7 @@ data class LuaScriptEditorScreen(
           val tree = DocumentFile.fromTreeUri(context, mpvConfStorageLocation.toUri())
           if (tree == null) {
             withContext(Dispatchers.Main) {
-              Toast.makeText(context, "No storage location set", Toast.LENGTH_LONG).show()
+              Toast.makeText(context, localizedString(R.string.ui_no_storage_location_set), Toast.LENGTH_LONG).show()
             }
             return@launch
           }
@@ -146,13 +148,13 @@ data class LuaScriptEditorScreen(
           val existing = scriptsDir.findFile(finalFileName)
           if (existing != null && (isNewScript || isRenaming)) {
             withContext(Dispatchers.Main) {
-              Toast.makeText(context, "$finalFileName already exists", Toast.LENGTH_LONG).show()
+              Toast.makeText(context, localizedString(R.string.ui_1_s_already_exists, finalFileName), Toast.LENGTH_LONG).show()
             }
             return@launch
           }
           val scriptFile = existing ?: scriptsDir.createFile("text/plain", finalFileName) ?: run {
             withContext(Dispatchers.Main) {
-              Toast.makeText(context, "Failed to create file", Toast.LENGTH_LONG).show()
+              Toast.makeText(context, localizedString(R.string.ui_failed_to_create_file), Toast.LENGTH_LONG).show()
             }
             return@launch
           }
@@ -160,11 +162,11 @@ data class LuaScriptEditorScreen(
           try {
             if (scriptFile.name != finalFileName) {
               check(existing == null && scriptFile.renameTo(finalFileName) && scriptFile.name == finalFileName) {
-                "Could not name script $finalFileName"
+                localizedString(R.string.ui_could_not_name_script, finalFileName)
               }
             }
             checkNotNull(context.contentResolver.openOutputStream(scriptFile.uri, "wt")) {
-              "Failed to open output stream"
+              localizedString(R.string.ui_failed_open_output_stream)
             }.use { out ->
               out.write(scriptContent.toByteArray(Charsets.UTF_8))
               out.flush()
@@ -187,12 +189,12 @@ data class LuaScriptEditorScreen(
 
           withContext(Dispatchers.Main) {
             hasUnsavedChanges = false
-            Toast.makeText(context, "$finalFileName saved successfully", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, localizedString(R.string.ui_1_s_saved_successfully, finalFileName), Toast.LENGTH_SHORT).show()
             backStack.removeLastOrNull()
           }
         } catch (e: Exception) {
           withContext(Dispatchers.Main) {
-            Toast.makeText(context, "Failed to save: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, localizedString(R.string.ui_failed_to_save_1_s, e.message), Toast.LENGTH_LONG).show()
           }
         }
       }
@@ -200,7 +202,7 @@ data class LuaScriptEditorScreen(
 
     fun shareScript() {
       if (isNewScript) {
-        Toast.makeText(context, "Save the script first before sharing", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, localizedString(R.string.ui_save_the_script_first_before_sharing), Toast.LENGTH_SHORT).show()
         return
       }
 
@@ -213,12 +215,12 @@ data class LuaScriptEditorScreen(
                 it.isDirectory && it.name?.equals("scripts", ignoreCase = true) == true
             } ?: tree
 
-            val scriptFile = checkNotNull(scriptsDir.findFile(scriptName)) { "Script file not found" }
+            val scriptFile = checkNotNull(scriptsDir.findFile(scriptName)) { localizedString(R.string.ui_script_not_found) }
             if (scriptFile.exists()) {
               // Copy to cache directory for sharing
               val cacheFile = File(context.cacheDir, scriptName)
               checkNotNull(context.contentResolver.openInputStream(scriptFile.uri)) {
-                "Could not read $scriptName"
+                localizedString(R.string.ui_could_not_read_script, scriptName)
               }.use { input ->
                 cacheFile.outputStream().use { output ->
                   input.copyTo(output)
@@ -239,19 +241,19 @@ data class LuaScriptEditorScreen(
                   putExtra(Intent.EXTRA_SUBJECT, scriptName)
                   addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
-                context.startActivity(Intent.createChooser(shareIntent, "Share $scriptName"))
+                context.startActivity(Intent.createChooser(shareIntent, localizedString(R.string.ui_share_script_named, scriptName)))
               }
             } else {
-              error("Script file not found")
+              error(localizedString(R.string.ui_script_not_found))
             }
           } else {
-            error("MPV configuration directory is unavailable")
+            error(localizedString(R.string.ui_mpv_directory_unavailable))
           }
         } catch (e: Exception) {
           withContext(Dispatchers.Main) {
             Toast.makeText(
               context,
-              "Failed to share: ${e.message}",
+              localizedString(R.string.ui_failed_to_share_1_s, e.message),
               Toast.LENGTH_LONG
             ).show()
           }
@@ -274,7 +276,7 @@ data class LuaScriptEditorScreen(
                   it.isDirectory && it.name?.equals("scripts", ignoreCase = true) == true
               } ?: tree
 
-              val scriptFile = checkNotNull(scriptsDir.findFile(scriptName)) { "Script file not found" }
+              val scriptFile = checkNotNull(scriptsDir.findFile(scriptName)) { localizedString(R.string.ui_script_not_found) }
               if (scriptFile.exists()) {
                 val deleted = scriptFile.delete()
                 if (deleted) {
@@ -285,23 +287,23 @@ data class LuaScriptEditorScreen(
                   }
 
                   withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "$scriptName deleted", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, localizedString(R.string.ui_1_s_deleted, scriptName), Toast.LENGTH_SHORT).show()
                     backStack.removeLastOrNull()
                   }
                 } else {
-                  error("Could not delete $scriptName")
+                  error(localizedString(R.string.ui_could_not_delete_script, scriptName))
                 }
               } else {
-                error("Script file not found")
+                error(localizedString(R.string.ui_script_not_found))
               }
           } else {
-            error("MPV configuration directory is unavailable")
+            error(localizedString(R.string.ui_mpv_directory_unavailable))
           }
         } catch (e: Exception) {
           withContext(Dispatchers.Main) {
             Toast.makeText(
               context,
-              "Failed to delete: ${e.message}",
+              localizedString(R.string.ui_failed_to_delete_1_s, e.message),
               Toast.LENGTH_LONG
             ).show()
           }
@@ -331,7 +333,7 @@ data class LuaScriptEditorScreen(
                 Box {
                   if (fileName.isEmpty()) {
                     Text(
-                      text = "Script name",
+                      text = localizedString(R.string.ui_script_name),
                       style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -344,7 +346,7 @@ data class LuaScriptEditorScreen(
             )
             if (hasUnsavedChanges) {
               Text(
-                text = "Unsaved changes",
+                text = localizedString(R.string.ui_unsaved_changes),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary,
               )
@@ -355,7 +357,7 @@ data class LuaScriptEditorScreen(
           IconButton(onClick = backStack::removeLastOrNull) {
             Icon(
               Icons.AutoMirrored.Default.ArrowBack,
-              contentDescription = "Back",
+              contentDescription = localizedString(R.string.back),
               tint = MaterialTheme.colorScheme.secondary,
             )
           }
@@ -376,7 +378,7 @@ data class LuaScriptEditorScreen(
             ) {
               Icon(
                 Icons.Default.Share,
-                contentDescription = "Share",
+                contentDescription = localizedString(R.string.generic_share),
               )
             }
           }
@@ -396,7 +398,7 @@ data class LuaScriptEditorScreen(
             ) {
               Icon(
                 Icons.Default.Delete,
-                contentDescription = "Delete",
+                contentDescription = localizedString(R.string.delete),
               )
             }
           }
@@ -426,7 +428,7 @@ data class LuaScriptEditorScreen(
           ) {
             Icon(
               Icons.Default.Check,
-              contentDescription = "Save",
+              contentDescription = localizedString(R.string.ui_save),
             )
           }
         },
@@ -463,8 +465,8 @@ data class LuaScriptEditorScreen(
     // Delete confirmation dialog
     if (showDeleteDialog) {
       ConfirmDialog(
-        title = "Delete Script?",
-        subtitle = "Are you sure you want to delete \"${scriptName ?: fileName}\"? This action cannot be undone.",
+        title = localizedString(R.string.ui_delete_script),
+        subtitle = localizedString(R.string.ui_delete_script_confirm, scriptName ?: fileName),
         onConfirm = {
           deleteScript()
           showDeleteDialog = false

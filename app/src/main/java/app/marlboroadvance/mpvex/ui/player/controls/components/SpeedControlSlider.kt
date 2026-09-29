@@ -1,5 +1,8 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
+import app.marlboroadvance.mpvex.utils.media.MediaFormatUtils
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
@@ -103,7 +106,7 @@ fun SpeedControlSlider(
               speedPresets.forEach { speed ->
                 val isCurrentSpeed = kotlin.math.abs(currentSpeed - speed) < 0.05f
                 Text(
-                  text = "${speed.format()}x",
+                  text = localizedString(R.string.ui_1_sx, speed.format()),
                   fontSize = if (isCurrentSpeed) 13.sp else 10.sp,
                   fontWeight = if (isCurrentSpeed) FontWeight.Bold else FontWeight.Normal,
                   color = if (isCurrentSpeed) {
@@ -171,7 +174,7 @@ fun SpeedControlSlider(
             modifier = Modifier.size(16.dp),
           )
           Text(
-            text = "${currentSpeed.format()}x Speed Playing",
+            text = localizedString(R.string.ui_1_sx_speed_playing, currentSpeed.format()),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.bodyLarge,
@@ -216,7 +219,7 @@ fun CompactSpeedIndicator(
       tint = MaterialTheme.colorScheme.onSurface 
     )
     Text(
-      text = "${currentSpeed.format()}x",
+      text = localizedString(R.string.ui_1_sx, currentSpeed.format()),
       fontSize = 14.sp,
       fontWeight = FontWeight.Bold,
       style = MaterialTheme.typography.bodyLarge,
@@ -230,8 +233,5 @@ fun CompactSpeedIndicator(
  * Format float speed value to display with minimal decimal places
  */
 private fun Float.format(): String {
-  return when {
-    this % 1.0f == 0.0f -> this.toInt().toString()
-    else -> String.format("%.2f", this).trimEnd('0').trimEnd('.')
-  }
+  return MediaFormatUtils.formatDecimal(this)
 }

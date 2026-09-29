@@ -2,6 +2,8 @@ package app.marlboroadvance.mpvex.database.repository
 
 import android.content.Context
 import android.net.Uri
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import app.marlboroadvance.mpvex.database.dao.PlaylistDao
 import app.marlboroadvance.mpvex.database.entities.PlaylistEntity
 import app.marlboroadvance.mpvex.database.entities.PlaylistItemEntity
@@ -288,10 +290,10 @@ class PlaylistRepository(private val playlistDao: PlaylistDao) {
   suspend fun refreshM3UPlaylist(playlistId: Int): Result<Unit> {
     return try {
       val playlist = getPlaylistById(playlistId)
-        ?: return Result.failure(Exception("Playlist not found"))
+        ?: return Result.failure(Exception(localizedString(R.string.ui_playlist_not_found)))
       
       if (!playlist.isM3uPlaylist || playlist.m3uSourceUrl == null) {
-        return Result.failure(Exception("Not an M3U playlist or no source URL available"))
+        return Result.failure(Exception(localizedString(R.string.ui_m3u_source_unavailable)))
       }
       
       val parseResult = M3UParser.parseFromUrl(playlist.m3uSourceUrl)

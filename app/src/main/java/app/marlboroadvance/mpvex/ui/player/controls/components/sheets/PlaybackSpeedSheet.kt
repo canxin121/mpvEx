@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components.sheets
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.utils.media.MediaFormatUtils
 import app.marlboroadvance.mpvex.preferences.AudioPreferences
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.presentation.components.PlayerSheet
@@ -130,7 +132,7 @@ fun PlaybackSpeedSheet(
       ) {
           Text(text = stringResource(R.string.player_sheets_speed_slider_label), style = MaterialTheme.typography.bodyMedium)
           Text(
-              text = "${speed.toFixed(2)}x", 
+              text = localizedString(R.string.ui_1_sx, MediaFormatUtils.formatDecimal(speed)),
               style = MaterialTheme.typography.headlineMedium,
               fontWeight = FontWeight.Bold
           )
@@ -192,7 +194,7 @@ fun PlaybackSpeedSheet(
               FilterChip(
                 selected = kotlin.math.abs(presetSpeed - speed) < 0.01f,
                 onClick = { onSpeedChange(presetSpeed) },
-                label = { Text("${presetSpeed.toFixed(2)}") },
+                label = { Text(MediaFormatUtils.formatDecimal(presetSpeed)) },
                 leadingIcon = null,
                 colors = if (!isDefault) {
                     androidx.compose.material3.FilterChipDefaults.filterChipColors(
@@ -223,7 +225,7 @@ fun PlaybackSpeedSheet(
                         modifier = buttonModifier
                     ) {
                        Icon(Icons.Default.Remove, null, modifier = Modifier.size(16.dp).padding(end = 4.dp))
-                       Text("Remove")
+                       Text(localizedString(R.string.remove))
                     }
                 }
             } else {
@@ -233,7 +235,7 @@ fun PlaybackSpeedSheet(
                     modifier = buttonModifier
                 ) {
                   Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp).padding(end = 4.dp))
-                  Text("Add")
+                  Text(localizedString(R.string.add))
                 }
             }
       }
@@ -309,4 +311,3 @@ fun Float.toFixed(precision: Int = 1): Float {
   val factor = 10.0f.pow(precision)
   return (this * factor).roundToInt() / factor
 }
-

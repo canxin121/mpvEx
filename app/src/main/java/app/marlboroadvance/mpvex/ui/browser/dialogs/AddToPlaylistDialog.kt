@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.dialogs
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -81,11 +83,9 @@ fun AddToPlaylistDialog(
             video.path to video.displayName
           }
           repository.addItemsToPlaylist(playlistId.toInt(), items)
-          val message = if (videos.size == 1) {
-            "Video added to \"$name\""
-          } else {
-            "${videos.size} videos added to \"$name\""
-          }
+          val message = app.marlboroadvance.mpvex.i18n.localizedQuantityString(
+            R.plurals.videos_added_to_playlist, videos.size, videos.size, name,
+          )
           Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
           showCreateDialog = false
           onSuccess()
@@ -100,7 +100,7 @@ fun AddToPlaylistDialog(
     onDismissRequest = onDismiss,
     title = {
       Text(
-        text = "Add to Playlist",
+        text = localizedString(R.string.ui_add_to_playlist),
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
       )
@@ -112,11 +112,9 @@ fun AddToPlaylistDialog(
       ) {
         // Show video count
         Text(
-          text = if (videos.size == 1) {
-            "Adding 1 video to playlist"
-          } else {
-            "Adding ${videos.size} videos to playlist"
-          },
+          text = app.marlboroadvance.mpvex.i18n.localizedQuantityString(
+            R.plurals.adding_videos_to_playlist, videos.size, videos.size,
+          ),
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -134,7 +132,7 @@ fun AddToPlaylistDialog(
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = "Create New Playlist",
+            text = localizedString(R.string.ui_create_new_playlist),
             fontWeight = FontWeight.Medium,
           )
         }
@@ -142,7 +140,7 @@ fun AddToPlaylistDialog(
         // Existing playlists
         if (playlists.isNotEmpty()) {
           Text(
-            text = "Existing Playlists",
+            text = localizedString(R.string.ui_existing_playlists),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -163,11 +161,12 @@ fun AddToPlaylistDialog(
                       video.path to video.displayName
                     }
                     repository.addItemsToPlaylist(playlist.id, items)
-                    val message = if (videos.size == 1) {
-                      "Video added to \"${playlist.name}\""
-                    } else {
-                      "${videos.size} videos added to \"${playlist.name}\""
-                    }
+                    val message = app.marlboroadvance.mpvex.i18n.localizedQuantityString(
+                      R.plurals.videos_added_to_playlist,
+                      videos.size,
+                      videos.size,
+                      playlist.name,
+                    )
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                   }
                 },
@@ -191,7 +190,7 @@ fun AddToPlaylistDialog(
         ),
         shape = MaterialTheme.shapes.extraLarge,
       ) {
-        Text("Done", fontWeight = FontWeight.Bold)
+        Text(localizedString(R.string.done), fontWeight = FontWeight.Bold)
       }
     },
     dismissButton = {
@@ -199,7 +198,7 @@ fun AddToPlaylistDialog(
         onClick = onDismiss,
         shape = MaterialTheme.shapes.extraLarge,
       ) {
-        Text("Cancel", fontWeight = FontWeight.Medium)
+        Text(localizedString(R.string.generic_cancel), fontWeight = FontWeight.Medium)
       }
     },
     containerColor = MaterialTheme.colorScheme.surface,
@@ -251,7 +250,9 @@ private fun PlaylistItemCard(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-          text = "$itemCount videos • ${formatDate(playlist.updatedAt)}",
+          text = app.marlboroadvance.mpvex.i18n.localizedQuantityString(
+            R.plurals.videos_count_with_date, itemCount, itemCount, formatDate(playlist.updatedAt),
+          ),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -283,13 +284,13 @@ private fun EmptyPlaylistsMessage() {
         tint = MaterialTheme.colorScheme.onSurfaceVariant,
       )
       Text(
-        text = "No playlists yet",
+        text = localizedString(R.string.ui_no_playlists_yet),
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
       )
       Text(
-        text = "Create your first playlist above",
+        text = localizedString(R.string.ui_create_your_first_playlist_above),
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
       )
@@ -308,7 +309,7 @@ private fun CreatePlaylistDialog(
     onDismissRequest = onDismiss,
     title = {
       Text(
-        text = "Create New Playlist",
+        text = localizedString(R.string.ui_create_new_playlist),
         style = MaterialTheme.typography.headlineSmall,
         fontWeight = FontWeight.Bold,
       )
@@ -317,7 +318,7 @@ private fun CreatePlaylistDialog(
       OutlinedTextField(
         value = playlistName,
         onValueChange = { playlistName = it },
-        label = { Text("Playlist Name") },
+        label = { Text(localizedString(R.string.ui_playlist_name)) },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
@@ -333,7 +334,7 @@ private fun CreatePlaylistDialog(
         enabled = playlistName.isNotBlank(),
         shape = MaterialTheme.shapes.extraLarge,
       ) {
-        Text("Create", fontWeight = FontWeight.Bold)
+        Text(localizedString(R.string.create), fontWeight = FontWeight.Bold)
       }
     },
     dismissButton = {
@@ -341,7 +342,7 @@ private fun CreatePlaylistDialog(
         onClick = onDismiss,
         shape = MaterialTheme.shapes.extraLarge,
       ) {
-        Text("Cancel", fontWeight = FontWeight.Medium)
+        Text(localizedString(R.string.generic_cancel), fontWeight = FontWeight.Medium)
       }
     },
     containerColor = MaterialTheme.colorScheme.surface,
@@ -351,6 +352,6 @@ private fun CreatePlaylistDialog(
 }
 
 private fun formatDate(timestamp: Long): String {
-  val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+  val sdf = java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM, Locale.getDefault())
   return sdf.format(Date(timestamp))
 }

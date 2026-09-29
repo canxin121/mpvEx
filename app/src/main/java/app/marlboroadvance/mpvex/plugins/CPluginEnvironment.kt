@@ -1,6 +1,7 @@
 package app.marlboroadvance.mpvex.plugins
 
 import android.system.Os
+import app.marlboroadvance.mpvex.R
 
 data class CPluginEnvironmentAssignment(
   val name: String,
@@ -47,6 +48,7 @@ object CPluginEnvironmentPlanBuilder {
     selectedPluginFileNames: Set<String>,
     descriptors: List<CPluginDescriptor>,
     configuredValues: Map<String, Map<String, String>>,
+    messages: CPluginMessages = AndroidCPluginMessages,
   ): CPluginEnvironmentPlan {
     val descriptorsByFileName = descriptors.associateBy { it.fileName }
     val excludedPlugins = mutableSetOf<String>()
@@ -56,7 +58,7 @@ object CPluginEnvironmentPlanBuilder {
     val selectedDescriptors = selectedPluginFileNames.mapNotNull { descriptorsByFileName[it] }
     selectedPluginFileNames
       .filterNot(descriptorsByFileName::containsKey)
-      .forEach { warnings += "Selected C plugin '$it' was not found" }
+      .forEach { warnings += messages.get(R.string.plugin_selected_not_found, it) }
 
     selectedDescriptors
       .filter { it.manifest != null }
@@ -65,13 +67,13 @@ object CPluginEnvironmentPlanBuilder {
       .forEach { (pluginId, duplicates) ->
         val files = duplicates.map { it.fileName }.sorted()
         excludedPlugins += files
-        warnings += "Plugin id '$pluginId' is declared by multiple selected plugins: ${files.joinToString()}"
+        warnings += messages.get(R.string.plugin_duplicate_selected_id, pluginId.orEmpty(), files.joinToString())
       }
 
     selectedDescriptors.sortedBy { it.fileName.lowercase() }.forEach { descriptor ->
       if (descriptor.manifestError != null) {
         excludedPlugins += descriptor.fileName
-        warnings += "Skipping '${descriptor.fileName}': ${descriptor.manifestError}"
+        warnings += messages.get(R.string.plugin_skipped_reason, descriptor.fileName, descriptor.manifestError)
         return@forEach
       }
 
@@ -84,7 +86,7 @@ object CPluginEnvironmentPlanBuilder {
 
       manifest.config.forEach { field ->
         val rawValue = pluginValues[field.id] ?: field.defaultValueAsString()
-        val validation = CPluginValueValidator.validate(field, rawValue)
+        val validation = CPluginValueValidator.validate(field, rawValue, messages)
         if (!validation.isValid) {
           pluginErrors += "${field.title}: ${validation.error}"
         } else {
@@ -101,7 +103,7 @@ object CPluginEnvironmentPlanBuilder {
 
       if (pluginErrors.isNotEmpty()) {
         excludedPlugins += descriptor.fileName
-        warnings += "Skipping '${descriptor.fileName}': ${pluginErrors.joinToString()}"
+        warnings += messages.get(R.string.plugin_skipped_reason, descriptor.fileName, pluginErrors.joinToString())
       } else {
         candidateAssignments += pluginAssignments
       }
@@ -113,7 +115,7 @@ object CPluginEnvironmentPlanBuilder {
       .forEach { (environmentName, assignments) ->
         val owners = assignments.map { it.pluginFileName }.distinct().sorted()
         excludedPlugins += owners
-        warnings += "Environment variable '$environmentName' is declared by multiple plugins: ${owners.joinToString()}"
+        warnings += messages.get(R.string.plugin_environment_duplicate, environmentName, owners.joinToString())
       }
 
     return CPluginEnvironmentPlan(
@@ -129,6 +131,7 @@ object CPluginEnvironmentApplicator {
     plan: CPluginEnvironmentPlan,
     previouslyManagedEnvironmentNames: Set<String>,
     environment: CPluginEnvironmentAccess = AndroidCPluginEnvironmentAccess,
+    messages: CPluginMessages = AndroidCPluginMessages,
   ): CPluginEnvironmentApplyResult {
     val warnings = mutableListOf<String>()
     val failedToClear = mutableSetOf<String>()
@@ -138,7 +141,7 @@ object CPluginEnvironmentApplicator {
       runCatching { environment.unset(name) }
         .onFailure {
           failedToClear += name
-          warnings += "Could not clear plugin environment variable '$name'"
+          warnings += messages.get(R.string.plugin_environment_clear_failed, name)
         }
     }
 
@@ -147,7 +150,7 @@ object CPluginEnvironmentApplicator {
       runCatching { environment.set(assignment.name, assignment.value) }
         .onFailure {
           failedPlugins += assignment.pluginFileName
-          warnings += "Could not set environment variable '${assignment.name}' for '${assignment.pluginFileName}'"
+          warnings += messages.get(R.string.plugin_environment_set_failed, assignment.name, assignment.pluginFileName)
         }
     }
 
@@ -158,7 +161,7 @@ object CPluginEnvironmentApplicator {
           runCatching { environment.unset(assignment.name) }
             .onFailure {
               failedToClear += assignment.name
-              warnings += "Could not roll back environment variable '${assignment.name}'"
+              warnings += messages.get(R.string.plugin_environment_rollback_failed, assignment.name)
             }
         }
     }

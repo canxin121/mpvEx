@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.R
@@ -192,8 +193,9 @@ object AppearancePreferencesScreen : Screen {
                                 valueRange = 1f..30f,
                                 summary = {
                                     Text(
-                                        text = stringResource(
-                                            id = R.string.pref_appearance_unplayed_old_video_days_summary,
+                                        text = pluralStringResource(
+                                            id = R.plurals.pref_appearance_unplayed_old_video_days_summary,
+                                            count = unplayedOldVideoDays,
                                             unplayedOldVideoDays,
                                         ),
                                         color = MaterialTheme.colorScheme.outline,

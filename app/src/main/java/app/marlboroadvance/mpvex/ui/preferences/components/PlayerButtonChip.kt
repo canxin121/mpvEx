@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.preferences.components
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -77,7 +79,7 @@ fun PlayerButtonChip(
         when (button) {
           PlayerButton.VIDEO_TITLE -> {
             Text(
-              text = "Video Title", // TODO: strings
+              text = localizedString(R.string.ui_video_title), // TODO: strings
               fontSize = 15.sp, // Increased font size
               textAlign = TextAlign.Center,
               lineHeight = 14.sp,
@@ -94,7 +96,7 @@ fun PlayerButtonChip(
                 modifier = Modifier.size(24.dp), 
               )
               Text(
-                text = "1:06 • Chapter 1", // TODO: strings
+                text = localizedString(R.string.ui_1_06_chapter_1), // TODO: strings
                 fontSize = 15.sp, 
                 textAlign = TextAlign.Center,
                 lineHeight = 14.sp,

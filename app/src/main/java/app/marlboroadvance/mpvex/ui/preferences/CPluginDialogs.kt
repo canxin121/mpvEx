@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -62,7 +64,7 @@ fun CPluginSelectionDialog(
 
   AlertDialog(
     onDismissRequest = onDismiss,
-    title = { Text("Manage C Plugins") },
+    title = { Text(localizedString(R.string.ui_manage_c_plugins)) },
     text = {
       Column(
         modifier =
@@ -72,10 +74,10 @@ fun CPluginSelectionDialog(
         verticalArrangement = Arrangement.spacedBy(12.dp),
       ) {
         if (availablePlugins.isEmpty()) {
-          Text("No C plugins found in the configured MPV directory.")
+          Text(localizedString(R.string.ui_no_c_plugins_found_in_the_configured_mpv_directory))
         } else {
           Text(
-            text = "Select plugins and configure fields declared by their .mpvex.json manifests.",
+            text = localizedString(R.string.ui_select_plugins_and_configure_fields_declared_by_their_mpvex_json_manif),
             color = MaterialTheme.colorScheme.outline,
           )
           pendingPlan.warnings.forEach { warning ->
@@ -136,21 +138,21 @@ fun CPluginSelectionDialog(
                 when {
                   descriptor.manifestError != null ->
                     Text(
-                      text = "Invalid manifest: ${descriptor.manifestError}",
+                      text = localizedString(R.string.ui_invalid_manifest_1_s, descriptor.manifestError),
                       style = MaterialTheme.typography.bodySmall,
                       color = MaterialTheme.colorScheme.error,
                       modifier = Modifier.padding(start = 48.dp, end = 8.dp),
                     )
                   descriptor.manifest == null ->
                     Text(
-                      text = "No configuration manifest. The plugin will load in legacy mode.",
+                      text = localizedString(R.string.ui_no_configuration_manifest_the_plugin_will_load_in_legacy_mode),
                       style = MaterialTheme.typography.bodySmall,
                       color = MaterialTheme.colorScheme.outline,
                       modifier = Modifier.padding(start = 48.dp, end = 8.dp),
                     )
                   descriptor.manifest.config.isEmpty() ->
                     Text(
-                      text = "This plugin declares no configurable fields.",
+                      text = localizedString(R.string.ui_this_plugin_declares_no_configurable_fields),
                       style = MaterialTheme.typography.bodySmall,
                       color = MaterialTheme.colorScheme.outline,
                       modifier = Modifier.padding(start = 48.dp, end = 8.dp),
@@ -161,7 +163,7 @@ fun CPluginSelectionDialog(
                       modifier = Modifier.padding(start = 36.dp),
                     ) {
                       val count = descriptor.manifest.config.size
-                      Text("Configure ($count field${if (count == 1) "" else "s"})")
+                      Text(localizedString(R.string.ui_configure_fields, count))
                     }
                 }
               }
@@ -175,12 +177,12 @@ fun CPluginSelectionDialog(
         onClick = { onPluginsSelected(pendingSelection, pendingConfiguration) },
         enabled = pendingPlan.excludedPluginFileNames.isEmpty(),
       ) {
-        Text("Save")
+        Text(localizedString(R.string.ui_save))
       }
     },
     dismissButton = {
       TextButton(onClick = onDismiss) {
-        Text("Cancel")
+        Text(localizedString(R.string.generic_cancel))
       }
     },
   )
@@ -222,7 +224,7 @@ private fun CPluginConfigurationDialog(
         verticalArrangement = Arrangement.spacedBy(16.dp),
       ) {
         Text(
-          text = "Changes take effect the next time the player is opened.",
+          text = localizedString(R.string.ui_changes_take_effect_the_next_time_the_player_is_opened),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.outline,
         )
@@ -240,12 +242,12 @@ private fun CPluginConfigurationDialog(
         },
         enabled = !hasErrors,
       ) {
-        Text("Save")
+        Text(localizedString(R.string.ui_save))
       }
     },
     dismissButton = {
       TextButton(onClick = onDismiss) {
-        Text("Cancel")
+        Text(localizedString(R.string.generic_cancel))
       }
     },
   )
@@ -327,7 +329,7 @@ private fun CPluginConfigurationField(
       )
     }
     Text(
-      text = "Environment: ${field.binding.name}",
+      text = localizedString(R.string.ui_environment_1_s, field.binding.name),
       style = MaterialTheme.typography.labelSmall,
       color = MaterialTheme.colorScheme.outline,
     )
@@ -342,7 +344,12 @@ private fun CPluginConfigurationField(
       onClick = { onValueChange(field.defaultValueAsString().orEmpty()) },
       modifier = Modifier.align(Alignment.End),
     ) {
-      Text(if (field.defaultValueAsString() == null) "Use plugin default" else "Reset to default")
+      Text(
+        localizedString(
+          if (field.defaultValueAsString() == null) R.string.ui_use_plugin_default
+          else R.string.pref_layout_reset_default,
+        )
+      )
     }
   }
 }
@@ -390,7 +397,7 @@ private fun BooleanConfigurationField(
       Text(field.displayTitle())
       if (state == ToggleableState.Indeterminate) {
         Text(
-          text = "Plugin default",
+          text = localizedString(R.string.ui_plugin_default),
           style = MaterialTheme.typography.bodySmall,
           color = MaterialTheme.colorScheme.outline,
         )

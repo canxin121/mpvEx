@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import app.marlboroadvance.mpvex.BuildConfig
+import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.domain.media.model.Video
 import app.marlboroadvance.mpvex.ui.player.PlayerActivity
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
@@ -201,7 +202,7 @@ object MediaUtils {
         Intent(Intent.ACTION_SEND_MULTIPLE).apply {
           type = "video/*"
           putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
-          putExtra(Intent.EXTRA_SUBJECT, "Sharing ${uris.size} videos")
+          putExtra(Intent.EXTRA_SUBJECT, context.resources.getQuantityString(R.plurals.share_videos, uris.size, uris.size))
           val clip = android.content.ClipData.newRawUri(videos.first().displayName, uris.first())
           uris.drop(1).forEach { u -> clip.addItem(android.content.ClipData.Item(u)) }
           clipData = clip
@@ -212,7 +213,7 @@ object MediaUtils {
     context.startActivity(
       Intent.createChooser(
         intent,
-        if (uris.size == 1) "Share video" else "Share ${uris.size} videos",
+        context.resources.getQuantityString(R.plurals.share_videos, uris.size, uris.size),
       ),
     )
   }

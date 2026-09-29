@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -78,8 +80,8 @@ data class ConfigEditorScreen(
       ConfigType.INPUT_CONF -> "input.conf" to preferences.inputConf.get()
     }
     val screenTitle = when (configType) {
-      ConfigType.MPV_CONF   -> "Edit mpv.conf"
-      ConfigType.INPUT_CONF -> "Edit input.conf"
+      ConfigType.MPV_CONF   -> localizedString(R.string.pref_advanced_mpv_conf)
+      ConfigType.INPUT_CONF -> localizedString(R.string.pref_advanced_input_conf)
     }
 
     var configText       by remember { mutableStateOf(initialValue) }
@@ -117,7 +119,7 @@ data class ConfigEditorScreen(
             val tree = DocumentFile.fromTreeUri(context, mpvConfStorageLocation.toUri())
             if (tree == null) {
               withContext(Dispatchers.Main) {
-                Toast.makeText(context, "No storage location set", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, localizedString(R.string.ui_no_storage_location_set), Toast.LENGTH_LONG).show()
               }
               return@launch
             }
@@ -125,7 +127,7 @@ data class ConfigEditorScreen(
             val confFile = existing ?: tree.createFile("text/plain", fileName)?.also { it.renameTo(fileName) }
             val uri = confFile?.uri ?: run {
               withContext(Dispatchers.Main) {
-                Toast.makeText(context, "Failed to create file", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, localizedString(R.string.ui_failed_to_create_file), Toast.LENGTH_LONG).show()
               }
               return@launch
             }
@@ -137,12 +139,12 @@ data class ConfigEditorScreen(
 
           withContext(Dispatchers.Main) {
             hasUnsavedChanges = false
-            Toast.makeText(context, "$fileName saved", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, localizedString(R.string.ui_1_s_saved, fileName), Toast.LENGTH_SHORT).show()
             backStack.removeLastOrNull()
           }
         } catch (e: Exception) {
           withContext(Dispatchers.Main) {
-            Toast.makeText(context, "Failed to save: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, localizedString(R.string.ui_failed_to_save_1_s, e.message), Toast.LENGTH_LONG).show()
           }
         }
       }
@@ -163,7 +165,7 @@ data class ConfigEditorScreen(
             )
             if (hasUnsavedChanges) {
               Text(
-                text  = "Unsaved changes",
+                text  = localizedString(R.string.ui_unsaved_changes),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary,
               )
@@ -174,7 +176,7 @@ data class ConfigEditorScreen(
           IconButton(onClick = backStack::removeLastOrNull) {
             Icon(
               Icons.AutoMirrored.Default.ArrowBack,
-              contentDescription = "Back",
+              contentDescription = localizedString(R.string.back),
               tint = MaterialTheme.colorScheme.secondary,
             )
           }
@@ -194,7 +196,7 @@ data class ConfigEditorScreen(
             ),
             shape = RoundedCornerShape(8.dp),
           ) {
-            Icon(Icons.Default.Check, contentDescription = "Save")
+            Icon(Icons.Default.Check, contentDescription = localizedString(R.string.ui_save))
           }
         },
       )

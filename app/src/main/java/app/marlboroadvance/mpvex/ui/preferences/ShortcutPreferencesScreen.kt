@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.preferences.ShortcutPreferences
 import app.marlboroadvance.mpvex.preferences.ShortcutSlot
+import app.marlboroadvance.mpvex.preferences.displayLabel
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.presentation.Screen
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
@@ -97,7 +98,7 @@ private fun ShortcutSlotItem(slot: ShortcutSlot, preferences: ShortcutPreference
   var editing by remember { mutableStateOf(false) }
 
   ListItem(
-    headlineContent = { Text(label.ifBlank { "Shortcut ${slot.number}" }) },
+    headlineContent = { Text(slot.displayLabel(label)) },
     supportingContent = {
       Text(
         if (key.isBlank()) stringResource(R.string.shortcut_not_configured)
@@ -109,7 +110,7 @@ private fun ShortcutSlotItem(slot: ShortcutSlot, preferences: ShortcutPreference
   )
 
   if (editing) {
-    var draftLabel by remember(label, editing) { mutableStateOf(label) }
+    var draftLabel by remember(label, editing) { mutableStateOf(if (label == "Shortcut ${slot.number}") "" else label) }
     var draftKey by remember(key, editing) { mutableStateOf(key) }
     val validKey = draftKey.trim().none(Char::isWhitespace)
 
@@ -140,7 +141,7 @@ private fun ShortcutSlotItem(slot: ShortcutSlot, preferences: ShortcutPreference
         TextButton(
           enabled = validKey,
           onClick = {
-            labelPreference.set(draftLabel.trim().ifBlank { "Shortcut ${slot.number}" })
+            labelPreference.set(draftLabel.trim())
             keyPreference.set(draftKey.trim())
             editing = false
           },

@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -145,26 +147,26 @@ object MainScreen : Screen {
               )
           ) {
             NavigationBarItem(
-              icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
-              label = { Text("Home") },
+              icon = { Icon(Icons.Filled.Home, contentDescription = localizedString(R.string.home)) },
+              label = { Text(localizedString(R.string.home)) },
               selected = selectedTab == 0,
               onClick = { selectedTab = 0 }
             )
             NavigationBarItem(
-              icon = { Icon(Icons.Filled.History, contentDescription = "Recents") },
-              label = { Text("Recents") },
+              icon = { Icon(Icons.Filled.History, contentDescription = localizedString(R.string.recents)) },
+              label = { Text(localizedString(R.string.recents)) },
               selected = selectedTab == 1,
               onClick = { selectedTab = 1 }
             )
             NavigationBarItem(
-              icon = { Icon(Icons.AutoMirrored.Filled.PlaylistPlay, contentDescription = "Playlists") },
-              label = { Text("Playlists") },
+              icon = { Icon(Icons.AutoMirrored.Filled.PlaylistPlay, contentDescription = localizedString(R.string.playlists)) },
+              label = { Text(localizedString(R.string.playlists)) },
               selected = selectedTab == 2,
               onClick = { selectedTab = 2 }
             )
             NavigationBarItem(
-              icon = { Icon(Icons.Filled.Language, contentDescription = "Network") },
-              label = { Text("Network") },
+              icon = { Icon(Icons.Filled.Language, contentDescription = localizedString(R.string.network)) },
+              label = { Text(localizedString(R.string.network)) },
               selected = selectedTab == 3,
               onClick = { selectedTab = 3 }
             )

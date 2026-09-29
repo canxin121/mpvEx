@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.preferences.ShortcutPreferences
+import app.marlboroadvance.mpvex.preferences.displayLabel
 import app.marlboroadvance.mpvex.preferences.ShortcutSlot
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.ui.player.pressShortcutKey
@@ -82,7 +83,7 @@ fun ShortcutActionButtons() {
       ) {
         Icon(Icons.Outlined.Keyboard, contentDescription = null)
         Text(
-          label.ifBlank { "Shortcut ${slot.number}" },
+          slot.displayLabel(label),
           modifier = Modifier.padding(start = 8.dp),
           maxLines = 1,
           overflow = TextOverflow.Ellipsis,

@@ -32,6 +32,8 @@ import androidx.compose.material.icons.outlined.Looks3
 import androidx.compose.material.icons.outlined.Looks4
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import app.marlboroadvance.mpvex.R
 
 /**
  * Represents a customizable button in the player controls.
@@ -81,39 +83,38 @@ val allPlayerButtons =
       it != PlayerButton.VIDEO_TITLE
   }
 
-/**
- * Gets the human-readable label for a player button.
- * TODO: You must add these string resources to your `strings.xml` file.
- */
+/** Gets the localized label for a player button. */
 @Composable
 fun getPlayerButtonLabel(button: PlayerButton): String =
-  when (button) {
-    PlayerButton.BACK_ARROW -> "Back Arrow" // stringResource(R.string.btn_label_back)
-    PlayerButton.VIDEO_TITLE -> "Video Title" // stringResource(R.string.btn_label_title)
-    PlayerButton.BOOKMARKS_CHAPTERS -> "Chapters / Bookmarks" // stringResource(R.string.btn_label_bookmarks)
-    PlayerButton.PLAYBACK_SPEED -> "Playback Speed" // stringResource(R.string.btn_label_speed)
-    PlayerButton.DECODER -> "Decoder" // stringResource(R.string.btn_label_decoder)
-    PlayerButton.SCREEN_ROTATION -> "Screen Rotation" // stringResource(R.string.btn_label_rotation)
-    PlayerButton.FRAME_NAVIGATION -> "Frame Navigation" // stringResource(R.string.btn_label_frame_nav)
-    PlayerButton.VIDEO_ZOOM -> "Video Zoom" // stringResource(R.string.btn_label_zoom)
-    PlayerButton.PICTURE_IN_PICTURE -> "Picture-in-Picture" // stringResource(R.string.btn_label_pip)
-    PlayerButton.ASPECT_RATIO -> "Aspect Ratio" // stringResource(R.string.btn_label_aspect)
-    PlayerButton.LOCK_CONTROLS -> "Lock Controls" // stringResource(R.string.btn_label_lock)
-    PlayerButton.AUDIO_TRACK -> "Audio Track" // stringResource(R.string.btn_label_audio)
-    PlayerButton.SUBTITLES -> "Subtitles" // stringResource(R.string.btn_label_subtitles)
-    PlayerButton.MORE_OPTIONS -> "More Options" // stringResource(R.string.btn_label_more)
-    PlayerButton.CURRENT_CHAPTER -> "Current Chapter" // stringResource(R.string.btn_label_chapter)
-    PlayerButton.REPEAT_MODE -> "Repeat Mode" // stringResource(R.string.btn_label_repeat_mode)
-    PlayerButton.SHUFFLE -> "Shuffle" // stringResource(R.string.btn_label_shuffle)
-    PlayerButton.MIRROR -> "Horizontal Flip"
-    PlayerButton.VERTICAL_FLIP -> "Vertical Flip"
-    PlayerButton.AB_LOOP -> "A-B Loop"
-    PlayerButton.CUSTOM_SKIP -> "Custom Skip"
-    PlayerButton.BACKGROUND_PLAYBACK -> "Background Playback"
-    PlayerButton.SHORTCUTS -> "Shortcuts"
-    PlayerButton.SHORTCUT_1 -> "Shortcut 1"
-    PlayerButton.SHORTCUT_2 -> "Shortcut 2"
-    PlayerButton.SHORTCUT_3 -> "Shortcut 3"
-    PlayerButton.SHORTCUT_4 -> "Shortcut 4"
-    PlayerButton.NONE -> "None"
-  }
+  stringResource(
+    when (button) {
+      PlayerButton.BACK_ARROW -> R.string.button_back_arrow
+      PlayerButton.VIDEO_TITLE -> R.string.ui_video_title
+      PlayerButton.BOOKMARKS_CHAPTERS -> R.string.button_chapters_bookmarks
+      PlayerButton.PLAYBACK_SPEED -> R.string.ui_playback_speed
+      PlayerButton.DECODER -> R.string.pref_decoder
+      PlayerButton.SCREEN_ROTATION -> R.string.button_screen_rotation
+      PlayerButton.FRAME_NAVIGATION -> R.string.player_sheets_frame_navigation_title
+      PlayerButton.VIDEO_ZOOM -> R.string.player_sheets_zoom_slider_label
+      PlayerButton.PICTURE_IN_PICTURE -> R.string.button_picture_in_picture
+      PlayerButton.ASPECT_RATIO -> R.string.ui_aspect_ratio
+      PlayerButton.LOCK_CONTROLS -> R.string.button_lock_controls
+      PlayerButton.AUDIO_TRACK -> R.string.button_audio_track
+      PlayerButton.SUBTITLES -> R.string.pref_subtitles
+      PlayerButton.MORE_OPTIONS -> R.string.button_more_options
+      PlayerButton.CURRENT_CHAPTER -> R.string.button_current_chapter
+      PlayerButton.REPEAT_MODE -> R.string.button_repeat_mode
+      PlayerButton.SHUFFLE -> R.string.button_shuffle
+      PlayerButton.MIRROR -> R.string.button_horizontal_flip
+      PlayerButton.VERTICAL_FLIP -> R.string.ui_vertical_flip
+      PlayerButton.AB_LOOP -> R.string.button_ab_loop
+      PlayerButton.CUSTOM_SKIP -> R.string.button_custom_skip
+      PlayerButton.BACKGROUND_PLAYBACK -> R.string.button_background_playback
+      PlayerButton.SHORTCUTS -> R.string.ui_shortcuts
+      PlayerButton.SHORTCUT_1 -> R.string.button_shortcut_1
+      PlayerButton.SHORTCUT_2 -> R.string.button_shortcut_2
+      PlayerButton.SHORTCUT_3 -> R.string.button_shortcut_3
+      PlayerButton.SHORTCUT_4 -> R.string.button_shortcut_4
+      PlayerButton.NONE -> R.string.filter_preset_none_title
+    },
+  )

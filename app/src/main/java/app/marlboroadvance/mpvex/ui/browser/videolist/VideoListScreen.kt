@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.videolist
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Intent
 import android.os.Environment
 import androidx.activity.compose.BackHandler
@@ -316,7 +318,7 @@ data class VideoListScreen(
         if (sortedVideosWithInfo.isNotEmpty()) {
           TooltipBox(
             positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-            tooltip = { PlainTooltip { Text("Play recently played or first video") } },
+            tooltip = { PlainTooltip { Text(localizedString(R.string.play_recently_played_or_first)) } },
             state = rememberTooltipState(),
           ) {
             FloatingActionButton(
@@ -343,7 +345,7 @@ data class VideoListScreen(
                 }
               },
             ) {
-              Icon(Icons.Filled.PlayArrow, contentDescription = "Play recently played or first video")
+              Icon(Icons.Filled.PlayArrow, contentDescription = localizedString(R.string.play_recently_played_or_first))
             }
           }
         }
@@ -435,8 +437,6 @@ data class VideoListScreen(
         isOpen = deleteDialogOpen.value,
         onDismiss = { deleteDialogOpen.value = false },
         onConfirm = { selectionManager.deleteSelected() },
-        itemType = "video",
-        itemCount = selectionManager.selectedCount,
         itemNames = selectionManager.getSelectedItems().map { it.displayName },
       )
 
@@ -514,7 +514,7 @@ data class VideoListScreen(
       // Private Space Loading Dialog
       LoadingDialog(
         isOpen = movingToPrivateSpace.value,
-        message = "Moving to private space...",
+        message = localizedString(R.string.ui_moving_to_private_space),
       )
 
       // Private Space Completion Dialog
@@ -523,15 +523,19 @@ data class VideoListScreen(
           onDismissRequest = { showPrivateSpaceCompletionDialog.value = false },
           title = {
             Text(
-              text = "Moved to Private Space",
+              text = localizedString(R.string.ui_moved_to_private_space),
               style = MaterialTheme.typography.headlineSmall,
             )
           },
           text = {
             Text(
               text =
-                "Successfully moved ${privateSpaceMovedCount.intValue} video(s) to private space.\n\n" +
-                  "To access private space, long press on the app name at the top of the main screen.",
+                app.marlboroadvance.mpvex.i18n.localizedQuantityString(
+                  R.plurals.videos_moved_to_private_space,
+                  privateSpaceMovedCount.intValue,
+                  privateSpaceMovedCount.intValue,
+                ) +
+                  "\n\n" + localizedString(R.string.ui_private_space_access_hint),
               style = MaterialTheme.typography.bodyMedium,
             )
           },
@@ -539,7 +543,7 @@ data class VideoListScreen(
             androidx.compose.material3.Button(
               onClick = { showPrivateSpaceCompletionDialog.value = false },
             ) {
-              Text("Close")
+              Text(localizedString(R.string.close))
             }
           },
         )
@@ -635,8 +639,8 @@ private fun VideoListContent(
       ) {
         EmptyState(
           icon = Icons.Filled.VideoLibrary,
-          title = "No videos in this folder",
-          message = "Videos you add to this folder will appear here",
+          title = localizedString(R.string.ui_no_videos_in_this_folder),
+          message = localizedString(R.string.ui_videos_you_add_to_this_folder_will_appear_here),
         )
       }
     }
@@ -880,7 +884,10 @@ private fun VideoSortDialog(
 
   val folderGridColumnSelector = if (mediaLayoutMode == MediaLayoutMode.GRID) {
     GridColumnSelector(
-      label = "Folder Grid Columns (${if (isLandscape) "Landscape" else "Portrait"})",
+      label = localizedString(
+        R.string.ui_folder_grid_columns_orientation,
+        localizedString(if (isLandscape) R.string.pref_player_orientation_landscape else R.string.pref_player_orientation_portrait),
+      ),
       currentValue = folderGridColumns,
       onValueChange = {
         if (isLandscape) browserPreferences.folderGridColumnsLandscape.set(it)
@@ -893,7 +900,10 @@ private fun VideoSortDialog(
 
   val videoGridColumnSelector = if (mediaLayoutMode == MediaLayoutMode.GRID) {
     GridColumnSelector(
-      label = "Grid Columns (${if (isLandscape) "Landscape" else "Portrait"})",
+      label = localizedString(
+        R.string.ui_grid_columns_orientation,
+        localizedString(if (isLandscape) R.string.pref_player_orientation_landscape else R.string.pref_player_orientation_portrait),
+      ),
       currentValue = videoGridColumns,
       onValueChange = {
         if (isLandscape) browserPreferences.videoGridColumnsLandscape.set(it)
@@ -907,7 +917,7 @@ private fun VideoSortDialog(
   SortDialog(
     isOpen = isOpen,
     onDismiss = onDismiss,
-    title = "Sort & View Options",
+    title = localizedString(R.string.ui_sort_view_options),
     sortType = sortType.displayName,
     onSortTypeChange = { typeName ->
       VideoSortType.entries.find { it.displayName == typeName }?.let(onSortTypeChange)
@@ -932,17 +942,17 @@ private fun VideoSortDialog(
       ),
     getLabelForType = { type, _ ->
       when (type) {
-        VideoSortType.Title.displayName -> Pair("A-Z", "Z-A")
-        VideoSortType.Duration.displayName -> Pair("Shortest", "Longest")
-        VideoSortType.Date.displayName -> Pair("Oldest", "Newest")
-        VideoSortType.Size.displayName -> Pair("Smallest", "Biggest")
-        else -> Pair("Asc", "Desc")
+        VideoSortType.Title.displayName -> Pair(localizedString(R.string.sort_ascending), localizedString(R.string.sort_descending))
+        VideoSortType.Duration.displayName -> Pair(localizedString(R.string.sort_shortest), localizedString(R.string.sort_longest))
+        VideoSortType.Date.displayName -> Pair(localizedString(R.string.sort_oldest), localizedString(R.string.sort_newest))
+        VideoSortType.Size.displayName -> Pair(localizedString(R.string.sort_smallest), localizedString(R.string.sort_largest))
+        else -> Pair(localizedString(R.string.sort_ascending), localizedString(R.string.sort_descending))
       }
     },
     viewModeSelector = ViewModeSelector(
-      label = "View Mode",
-      firstOptionLabel = "Folder",
-      secondOptionLabel = "Tree",
+      label = localizedString(R.string.ui_view_mode),
+      firstOptionLabel = localizedString(R.string.ui_folder),
+      secondOptionLabel = localizedString(R.string.sort_tree),
       firstOptionIcon = Icons.Filled.ViewModule,
       secondOptionIcon = Icons.Filled.AccountTree,
       isFirstOptionSelected = folderViewMode == FolderViewMode.AlbumView,
@@ -953,9 +963,9 @@ private fun VideoSortDialog(
       },
     ),
     layoutModeSelector = ViewModeSelector(
-      label = "Layout",
-      firstOptionLabel = "List",
-      secondOptionLabel = "Grid",
+      label = localizedString(R.string.ui_layout),
+      firstOptionLabel = localizedString(R.string.sort_list),
+      secondOptionLabel = localizedString(R.string.sort_grid),
       firstOptionIcon = Icons.AutoMirrored.Filled.ViewList,
       secondOptionIcon = Icons.Filled.GridView,
       isFirstOptionSelected = mediaLayoutMode == MediaLayoutMode.LIST,
@@ -968,12 +978,12 @@ private fun VideoSortDialog(
     visibilityToggles =
       listOf(
         VisibilityToggle(
-          label = "Thumbnails",
+          label = localizedString(R.string.ui_thumbnails),
           checked = showThumbnails,
           onCheckedChange = { browserPreferences.showVideoThumbnails.set(it) },
         ),
         VisibilityToggle(
-          label = "Subtitle Indicator",
+          label = localizedString(R.string.ui_subtitle_indicator),
           checked = showSubtitleIndicator,
           onCheckedChange = {
             browserPreferences.showSubtitleIndicator.set(it)
@@ -982,22 +992,22 @@ private fun VideoSortDialog(
           },
         ),
         VisibilityToggle(
-          label = "Full Name",
+          label = localizedString(R.string.ui_full_name),
           checked = unlimitedNameLines,
           onCheckedChange = { appearancePreferences.unlimitedNameLines.set(it) },
         ),
         VisibilityToggle(
-          label = "Size",
+          label = localizedString(R.string.ui_size),
           checked = showSizeChip,
           onCheckedChange = { browserPreferences.showSizeChip.set(it) },
         ),
         VisibilityToggle(
-          label = "Resolution",
+          label = localizedString(R.string.ui_resolution),
           checked = showResolutionChip,
           onCheckedChange = { browserPreferences.showResolutionChip.set(it) },
         ),
         VisibilityToggle(
-          label = "Framerate",
+          label = localizedString(R.string.ui_framerate),
           checked = showFramerateInResolution,
           onCheckedChange = {
             browserPreferences.showFramerateInResolution.set(it)
@@ -1006,7 +1016,7 @@ private fun VideoSortDialog(
           },
         ),
         VisibilityToggle(
-          label = "Date",
+          label = localizedString(R.string.ui_date),
           checked = showDateChip,
           onCheckedChange = { browserPreferences.showDateChip.set(it) },
         ),

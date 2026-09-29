@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.states
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -35,8 +37,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun LoadingState(
   icon: ImageVector = Icons.Filled.FolderOpen,
-  title: String = "Scanning for videos...",
-  message: String = "Please wait while we search your device",
+  title: String = localizedString(R.string.ui_scanning_for_videos),
+  message: String = localizedString(R.string.ui_wait_for_device_search),
   modifier: Modifier = Modifier,
 ) {
   // Animated alpha for subtle pulsing effect (same as EmptyState)

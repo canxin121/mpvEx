@@ -402,7 +402,7 @@ class PlayerActivity :
     // Extract fileName early so it's available when video loads
     fileName = getFileName(intent)
     if (fileName.isBlank()) {
-      fileName = intent.data?.lastPathSegment ?: "Unknown Video"
+      fileName = intent.data?.lastPathSegment ?: getString(app.marlboroadvance.mpvex.R.string.ui_unknown_video)
     }
     mediaIdentifier = getMediaIdentifier(intent, fileName)
 
@@ -848,15 +848,16 @@ class PlayerActivity :
         if (playerPreferences.showSystemStatusBar.get()) 0 else View.SYSTEM_UI_FLAG_LOW_PROFILE
   }
 
-  @RequiresApi(Build.VERSION_CODES.P)
   private fun restoreSystemUI() {
     // Clear flags first for immediate effect
     window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
     // Set cutout mode before showing bars for smoother transition
-    window.attributes.layoutInDisplayCutoutMode =
-      WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      window.attributes.layoutInDisplayCutoutMode =
+        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+    }
 
     // Update window insets configuration
     WindowCompat.setDecorFitsSystemWindows(window, true)
@@ -1552,7 +1553,7 @@ class PlayerActivity :
     // For HTTP/HTTPS URLs, extract from path (will be updated async via HTTP headers)
     if (HttpUtils.isNetworkStream(uri)) {
       // Get the last path segment and decode URL encoding
-      val path = uri.path ?: return uri.host ?: "Network Stream"
+      val path = uri.path ?: return uri.host ?: getString(app.marlboroadvance.mpvex.R.string.ui_network_stream)
       val lastSegment = path.substringAfterLast("/")
 
       if (lastSegment.isNotBlank()) {
@@ -1561,7 +1562,7 @@ class PlayerActivity :
           java.net.URLDecoder.decode(lastSegment, "UTF-8")
             .substringBefore("?") // Remove query parameters
             .substringBefore("#") // Remove fragments (only for network streams)
-            .takeIf { it.isNotBlank() } ?: uri.host ?: "Network Stream"
+            .takeIf { it.isNotBlank() } ?: uri.host ?: getString(app.marlboroadvance.mpvex.R.string.ui_network_stream)
         } catch (e: Exception) {
           lastSegment
             .substringBefore("?")
@@ -1570,11 +1571,11 @@ class PlayerActivity :
       }
 
       // If no filename in path, use hostname
-      return uri.host ?: "Network Stream"
+      return uri.host ?: getString(app.marlboroadvance.mpvex.R.string.ui_network_stream)
     }
 
     // For file:// and content:// URIs - preserve # characters as they're part of the filename
-    val lastSegment = uri.lastPathSegment?.substringAfterLast("/") ?: uri.path ?: "Unknown Video"
+    val lastSegment = uri.lastPathSegment?.substringAfterLast("/") ?: uri.path ?: getString(app.marlboroadvance.mpvex.R.string.ui_unknown_video)
     
     // For local files, only decode URL encoding but preserve # characters
     return try {
@@ -1934,7 +1935,7 @@ class PlayerActivity :
       fileName = getFileName(intent)
       // Ensure fileName is not blank - use a fallback if necessary
       if (fileName.isBlank()) {
-        fileName = intent.data?.lastPathSegment ?: "Unknown Video"
+        fileName = intent.data?.lastPathSegment ?: getString(app.marlboroadvance.mpvex.R.string.ui_unknown_video)
       }
       mediaIdentifier = getMediaIdentifier(intent, fileName)
     } else if (mediaIdentifier.isBlank()) {
@@ -2101,8 +2102,7 @@ class PlayerActivity :
         val betterFilename = HttpUtils.extractFilenameFromUrl(url)
         if (betterFilename != null && betterFilename.isNotBlank() &&
           betterFilename != fileName &&
-          betterFilename != uri.host &&
-          betterFilename != "Network Stream"
+          betterFilename != uri.host
         ) {
 
           Log.d(TAG, "Found better filename from HTTP headers: $betterFilename")
@@ -2625,7 +2625,7 @@ class PlayerActivity :
     // Extract the new fileName before loading the file
     fileName = getFileName(intent)
     if (fileName.isBlank()) {
-      fileName = intent.data?.lastPathSegment ?: "Unknown Video"
+      fileName = intent.data?.lastPathSegment ?: getString(app.marlboroadvance.mpvex.R.string.ui_unknown_video)
     }
     mediaIdentifier = getMediaIdentifier(intent, fileName)
 
@@ -3082,7 +3082,6 @@ class PlayerActivity :
    * Manually triggers background playback when the user clicks the background playback button.
    * This works independently of the automaticBackgroundPlayback preference.
    */
-  @RequiresApi(Build.VERSION_CODES.P)
   fun triggerBackgroundPlayback() {
     if (fileName.isBlank() || !isReady) {
       Log.w(TAG, "Cannot trigger background playback: video not ready")

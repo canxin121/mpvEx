@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.playlist
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -184,11 +186,11 @@ object PlaylistScreen : Screen {
                   onSearch = { },
                   expanded = false,
                   onExpandedChange = { },
-                  placeholder = { Text("Search playlists...") },
+                  placeholder = { Text(localizedString(R.string.ui_search_playlists)) },
                   leadingIcon = {
                     Icon(
                       imageVector = Icons.Filled.Search,
-                      contentDescription = "Search",
+                      contentDescription = localizedString(R.string.settings_search_title),
                     )
                   },
                   trailingIcon = {
@@ -200,7 +202,7 @@ object PlaylistScreen : Screen {
                     ) {
                       Icon(
                         imageVector = Icons.Filled.Close,
-                        contentDescription = "Cancel",
+                        contentDescription = localizedString(R.string.generic_cancel),
                       )
                     }
                   },
@@ -219,7 +221,7 @@ object PlaylistScreen : Screen {
             }
           } else {
             BrowserTopBar(
-              title = "Playlists",
+              title = localizedString(R.string.playlists),
               isInSelectionMode = selectionManager.isInSelectionMode,
               selectedCount = selectionManager.selectedCount,
               totalCount = playlistsWithCount.size,
@@ -246,7 +248,7 @@ object PlaylistScreen : Screen {
             ExtendedFloatingActionButton(
               onClick = { showPlaylistActionSheet = true },
               icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-              text = { Text("Create Playlist") },
+              text = { Text(localizedString(R.string.ui_create_playlist)) },
               modifier = Modifier.padding(bottom = navigationBarHeight)
             )
           }
@@ -262,8 +264,8 @@ object PlaylistScreen : Screen {
           ) {
             EmptyState(
               icon = Icons.Filled.Search,
-              title = "No playlists found",
-              message = "Try a different search term",
+              title = localizedString(R.string.ui_no_playlists_found),
+              message = localizedString(R.string.ui_try_a_different_search_term),
             )
           }
         } else if (playlistsWithCount.isEmpty() && hasCompletedInitialLoad) {
@@ -279,8 +281,8 @@ object PlaylistScreen : Screen {
             ) {
               EmptyState(
                 icon = Icons.AutoMirrored.Outlined.PlaylistAdd,
-                title = "No playlists yet",
-                message = "Create a playlist or add one from an m3u URL",
+                title = localizedString(R.string.ui_no_playlists_yet),
+                message = localizedString(R.string.ui_create_a_playlist_or_add_one_from_an_m3u_url),
               )
             }
           }
@@ -324,12 +326,12 @@ object PlaylistScreen : Screen {
           var playlistName by remember { mutableStateOf(selectedPlaylist.playlist.name) }
           androidx.compose.material3.AlertDialog(
             onDismissRequest = { showRenameDialog = false },
-            title = { Text("Rename Playlist") },
+            title = { Text(localizedString(R.string.ui_rename_playlist)) },
             text = {
               androidx.compose.material3.OutlinedTextField(
                 value = playlistName,
                 onValueChange = { playlistName = it },
-                label = { Text("Playlist Name") },
+                label = { Text(localizedString(R.string.ui_playlist_name)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
               )
@@ -347,14 +349,14 @@ object PlaylistScreen : Screen {
                 },
                 enabled = playlistName.isNotBlank(),
               ) {
-                Text("Rename")
+                Text(localizedString(R.string.rename))
               }
             },
             dismissButton = {
               androidx.compose.material3.TextButton(
                 onClick = { showRenameDialog = false },
               ) {
-                Text("Cancel")
+                Text(localizedString(R.string.generic_cancel))
               }
             },
           )
@@ -369,8 +371,6 @@ object PlaylistScreen : Screen {
             selectionManager.deleteSelected()
             showDeleteDialog = false
           },
-          itemCount = selectionManager.selectedCount,
-          itemType = "playlist",
           itemNames = selectionManager.getSelectedItems().map { it.playlist.name },
         )
       }
@@ -512,4 +512,3 @@ object PlaylistScreen : Screen {
       }
     }
   }
-

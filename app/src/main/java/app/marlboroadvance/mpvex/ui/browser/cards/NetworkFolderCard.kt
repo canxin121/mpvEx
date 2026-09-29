@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.cards
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -77,7 +79,7 @@ fun NetworkFolderCard(
       ) {
         Icon(
           Icons.Filled.Folder,
-          contentDescription = "Folder",
+          contentDescription = localizedString(R.string.ui_folder),
           modifier = Modifier.size(48.dp),
           tint = MaterialTheme.colorScheme.secondary,
         )

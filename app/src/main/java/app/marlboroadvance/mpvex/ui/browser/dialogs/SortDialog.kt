@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.dialogs
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -202,7 +204,7 @@ private fun SortTypeSelector(
     verticalArrangement = Arrangement.spacedBy(12.dp),
   ) {
     Text(
-      text = "Sort by",
+      text = localizedString(R.string.ui_sort_by),
       style = MaterialTheme.typography.titleMedium,
       fontWeight = FontWeight.Medium,
       color = MaterialTheme.colorScheme.onSurface,
@@ -420,7 +422,7 @@ private fun VisibilityTogglesSection(
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Text(
-        text = "Fields",
+        text = localizedString(R.string.ui_fields),
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Medium,
         color = MaterialTheme.colorScheme.onSurface,
@@ -487,7 +489,7 @@ private fun GridColumnSelectorComponent(
     )
 
     Text(
-      text = "${gridColumnSelector.currentValue} columns",
+      text = app.marlboroadvance.mpvex.i18n.localizedQuantityString(R.plurals.columns_count, gridColumnSelector.currentValue, gridColumnSelector.currentValue),
       style = MaterialTheme.typography.bodyMedium,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
       modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -508,7 +510,7 @@ private fun GridColumnsSection(
     verticalArrangement = Arrangement.spacedBy(12.dp),
   ) {
     Text(
-      text = "Grid Columns",
+      text = localizedString(R.string.ui_grid_columns),
       style = MaterialTheme.typography.titleMedium,
       fontWeight = FontWeight.Medium,
       color = MaterialTheme.colorScheme.onSurface,
@@ -525,7 +527,7 @@ private fun GridColumnsSection(
           verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
           Text(
-            text = "Folder Grid",
+            text = localizedString(R.string.ui_folder_grid),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
           )
@@ -537,7 +539,7 @@ private fun GridColumnsSection(
             modifier = Modifier.fillMaxWidth(),
           )
           Text(
-            text = "${folderGridColumnSelector.currentValue} columns",
+            text = app.marlboroadvance.mpvex.i18n.localizedQuantityString(R.plurals.columns_count, folderGridColumnSelector.currentValue, folderGridColumnSelector.currentValue),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -551,7 +553,7 @@ private fun GridColumnsSection(
           verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
           Text(
-            text = "Video Grid",
+            text = localizedString(R.string.ui_video_grid),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
           )
@@ -563,7 +565,7 @@ private fun GridColumnsSection(
             modifier = Modifier.fillMaxWidth(),
           )
           Text(
-            text = "${videoGridColumnSelector.currentValue} columns",
+            text = app.marlboroadvance.mpvex.i18n.localizedQuantityString(R.plurals.columns_count, videoGridColumnSelector.currentValue, videoGridColumnSelector.currentValue),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.align(Alignment.CenterHorizontally),

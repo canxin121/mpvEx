@@ -1,13 +1,14 @@
 package app.marlboroadvance.mpvex.utils.media
 
 import java.util.Locale
+import java.text.NumberFormat
 import kotlin.math.log10
 import kotlin.math.pow
 
 object MediaFormatUtils {
 
   fun formatDuration(durationMs: Long): String {
-    if (durationMs <= 0) return "0s"
+    if (durationMs <= 0) return "0:00"
 
     val seconds = durationMs / 1000
     val hours = seconds / 3600
@@ -17,9 +18,16 @@ object MediaFormatUtils {
     return when {
       hours > 0 -> String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, secs)
       minutes > 0 -> String.format(Locale.getDefault(), "%d:%02d", minutes, secs)
-      else -> "${secs}s"
+      else -> String.format(Locale.getDefault(), "0:%02d", secs)
     }
   }
+
+  fun formatDecimal(value: Float, minimumFractionDigits: Int = 0, maximumFractionDigits: Int = 2): String =
+    NumberFormat.getNumberInstance(Locale.getDefault()).apply {
+      isGroupingUsed = false
+      this.minimumFractionDigits = minimumFractionDigits
+      this.maximumFractionDigits = maximumFractionDigits
+    }.format(value)
 
   fun formatFileSize(bytes: Long): String {
     if (bytes <= 0) return "0 B"

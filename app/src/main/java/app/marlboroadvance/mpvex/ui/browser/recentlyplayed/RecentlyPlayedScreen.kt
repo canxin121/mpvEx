@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.recentlyplayed
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -187,7 +189,7 @@ object RecentlyPlayedScreen : Screen {
     Scaffold(
         topBar = {
           BrowserTopBar(
-            title = "Recently Played",
+            title = localizedString(R.string.pref_advanced_enable_recently_played_title),
             isInSelectionMode = selectionManager.isInSelectionMode,
             selectedCount = selectionManager.selectedCount,
             totalCount = recentItems.size,
@@ -221,7 +223,7 @@ object RecentlyPlayedScreen : Screen {
                   TooltipAnchorPosition.Above
                 }
               ),
-              tooltip = { PlainTooltip { Text("Toggle menu") } },
+              tooltip = { PlainTooltip { Text(localizedString(R.string.toggle_menu)) } },
               state = rememberTooltipState(),
             ) {
               ToggleFloatingActionButton(
@@ -253,7 +255,7 @@ object RecentlyPlayedScreen : Screen {
               filePicker.launch(arrayOf("video/*"))
             },
             icon = { Icon(Icons.Filled.FileOpen, contentDescription = null) },
-            text = { Text(text = "Open File") },
+            text = { Text(text = localizedString(R.string.ui_open_file)) },
           )
 
           FloatingActionButtonMenuItem(
@@ -268,7 +270,7 @@ object RecentlyPlayedScreen : Screen {
               }
             },
             icon = { Icon(Icons.Filled.History, contentDescription = null) },
-            text = { Text(text = "Recently Played") },
+            text = { Text(text = localizedString(R.string.pref_advanced_enable_recently_played_title)) },
           )
 
           FloatingActionButtonMenuItem(
@@ -277,7 +279,7 @@ object RecentlyPlayedScreen : Screen {
               showLinkDialog.value = true
             },
             icon = { Icon(Icons.Filled.Link, contentDescription = null) },
-            text = { Text(text = "Open Link") },
+            text = { Text(text = localizedString(R.string.ui_open_link)) },
           )
         }
       },
@@ -292,8 +294,8 @@ object RecentlyPlayedScreen : Screen {
           ) {
             EmptyState(
               icon = Icons.Filled.History,
-              title = "Recently Played is disabled",
-              message = "Enable it in Advanced Settings to track your playback history",
+              title = localizedString(R.string.ui_recently_played_is_disabled),
+              message = localizedString(R.string.ui_enable_it_in_advanced_settings_to_track_your_playback_history),
             )
           }
         }
@@ -321,8 +323,8 @@ object RecentlyPlayedScreen : Screen {
           ) {
             EmptyState(
               icon = Icons.Filled.History,
-              title = "No recently played videos",
-              message = "Videos you play will appear here",
+              title = localizedString(R.string.ui_no_recently_played_videos),
+              message = localizedString(R.string.ui_videos_you_play_will_appear_here),
             )
           }
         }
@@ -352,25 +354,18 @@ object RecentlyPlayedScreen : Screen {
       // Delete confirmation dialog
       if (deleteDialogOpen.value && selectionManager.isInSelectionMode) {
         // Remove selected items from history
-        val itemCount = selectionManager.selectedCount
-        val itemText = if (itemCount == 1) "item" else "items"
         val deleteFiles = deleteFilesCheckbox.value
 
         val title = if (deleteFiles) {
-          "Delete $itemCount $itemText?"
+          localizedString(R.string.ui_delete_selected_items)
         } else {
-          "Remove $itemCount $itemText from history?"
+          localizedString(R.string.ui_remove_selected_from_history)
         }
 
-        val subtitle = buildString {
-          if (deleteFiles) {
-            append("This will permanently delete the original video file(s) from your device storage.\n\n")
-            append("This action cannot be undone.")
-          } else {
-            append("This will remove the selected $itemText from your recently played list. ")
-            append("The original video files will not be deleted.")
-          }
-        }
+        val subtitle = localizedString(
+          if (deleteFiles) R.string.ui_delete_original_files_warning
+          else R.string.ui_remove_history_warning,
+        )
 
         ConfirmDialog(
           title = title,
@@ -387,7 +382,7 @@ object RecentlyPlayedScreen : Screen {
                 },
               )
               androidx.compose.material3.Text(
-                text = "Also delete original file(s)",
+                text = localizedString(R.string.ui_also_delete_original_file_s),
                 modifier = Modifier.padding(start = 8.dp),
                 style = MaterialTheme.typography.bodyMedium,
               )
@@ -724,4 +719,3 @@ private fun RecentItemsContent(
     }
   }
 }
-

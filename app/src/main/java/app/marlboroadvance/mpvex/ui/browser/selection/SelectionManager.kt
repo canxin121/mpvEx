@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.selection
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
@@ -91,12 +93,12 @@ class SelectionManager<T, ID>(
       runCatching {
         val (deleted, failed) = onDeleteItems(selected, deleteFiles)
         if (deleted > 0) {
-          Toast.makeText(context, "Deleted successfully", Toast.LENGTH_SHORT).show()
+          Toast.makeText(context, localizedString(R.string.ui_deleted_successfully), Toast.LENGTH_SHORT).show()
         } else if (failed > 0) {
-          Toast.makeText(context, "Failed to delete", Toast.LENGTH_SHORT).show()
+          Toast.makeText(context, localizedString(R.string.ui_failed_to_delete), Toast.LENGTH_SHORT).show()
         }
       }.onFailure {
-        Toast.makeText(context, "Failed to delete: ${it.message}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, localizedString(R.string.ui_failed_to_delete_1_s, it.message), Toast.LENGTH_SHORT).show()
       }
       clear()
       onOperationComplete()
@@ -115,12 +117,12 @@ class SelectionManager<T, ID>(
       runCatching {
         val result = onRenameItem(item, newName)
         result.onSuccess {
-          Toast.makeText(context, "Renamed successfully", Toast.LENGTH_SHORT).show()
+          Toast.makeText(context, localizedString(R.string.ui_renamed_successfully), Toast.LENGTH_SHORT).show()
         }.onFailure { error ->
-          Toast.makeText(context, "Failed to rename: ${error.message}", Toast.LENGTH_SHORT).show()
+          Toast.makeText(context, localizedString(R.string.ui_failed_to_rename_1_s, error.message), Toast.LENGTH_SHORT).show()
         }
       }.onFailure {
-        Toast.makeText(context, "Failed to rename: ${it.message}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, localizedString(R.string.ui_failed_to_rename_1_s, it.message), Toast.LENGTH_SHORT).show()
       }
       clear()
       onOperationComplete()

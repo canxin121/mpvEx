@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,7 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -53,7 +54,7 @@ object GesturePreferencesScreen : Screen {
   @Composable
   override fun Content() {
     val preferences = koinInject<GesturePreferences>()
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val backstack = LocalBackStack.current
     val useSingleTapForCenter by preferences.useSingleTapForCenter.collectAsState()
 
@@ -113,18 +114,18 @@ object GesturePreferencesScreen : Screen {
             values = predefinedValues + listOf(-1),
             valueToText = { value ->
               if (value == -1) {
-                AnnotatedString("Custom")
+                AnnotatedString(localizedString(R.string.pref_gesture_double_tap_custom))
               } else {
-                AnnotatedString("${value}s")
+                AnnotatedString(app.marlboroadvance.mpvex.i18n.localizedQuantityString(R.plurals.seconds, value, value))
               }
             },
             title = { Text(text = stringResource(id = R.string.pref_player_double_tap_seek_duration)) },
             summary = {
               Text(
-                text = if (isCustomValue) {
-                  "Custom (${doubleTapSeekDuration}s)"
-                } else {
-                  "${doubleTapSeekDuration}s"
+                text = app.marlboroadvance.mpvex.i18n.localizedQuantityString(
+                  R.plurals.seconds, doubleTapSeekDuration, doubleTapSeekDuration,
+                ).let { duration ->
+                  if (isCustomValue) localizedString(R.string.ui_custom_with_value, duration) else duration
                 },
                 color = MaterialTheme.colorScheme.outline,
               )
@@ -140,13 +141,13 @@ object GesturePreferencesScreen : Screen {
               text = {
                 Column {
                   Text(
-                    text = "Enter custom seek duration in seconds (1-120)",
+                    text = localizedString(R.string.ui_enter_custom_seek_duration_in_seconds_1_120),
                     modifier = Modifier.padding(bottom = 8.dp),
                   )
                   OutlinedTextField(
                     value = customSeekValue,
                     onValueChange = { customSeekValue = it },
-                    label = { Text("Seconds") },
+                    label = { Text(localizedString(R.string.seconds)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -182,10 +183,10 @@ object GesturePreferencesScreen : Screen {
             onValueChange = { preferences.doubleTapSeekAreaWidth.set(it) },
             values = seekAreaValues,
             valueToText = { AnnotatedString("${it}%") },
-            title = { Text(text = "Double Tap Seek Area Width") },
+            title = { Text(text = localizedString(R.string.pref_double_tap_seek_area_width_title)) },
             summary = {
               Text(
-                text = "Current: ${doubleTapSeekAreaWidth}%",
+                text = localizedString(R.string.ui_current_1_s, doubleTapSeekAreaWidth),
                 color = MaterialTheme.colorScheme.outline,
               )
             },
@@ -198,7 +199,7 @@ object GesturePreferencesScreen : Screen {
             value = leftDoubleTap,
             onValueChange = { preferences.leftSingleActionGesture.set(it) },
             values = SingleActionGesture.entries,
-            valueToText = { AnnotatedString(context.getString(it.titleRes)) },
+            valueToText = { AnnotatedString(resources.getString(it.titleRes)) },
             title = { Text(text = stringResource(R.string.pref_gesture_double_tap_left_title)) },
             summary = { Text(
               text = stringResource(leftDoubleTap.titleRes),
@@ -218,7 +219,7 @@ object GesturePreferencesScreen : Screen {
                 SingleActionGesture.PlayPause,
                 SingleActionGesture.Custom,
               ),
-            valueToText = { AnnotatedString(context.getString(it.titleRes)) },
+            valueToText = { AnnotatedString(resources.getString(it.titleRes)) },
             title = {
               Text(
                 text =
@@ -240,7 +241,7 @@ object GesturePreferencesScreen : Screen {
             value = rightDoubleTap,
             onValueChange = { preferences.rightSingleActionGesture.set(it) },
             values = SingleActionGesture.entries,
-            valueToText = { AnnotatedString(context.getString(it.titleRes)) },
+            valueToText = { AnnotatedString(resources.getString(it.titleRes)) },
             title = { Text(text = stringResource(R.string.pref_gesture_double_tap_right_title)) },
             summary = { Text(
               text = stringResource(rightDoubleTap.titleRes),
@@ -277,7 +278,7 @@ object GesturePreferencesScreen : Screen {
             summary = {
               var annotatedString =
                 buildAnnotatedString {
-                  append(stringResource(R.string.pref_gesture_double_tap_custom_info))
+                  append(stringResource(R.string.pref_gesture_double_tap_custom_info, "MBTN_LEFT_DBL", "MBTN_MID_DBL", "MBTN_RIGHT_DBL"))
                 }
 
               doubleTapKeyCodes.forEach { keyCode ->
@@ -314,7 +315,7 @@ object GesturePreferencesScreen : Screen {
             value = mediaPreviousGesture,
             onValueChange = { preferences.mediaPreviousGesture.set(it) },
             values = SingleActionGesture.entries,
-            valueToText = { AnnotatedString(context.getString(it.titleRes)) },
+            valueToText = { AnnotatedString(resources.getString(it.titleRes)) },
             title = { Text(text = stringResource(R.string.pref_gesture_media_previous)) },
             summary = { Text(
               text = stringResource(mediaPreviousGesture.titleRes),
@@ -333,7 +334,7 @@ object GesturePreferencesScreen : Screen {
                 SingleActionGesture.PlayPause,
                 SingleActionGesture.Custom,
               ),
-            valueToText = { AnnotatedString(context.getString(it.titleRes)) },
+            valueToText = { AnnotatedString(resources.getString(it.titleRes)) },
             title = { Text(text = stringResource(R.string.pref_gesture_media_play)) },
             summary = { Text(
               text = stringResource(mediaPlayGesture.titleRes),
@@ -347,7 +348,7 @@ object GesturePreferencesScreen : Screen {
             value = mediaNextGesture,
             onValueChange = { preferences.mediaNextGesture.set(it) },
             values = SingleActionGesture.entries,
-            valueToText = { AnnotatedString(context.getString(it.titleRes)) },
+            valueToText = { AnnotatedString(resources.getString(it.titleRes)) },
             title = { Text(text = stringResource(R.string.pref_gesture_media_next)) },
             summary = { Text(
               text = stringResource(mediaNextGesture.titleRes),
@@ -365,7 +366,7 @@ object GesturePreferencesScreen : Screen {
             summary = {
               var annotatedString =
                 buildAnnotatedString {
-                  append(stringResource(R.string.pref_gesture_media_custom_info))
+                  append(stringResource(R.string.pref_gesture_media_custom_info, "PREV", "PLAYPAUSE", "NEXT"))
                 }
 
               mediaKeyCodes.forEach { keyCode ->

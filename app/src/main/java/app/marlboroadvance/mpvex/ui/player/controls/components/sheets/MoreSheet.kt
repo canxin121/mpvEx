@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components.sheets
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.text.format.DateUtils
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -203,7 +204,7 @@ val scope = rememberCoroutineScope()
         
         if (isHighRes) {
             Text(
-                text = "Not available for 4K/8K video",
+                text = localizedString(R.string.ui_not_available_for_4k_8k_video),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(bottom = 4.dp)
@@ -358,7 +359,7 @@ fun TimePickerDialog(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                "Quick Presets",
+                localizedString(R.string.ui_quick_presets),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -375,7 +376,7 @@ fun TimePickerDialog(
                             onTimeSelect(minutes * 60)
                             onDismissRequest()
                         },
-                        label = { Text("${minutes}m") },
+                        label = { Text(localizedString(R.string.ui_1_sm, minutes)) },
                         leadingIcon = null,
                     )
                 }

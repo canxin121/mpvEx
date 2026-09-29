@@ -2,6 +2,9 @@ package app.marlboroadvance.mpvex.utils.media
 
 import android.content.ContentValues
 import android.content.Context
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
+import app.marlboroadvance.mpvex.i18n.localizedQuantityString
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -123,7 +126,7 @@ object CopyPasteOps {
       try {
         // Validate inputs
         if (videos.isEmpty()) {
-          return@withContext Result.failure(IllegalArgumentException("No files to copy"))
+          return@withContext Result.failure(IllegalArgumentException(localizedString(R.string.file_no_files_to_copy)))
         }
 
         val copiedFilePaths =
@@ -134,7 +137,7 @@ object CopyPasteOps {
             val destDir =
               prepareDestinationDirectory(destinationPath)
                 ?: return@withContext Result.failure(
-                  IOException("Failed to create destination directory: $destinationPath"),
+                  IOException(localizedString(R.string.file_create_destination_directory, destinationPath)),
                 )
 
             // Filter valid source files
@@ -154,7 +157,7 @@ object CopyPasteOps {
 
             if (validVideos.isEmpty()) {
               return@withContext Result.failure(
-                IllegalArgumentException("No valid files to copy"),
+                IllegalArgumentException(localizedString(R.string.file_no_valid_files_to_copy)),
               )
             }
 
@@ -162,7 +165,7 @@ object CopyPasteOps {
             val totalBytes = validVideos.sumOf { it.size }
             if (!hasEnoughDiskSpace(destDir, totalBytes)) {
               return@withContext Result.failure(
-                IOException("Not enough disk space. Required: ${formatBytes(totalBytes)}"),
+                IOException(localizedString(R.string.file_not_enough_space, formatBytes(totalBytes))),
               )
             }
 
@@ -179,7 +182,7 @@ object CopyPasteOps {
         Log.e(TAG, "Copy operation failed: ${e.message}", e)
         _operationProgress.value =
           _operationProgress.value.copy(
-            error = e.message ?: "Unknown error occurred",
+            error = e.message ?: localizedString(R.string.ui_unknown_error),
           )
         Result.failure(e)
       }
@@ -201,7 +204,7 @@ object CopyPasteOps {
       try {
         // Validate inputs
         if (videos.isEmpty()) {
-          return@withContext Result.failure(IllegalArgumentException("No files to move"))
+          return@withContext Result.failure(IllegalArgumentException(localizedString(R.string.file_no_files_to_move)))
         }
 
         val movedFilePaths =
@@ -212,7 +215,7 @@ object CopyPasteOps {
             val destDir =
               prepareDestinationDirectory(destinationPath)
                 ?: return@withContext Result.failure(
-                  IOException("Failed to create destination directory: $destinationPath"),
+                  IOException(localizedString(R.string.file_create_destination_directory, destinationPath)),
                 )
 
             // Filter valid source files
@@ -232,7 +235,7 @@ object CopyPasteOps {
 
             if (validVideos.isEmpty()) {
               return@withContext Result.failure(
-                IllegalArgumentException("No valid files to move"),
+                IllegalArgumentException(localizedString(R.string.file_no_valid_files_to_move)),
               )
             }
 
@@ -260,7 +263,7 @@ object CopyPasteOps {
         Log.e(TAG, "Move operation failed: ${e.message}", e)
         _operationProgress.value =
           _operationProgress.value.copy(
-            error = e.message ?: "Unknown error occurred",
+            error = e.message ?: localizedString(R.string.ui_unknown_error),
           )
         Result.failure(e)
       }
@@ -277,7 +280,7 @@ object CopyPasteOps {
     withContext(Dispatchers.IO) {
       try {
         if (videos.isEmpty()) {
-          return@withContext Result.failure(IllegalArgumentException("No files to copy"))
+          return@withContext Result.failure(IllegalArgumentException(localizedString(R.string.file_no_files_to_copy)))
         }
 
         resetOperation()
@@ -289,7 +292,7 @@ object CopyPasteOps {
         Log.e(TAG, "Copy (tree) failed: ${e.message}", e)
         _operationProgress.value =
           _operationProgress.value.copy(
-            error = e.message ?: "Unknown error occurred",
+            error = e.message ?: localizedString(R.string.ui_unknown_error),
           )
         Result.failure(e)
       }
@@ -306,7 +309,7 @@ object CopyPasteOps {
     withContext(Dispatchers.IO) {
       try {
         if (videos.isEmpty()) {
-          return@withContext Result.failure(IllegalArgumentException("No files to move"))
+          return@withContext Result.failure(IllegalArgumentException(localizedString(R.string.file_no_files_to_move)))
         }
 
         resetOperation()
@@ -316,7 +319,7 @@ object CopyPasteOps {
         checkCancellation()
         val (deleted, failed) = PermissionUtils.StorageOps.deleteVideos(context, videos)
         if (deleted != videos.size || failed > 0) {
-          throw IOException("Failed to delete source files after move: deleted=$deleted, failed=$failed")
+          throw IOException(localizedString(R.string.file_delete_source_count, deleted, failed))
         }
 
         val historyUpdates = mutableListOf<Pair<String, String>>()
@@ -337,7 +340,7 @@ object CopyPasteOps {
         Log.e(TAG, "Move (tree) failed: ${e.message}", e)
         _operationProgress.value =
           _operationProgress.value.copy(
-            error = e.message ?: "Unknown error occurred",
+            error = e.message ?: localizedString(R.string.ui_unknown_error),
           )
         Result.failure(e)
       }
@@ -367,7 +370,7 @@ object CopyPasteOps {
         return candidate
       }
     }
-    throw IOException("Could not generate unique filename after $MAX_FILENAME_ATTEMPTS attempts")
+    throw IOException(localizedQuantityString(R.plurals.file_unique_filename_failed, MAX_FILENAME_ATTEMPTS, MAX_FILENAME_ATTEMPTS))
   }
 
   private fun performTreeCopyOperation(
@@ -377,7 +380,7 @@ object CopyPasteOps {
   ): List<Uri> {
     val destinationRoot =
       DocumentFile.fromTreeUri(context, destinationTreeUri)
-        ?: throw IOException("Unable to access destination folder")
+        ?: throw IOException(localizedString(R.string.file_destination_unavailable))
 
     val totalBytes = videos.sumOf { it.size.coerceAtLeast(0L) }
     val copiedUris = mutableListOf<Uri>()
@@ -395,7 +398,7 @@ object CopyPasteOps {
       val mime = video.mimeType.ifBlank { "video/*" }
       val destFile =
         destinationRoot.createFile(mime, uniqueName)
-          ?: throw IOException("Failed to create destination file for ${video.displayName}")
+          ?: throw IOException(localizedString(R.string.file_create_destination_file, video.displayName))
 
       updateProgress(
         currentFile = video.displayName,
@@ -409,11 +412,11 @@ object CopyPasteOps {
       try {
         context.contentResolver.openInputStream(video.uri).use { input ->
           if (input == null) {
-            throw IOException("Could not open source stream for ${video.displayName}")
+            throw IOException(localizedString(R.string.file_open_source_stream, video.displayName))
           }
           context.contentResolver.openOutputStream(destFile.uri, "w").use { output ->
             if (output == null) {
-              throw IOException("Could not open destination stream for ${video.displayName}")
+              throw IOException(localizedString(R.string.file_open_destination_stream, video.displayName))
             }
 
             val buffer = ByteArray(BUFFER_SIZE)
@@ -506,7 +509,7 @@ object CopyPasteOps {
       if (!exists) return candidate
     }
 
-    throw IOException("Could not generate unique filename after $MAX_FILENAME_ATTEMPTS attempts")
+    throw IOException(localizedQuantityString(R.plurals.file_unique_filename_failed, MAX_FILENAME_ATTEMPTS, MAX_FILENAME_ATTEMPTS))
   }
 
   private fun performScopedCopyOperation(
@@ -518,7 +521,7 @@ object CopyPasteOps {
 
     val relativePath =
       toMediaStoreRelativePath(destinationPath)
-        ?: throw IOException("Destination must be in primary shared storage for scoped copy")
+        ?: throw IOException(localizedString(R.string.file_destination_primary_storage))
 
     val validVideos =
       videos.filter { video ->
@@ -532,7 +535,7 @@ object CopyPasteOps {
       }
 
     if (validVideos.isEmpty()) {
-      throw IllegalArgumentException("No valid files to copy")
+      throw IllegalArgumentException(localizedString(R.string.file_no_valid_files_to_copy))
     }
 
     val totalBytes = validVideos.sumOf { it.size.coerceAtLeast(0L) }
@@ -569,16 +572,16 @@ object CopyPasteOps {
 
       val insertedUri =
         context.contentResolver.insert(collection, values)
-          ?: throw IOException("Failed to create destination item for ${video.displayName}")
+          ?: throw IOException(localizedString(R.string.file_create_destination_item, video.displayName))
 
       try {
         context.contentResolver.openInputStream(video.uri).use { input ->
           if (input == null) {
-            throw IOException("Could not open source stream for ${video.displayName}")
+            throw IOException(localizedString(R.string.file_open_source_stream, video.displayName))
           }
           context.contentResolver.openOutputStream(insertedUri, "w").use { output ->
             if (output == null) {
-              throw IOException("Could not open destination stream for ${video.displayName}")
+              throw IOException(localizedString(R.string.file_open_destination_stream, video.displayName))
             }
 
             val buffer = ByteArray(BUFFER_SIZE)
@@ -645,7 +648,7 @@ object CopyPasteOps {
     if (contentUrisToDelete.isNotEmpty()) {
       val granted = PermissionUtils.requestScopedDeleteAccess(context, contentUrisToDelete)
       if (!granted) {
-        throw IOException("Move cancelled: source delete permission denied")
+        throw IOException(localizedString(R.string.file_move_delete_permission_denied))
       }
     }
 
@@ -663,7 +666,7 @@ object CopyPasteOps {
         }
 
       if (!deleted) {
-        throw IOException("Failed to delete source after move: ${video.displayName}")
+        throw IOException(localizedString(R.string.file_delete_source_after_move, video.displayName))
       }
 
       val newPath = movedPaths.getOrNull(index)
@@ -840,7 +843,7 @@ object CopyPasteOps {
 
       // Verify move success
       if (!finalDestFile.exists()) {
-        throw IOException("Move failed: destination file not found for ${video.displayName}")
+        throw IOException(localizedString(R.string.file_move_destination_missing, video.displayName))
       }
 
       movedFilePaths.add(finalDestFile.absolutePath)
@@ -912,7 +915,7 @@ object CopyPasteOps {
     // Verify copy
     if (!destination.exists() || destination.length() != source.length()) {
       destination.delete() // Clean up partial copy
-      throw IOException("Copy verification failed for: $fileName")
+      throw IOException(localizedString(R.string.file_copy_verification_failed, fileName))
     }
 
     // Delete source
@@ -933,11 +936,11 @@ object CopyPasteOps {
     onProgress: (Float) -> Unit,
   ) {
     if (!source.exists()) {
-      throw IOException("Source file does not exist: ${source.path}")
+      throw IOException(localizedString(R.string.file_source_missing, source.path))
     }
 
     if (!source.canRead()) {
-      throw IOException("Source file is not readable: ${source.path}")
+      throw IOException(localizedString(R.string.file_source_unreadable, source.path))
     }
 
     try {
@@ -989,7 +992,7 @@ object CopyPasteOps {
       }
     }
 
-    throw IOException("Could not generate unique filename after $MAX_FILENAME_ATTEMPTS attempts")
+    throw IOException(localizedQuantityString(R.plurals.file_unique_filename_failed, MAX_FILENAME_ATTEMPTS, MAX_FILENAME_ATTEMPTS))
   }
 
   // ============================================================================
@@ -1023,9 +1026,9 @@ object CopyPasteOps {
       _operationProgress.value =
         _operationProgress.value.copy(
           isCancelled = true,
-          error = "Operation cancelled by user",
+          error = localizedString(R.string.file_operation_cancelled),
         )
-      throw IOException("Operation cancelled by user")
+      throw IOException(localizedString(R.string.file_operation_cancelled))
     }
   }
 

@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.browser.components
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -255,7 +256,7 @@ private fun NormalTopBar(
         ) {
           Icon(
             Icons.Filled.Search,
-            contentDescription = "Search",
+            contentDescription = localizedString(R.string.settings_search_title),
             modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.secondary,
           )
@@ -281,7 +282,7 @@ private fun NormalTopBar(
         ) {
           Icon(
             Icons.Filled.Settings,
-            contentDescription = "Settings",
+            contentDescription = localizedString(R.string.settings),
             modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.secondary,
           )
@@ -400,7 +401,7 @@ private fun SelectionTopBar(
         ) {
           Icon(
             Icons.Filled.PlayArrow,
-            contentDescription = "Play",
+            contentDescription = localizedString(R.string.ui_play),
             modifier = Modifier.size(28.dp),
             tint = MaterialTheme.colorScheme.primary,
           )
@@ -415,7 +416,7 @@ private fun SelectionTopBar(
         ) {
           Icon(
             Icons.AutoMirrored.Filled.PlaylistAdd,
-            contentDescription = "Add to Playlist",
+            contentDescription = localizedString(R.string.ui_add_to_playlist),
             modifier = Modifier.size(28.dp),
             tint = MaterialTheme.colorScheme.secondary,
           )

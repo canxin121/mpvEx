@@ -37,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -67,17 +68,19 @@ import org.koin.compose.koinInject
 @Composable
 fun SubtitleSettingsTypographyCard(modifier: Modifier = Modifier) {
   val context = LocalContext.current
+  val resources = LocalResources.current
+  val defaultFontLabel = stringResource(R.string.ui_system_default_font)
   val preferences = koinInject<SubtitlesPreferences>()
   val fileManager = koinInject<FileManager>()
   var isExpanded by remember { mutableStateOf(true) }
-  val fonts by remember { mutableStateOf(mutableListOf<String>("Default")) }
+  val fonts by remember(defaultFontLabel) { mutableStateOf(mutableListOf(defaultFontLabel)) }
   var fontsLoadingIndicator: (@Composable () -> Unit)? by remember {
     val indicator: (@Composable () -> Unit) = {
       CircularProgressIndicator(Modifier.size(32.dp))
     }
     mutableStateOf(indicator)
   }
-  LaunchedEffect(Unit) {
+  LaunchedEffect(defaultFontLabel) {
     withContext(Dispatchers.IO) {
       val fontsDir = fileManager.fromPath(context.filesDir.path + "/fonts")
       if (fileManager.exists(fontsDir)) {
@@ -199,11 +202,11 @@ fun SubtitleSettingsTypographyCard(modifier: Modifier = Modifier) {
           modifier = Modifier.size(32.dp),
         )
         ExposedTextDropDownMenu(
-          selectedValue = font!!.ifEmpty { "Default" },
+          selectedValue = font!!.ifEmpty { defaultFontLabel },
           options = fonts.toImmutableList(),
           label = stringResource(R.string.player_sheets_sub_typography_font),
           onValueChangedEvent = {
-            val actualFont = if (it == "Default") "" else it
+            val actualFont = if (it == defaultFontLabel) "" else it
             preferences.font.set(actualFont)
             MPVLib.setPropertyString("sub-font", actualFont)
             MPVLib.setPropertyString("secondary-sub-font", actualFont)
@@ -234,7 +237,7 @@ fun SubtitleSettingsTypographyCard(modifier: Modifier = Modifier) {
             MPVLib.setPropertyString("sub-border-style", it.value)
           },
           title = { Text(stringResource(R.string.player_sheets_subtitles_border_style)) },
-          valueToText = { AnnotatedString(context.getString(it.titleRes)) },
+          valueToText = { AnnotatedString(resources.getString(it.titleRes)) },
           values = SubtitlesBorderStyle.entries,
           type = ListPreferenceType.DROPDOWN_MENU,
           summary = { Text(stringResource(borderStyle.titleRes)) },

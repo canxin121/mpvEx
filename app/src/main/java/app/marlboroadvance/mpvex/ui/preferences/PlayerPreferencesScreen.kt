@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,7 +16,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +26,7 @@ import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.presentation.Screen
 import app.marlboroadvance.mpvex.ui.player.PlayerOrientation
 import app.marlboroadvance.mpvex.ui.player.controls.components.sheets.toFixed
+import app.marlboroadvance.mpvex.utils.media.MediaFormatUtils
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
 import kotlinx.serialization.Serializable
 import me.zhanghai.compose.preference.ListPreference
@@ -40,7 +42,7 @@ object PlayerPreferencesScreen : Screen {
   @Composable
   override fun Content() {
     val backstack = LocalBackStack.current
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val preferences = koinInject<PlayerPreferences>()
     Scaffold(
       topBar = {
@@ -74,7 +76,7 @@ object PlayerPreferencesScreen : Screen {
         ) {
           // General Section
           item {
-            PreferenceSectionHeader(title = "General")
+            PreferenceSectionHeader(title = localizedString(R.string.general))
           }
           
           item {
@@ -84,7 +86,7 @@ object PlayerPreferencesScreen : Screen {
                 value = orientation,
                 onValueChange = preferences.orientation::set,
                 values = PlayerOrientation.entries,
-                valueToText = { AnnotatedString(context.getString(it.titleRes)) },
+                valueToText = { AnnotatedString(resources.getString(it.titleRes)) },
                 title = { Text(text = stringResource(id = R.string.pref_player_orientation)) },
                 summary = { 
                   Text(
@@ -118,13 +120,13 @@ object PlayerPreferencesScreen : Screen {
               SwitchPreference(
                 value = autoplayNextVideo,
                 onValueChange = preferences.autoplayNextVideo::set,
-                title = { Text(text = "Autoplay next video") },
+                title = { Text(text = localizedString(R.string.pref_autoplay_next_video_title)) },
                 summary = {
                   Text(
-                    text = if (autoplayNextVideo)
-                      "Automatically play next video when current ends"
-                    else
-                      "Stay on current video when it ends",
+                    text = localizedString(
+                      if (autoplayNextVideo) R.string.pref_autoplay_next_video_summary
+                      else R.string.ui_stay_on_current_video,
+                    ),
                     color = MaterialTheme.colorScheme.outline,
                   )
                 },
@@ -136,13 +138,13 @@ object PlayerPreferencesScreen : Screen {
               SwitchPreference(
                 value = playlistMode,
                 onValueChange = preferences.playlistMode::set,
-                title = { Text(text = "Enable next/previous navigation") },
+                title = { Text(text = localizedString(R.string.pref_autoplay_title)) },
                 summary = {
                   Text(
-                    text = if (playlistMode)
-                      "Show next/previous buttons for all videos in folder"
-                    else
-                      "Play videos individually (select multiple for playlist)",
+                    text = localizedString(
+                      if (playlistMode) R.string.pref_autoplay_summary
+                      else R.string.ui_play_videos_individually,
+                    ),
                     color = MaterialTheme.colorScheme.outline,
                   )
                 },
@@ -163,10 +165,10 @@ object PlayerPreferencesScreen : Screen {
               SwitchPreference(
                 value = autoPiPOnNavigation,
                 onValueChange = preferences.autoPiPOnNavigation::set,
-                title = { Text("Auto Picture-in-Picture") },
+                title = { Text(localizedString(R.string.pref_auto_pip_title)) },
                 summary = {
                   Text(
-                    text = "Automatically enter PIP mode when pressing home or back",
+                    text = localizedString(R.string.pref_auto_pip_summary),
                     color = MaterialTheme.colorScheme.outline,
                   )
                 },
@@ -178,13 +180,13 @@ object PlayerPreferencesScreen : Screen {
               SwitchPreference(
                 value = keepScreenOnWhenPaused,
                 onValueChange = preferences.keepScreenOnWhenPaused::set,
-                title = { Text("Keep screen on when paused") },
+                title = { Text(localizedString(R.string.ui_keep_screen_on_when_paused)) },
                 summary = {
                   Text(
-                    text = if (keepScreenOnWhenPaused)
-                      "Screen stays awake while video is paused"
-                    else
-                      "Screen can turn off while video is paused",
+                    text = localizedString(
+                      if (keepScreenOnWhenPaused) R.string.ui_screen_stays_awake_when_paused
+                      else R.string.ui_screen_can_turn_off_when_paused,
+                    ),
                     color = MaterialTheme.colorScheme.outline,
                   )
                 },
@@ -236,7 +238,13 @@ object PlayerPreferencesScreen : Screen {
                 summary = {
                    val summaryText = stringResource(R.string.pref_player_custom_skip_duration_summary)
                    Text(
-                     "$summaryText ($customSkipDuration s)",
+                     localizedString(
+                       R.string.ui_1_s_2_s_s,
+                       summaryText,
+                       app.marlboroadvance.mpvex.i18n.localizedQuantityString(
+                         R.plurals.seconds, customSkipDuration, customSkipDuration,
+                       ),
+                     ),
                      color = MaterialTheme.colorScheme.outline,
                    )
                 },
@@ -297,7 +305,15 @@ object PlayerPreferencesScreen : Screen {
                 summary = {
                   val sensitivityPercent = (horizontalSwipeSensitivity * 1000).toInt()
                   Text(
-                    "Current: ${sensitivityPercent}/100 (${if (sensitivityPercent < 30) "Low" else if (sensitivityPercent < 55) "Medium" else "High"})",
+                    localizedString(
+                      R.string.ui_sensitivity_summary,
+                      sensitivityPercent,
+                      localizedString(
+                        if (sensitivityPercent < 30) R.string.sensitivity_low
+                        else if (sensitivityPercent < 55) R.string.sensitivity_medium
+                        else R.string.sensitivity_high,
+                      ),
+                    ),
                     color = MaterialTheme.colorScheme.outline,
                   )
                 },
@@ -318,7 +334,7 @@ object PlayerPreferencesScreen : Screen {
                     if (holdForMultipleSpeed == 0F) {
                       stringResource(R.string.generic_disabled)
                     } else {
-                      "%.2fx".format(holdForMultipleSpeed)
+                      localizedString(R.string.ui_1_sx, MediaFormatUtils.formatDecimal(holdForMultipleSpeed, 2, 2))
                     },
                     color = MaterialTheme.colorScheme.outline,
                   )
@@ -333,10 +349,10 @@ object PlayerPreferencesScreen : Screen {
               SwitchPreference(
                 value = showDynamicSpeedOverlay,
                 onValueChange = preferences.showDynamicSpeedOverlay::set,
-                title = { Text("Dynamic Speed Overlay") },
+                title = { Text(localizedString(R.string.pref_dynamic_speed_overlay_title)) },
                 summary = { 
                   Text(
-                    "Show advance overlay for speed control during long press and swipe",
+                    localizedString(R.string.pref_dynamic_speed_overlay_summary),
                     color = MaterialTheme.colorScheme.outline,
                   ) 
                 }
@@ -400,7 +416,7 @@ object PlayerPreferencesScreen : Screen {
               SwitchPreference(
                 value = showSystemNavigationBar,
                 onValueChange = preferences.showSystemNavigationBar::set,
-                title = { Text("Show navigation bar with controls") },
+                title = { Text(localizedString(R.string.pref_show_navigation_bar_title)) },
               )
               
               PreferenceDivider()

@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.filesystem
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -44,7 +46,7 @@ fun BreadcrumbNavigation(
       if (index > 0) {
         Icon(
           imageVector = Icons.Filled.ChevronRight,
-          contentDescription = "Separator",
+          contentDescription = localizedString(R.string.ui_separator),
           tint = MaterialTheme.colorScheme.onSurfaceVariant,
           modifier = Modifier.padding(horizontal = 4.dp),
         )

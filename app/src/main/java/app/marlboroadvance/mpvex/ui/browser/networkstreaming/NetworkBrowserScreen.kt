@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.networkstreaming
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -181,7 +183,7 @@ private fun NetworkBrowserContent(
       ) {
         EmptyState(
           icon = Icons.Filled.Folder,
-          title = "Error loading files",
+          title = localizedString(R.string.ui_error_loading_files),
           message = error,
         )
       }
@@ -194,8 +196,8 @@ private fun NetworkBrowserContent(
       ) {
         EmptyState(
           icon = Icons.Filled.Folder,
-          title = "Empty folder",
-          message = "This folder contains no files or directories",
+          title = localizedString(R.string.ui_empty_folder),
+          message = localizedString(R.string.ui_this_folder_contains_no_files_or_directories),
         )
       }
     }
@@ -255,7 +257,7 @@ private fun NetworkBrowserContent(
             if (folders.isNotEmpty()) {
               item {
                 Text(
-                  text = "Folders",
+                  text = localizedString(R.string.pref_folders_title),
                   style = MaterialTheme.typography.titleMedium,
                   color = MaterialTheme.colorScheme.primary,
                   modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
@@ -277,7 +279,7 @@ private fun NetworkBrowserContent(
             if (videos.isNotEmpty()) {
               item {
                 Text(
-                  text = "Videos",
+                  text = localizedString(R.string.ui_videos),
                   style = MaterialTheme.typography.titleMedium,
                   color = MaterialTheme.colorScheme.primary,
                   modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),

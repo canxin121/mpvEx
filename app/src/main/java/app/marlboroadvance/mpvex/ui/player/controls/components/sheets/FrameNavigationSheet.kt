@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components.sheets
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
@@ -428,7 +429,7 @@ private fun FrameInfoDisplay(
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Text(
-        text = "Frame: ",
+        text = localizedString(R.string.ui_frame),
         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.ExtraBold),
         color = MaterialTheme.colorScheme.tertiary,
       )
@@ -448,7 +449,7 @@ private fun FrameInfoDisplay(
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Text(
-        text = "Timestamp: ",
+        text = localizedString(R.string.ui_timestamp),
         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.ExtraBold),
         color = MaterialTheme.colorScheme.tertiary,
       )
@@ -624,7 +625,7 @@ private suspend fun takeSnapshot(
       // Check if file was created
       if (!tempFile.exists() || tempFile.length() == 0L) {
         withContext(Dispatchers.Main) {
-          Toast.makeText(context, "Failed to create screenshot", Toast.LENGTH_SHORT).show()
+          Toast.makeText(context, localizedString(R.string.ui_failed_to_create_screenshot), Toast.LENGTH_SHORT).show()
         }
         return@withContext
       }
@@ -671,12 +672,12 @@ private suspend fun takeSnapshot(
             Toast
               .makeText(
                 context,
-                context.getString(R.string.player_sheets_frame_navigation_snapshot_saved),
+                context.getString(R.string.player_sheets_frame_navigation_snapshot_saved, "Pictures/mpvSnaps"),
                 Toast.LENGTH_SHORT,
               ).show()
           }
         } else {
-          throw Exception("Failed to create MediaStore entry")
+          throw Exception(context.getString(R.string.ui_screenshot_entry_failed))
         }
       } else {
         // Android 9 and below - Use legacy external storage
@@ -690,7 +691,7 @@ private suspend fun takeSnapshot(
         if (!snapshotsDir.exists()) {
           val created = snapshotsDir.mkdirs()
           if (!created && !snapshotsDir.exists()) {
-            throw Exception("Failed to create mpvSnaps directory")
+            throw Exception(context.getString(R.string.ui_screenshot_folder_failed))
           }
         }
 
@@ -710,14 +711,14 @@ private suspend fun takeSnapshot(
           Toast
             .makeText(
               context,
-              context.getString(R.string.player_sheets_frame_navigation_snapshot_saved),
+              context.getString(R.string.player_sheets_frame_navigation_snapshot_saved, "Pictures/mpvSnaps"),
               Toast.LENGTH_SHORT,
             ).show()
         }
       }
     } catch (e: Exception) {
       withContext(Dispatchers.Main) {
-        Toast.makeText(context, "Failed to save snapshot: ${e.message}", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, localizedString(R.string.ui_failed_to_save_snapshot_1_s, e.message), Toast.LENGTH_LONG).show()
       }
     }
   }

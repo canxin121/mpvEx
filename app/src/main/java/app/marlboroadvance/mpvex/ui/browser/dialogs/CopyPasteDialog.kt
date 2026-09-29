@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.dialogs
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,10 +42,10 @@ fun FileOperationProgressDialog(
 ) {
   if (!isOpen) return
 
-  val operationName =
+  val operationTitle =
     when (operationType) {
-      is CopyPasteOps.OperationType.Copy -> "Copying"
-      is CopyPasteOps.OperationType.Move -> "Moving"
+      is CopyPasteOps.OperationType.Copy -> localizedString(R.string.ui_copying_files)
+      is CopyPasteOps.OperationType.Move -> localizedString(R.string.ui_moving_files)
     }
 
   val isOperationComplete = progress.isComplete || progress.isCancelled || progress.error != null
@@ -56,7 +58,7 @@ fun FileOperationProgressDialog(
     },
     title = {
       Text(
-        text = "$operationName files",
+        text = operationTitle,
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
       )
@@ -77,14 +79,14 @@ fun FileOperationProgressDialog(
           }
           progress.isComplete -> {
             StatusCard(
-              message = "Operation completed successfully!",
+              message = localizedString(R.string.ui_operation_completed_successfully),
               containerColor = MaterialTheme.colorScheme.primaryContainer,
               contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             )
           }
           progress.isCancelled -> {
             StatusCard(
-              message = "Operation cancelled",
+              message = localizedString(R.string.ui_operation_cancelled),
               containerColor = MaterialTheme.colorScheme.secondaryContainer,
               contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
             )
@@ -97,7 +99,7 @@ fun FileOperationProgressDialog(
             // Current File Info
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
               Text(
-                text = "File ${progress.currentFileIndex} of ${progress.totalFiles}",
+                text = localizedString(R.string.ui_file_1_s_of_2_s, progress.currentFileIndex, progress.totalFiles),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -114,21 +116,21 @@ fun FileOperationProgressDialog(
 
             // Current File Progress
             ProgressSection(
-              label = "Current file",
+              label = localizedString(R.string.ui_current_file),
               progress = progress.currentFileProgress,
             )
 
             // Overall Progress
             ProgressSection(
-              label = "Overall progress",
+              label = localizedString(R.string.ui_overall_progress),
               progress = progress.overallProgress,
             )
 
             // Size Information
             Text(
-              text = "${CopyPasteOps.formatBytes(
+              text = localizedString(R.string.ui_1_s_of_2_s, CopyPasteOps.formatBytes(
                 progress.bytesProcessed,
-              )} of ${CopyPasteOps.formatBytes(progress.totalBytes)}",
+              ), CopyPasteOps.formatBytes(progress.totalBytes)),
               style = MaterialTheme.typography.bodyLarge,
               fontWeight = FontWeight.Medium,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -141,11 +143,11 @@ fun FileOperationProgressDialog(
         if (isOperationComplete) {
           Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SummaryRow(
-              label = "Files processed",
+              label = localizedString(R.string.ui_files_processed),
               value = "${progress.currentFileIndex} / ${progress.totalFiles}",
             )
             SummaryRow(
-              label = "Total size",
+              label = localizedString(R.string.ui_total_size),
               value = CopyPasteOps.formatBytes(progress.totalBytes),
             )
           }
@@ -162,7 +164,7 @@ fun FileOperationProgressDialog(
             ),
           shape = MaterialTheme.shapes.extraLarge,
         ) {
-          Text("Done", fontWeight = FontWeight.Bold)
+          Text(localizedString(R.string.done), fontWeight = FontWeight.Bold)
         }
       } else {
         TextButton(
@@ -171,10 +173,10 @@ fun FileOperationProgressDialog(
         ) {
           Icon(
             imageVector = Icons.Default.Cancel,
-            contentDescription = "Cancel",
+            contentDescription = localizedString(R.string.generic_cancel),
             modifier = Modifier.padding(end = 4.dp),
           )
-          Text("Cancel", fontWeight = FontWeight.Medium)
+          Text(localizedString(R.string.generic_cancel), fontWeight = FontWeight.Medium)
         }
       }
     },
@@ -189,7 +191,7 @@ fun FileOperationProgressDialog(
 @Composable
 fun LoadingDialog(
   isOpen: Boolean,
-  message: String = "Loading...",
+  message: String = localizedString(R.string.ui_loading),
   onDismissRequest: () -> Unit = {},
 ) {
   if (!isOpen) return

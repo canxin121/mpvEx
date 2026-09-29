@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -79,7 +81,7 @@ fun SlideToUnlock(
       contentAlignment = Alignment.Center,
     ) {
       Text(
-        text = "Slide to Unlock",
+        text = localizedString(R.string.ui_slide_to_unlock),
         color = Color.White.copy(alpha = 0.7f),
         fontSize = 16.sp,
         fontWeight = FontWeight.Medium,
@@ -147,7 +149,7 @@ fun SlideToUnlock(
       ) { showUnlock ->
         Icon(
           imageVector = if (showUnlock) Icons.Filled.LockOpen else Icons.Filled.Lock,
-          contentDescription = "Slide to unlock",
+          contentDescription = localizedString(R.string.ui_slide_to_unlock_2),
           tint = Color.White,
           modifier = Modifier.size(28.dp),
         )

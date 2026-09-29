@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components.sheets
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -73,7 +75,7 @@ fun AspectRatioSheet(
           .padding(vertical = MaterialTheme.spacing.medium),
     ) {
       Text(
-        text = "Aspect Ratio",
+        text = localizedString(R.string.ui_aspect_ratio),
         style = MaterialTheme.typography.headlineSmall,
         modifier =
           Modifier
@@ -83,7 +85,7 @@ fun AspectRatioSheet(
 
       // Preset ratios
       Text(
-        text = "Presets",
+        text = localizedString(R.string.ui_presets),
         style = MaterialTheme.typography.titleSmall,
         modifier =
           Modifier
@@ -109,7 +111,7 @@ fun AspectRatioSheet(
       // Custom ratios
       if (customRatios.isNotEmpty()) {
         Text(
-          text = "Custom",
+          text = localizedString(R.string.pref_gesture_double_tap_custom),
           style = MaterialTheme.typography.titleSmall,
           modifier =
             Modifier
@@ -166,7 +168,7 @@ private fun AddCustomRatioRow(
         .padding(horizontal = MaterialTheme.spacing.medium),
   ) {
     Text(
-      text = "Add Custom Ratio (e.g. 16:9)",
+      text = localizedString(R.string.ui_add_custom_ratio_e_g_16_9),
       style = MaterialTheme.typography.titleSmall,
       modifier = Modifier.padding(bottom = MaterialTheme.spacing.small),
     )
@@ -183,7 +185,7 @@ private fun AddCustomRatioRow(
           widthText = it.filter { char -> char.isDigit() || char == '.' }
           errorMessage = null
         },
-        label = { Text("Width") },
+        label = { Text(localizedString(R.string.width)) },
         isError = errorMessage != null,
         keyboardOptions =
           KeyboardOptions(
@@ -209,7 +211,7 @@ private fun AddCustomRatioRow(
           heightText = it.filter { char -> char.isDigit() || char == '.' }
           errorMessage = null
         },
-        label = { Text("Height") },
+        label = { Text(localizedString(R.string.height)) },
         isError = errorMessage != null,
         keyboardOptions =
           KeyboardOptions(
@@ -226,7 +228,7 @@ private fun AddCustomRatioRow(
                 heightText = ""
                 keyboardController?.hide()
               } else {
-                errorMessage = "Invalid"
+                errorMessage = localizedString(R.string.ui_invalid_ratio)
               }
             },
           ),
@@ -244,11 +246,11 @@ private fun AddCustomRatioRow(
             heightText = ""
             keyboardController?.hide()
           } else {
-            errorMessage = "Invalid"
+            errorMessage = localizedString(R.string.ui_invalid_ratio)
           }
         },
       ) {
-        Icon(Icons.Default.Add, contentDescription = "Add")
+        Icon(Icons.Default.Add, contentDescription = localizedString(R.string.add))
       }
     }
 

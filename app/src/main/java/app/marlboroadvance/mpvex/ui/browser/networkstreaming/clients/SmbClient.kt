@@ -1,6 +1,8 @@
 package app.marlboroadvance.mpvex.ui.browser.networkstreaming.clients
 
 import android.net.Uri
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import app.marlboroadvance.mpvex.domain.network.NetworkConnection
 import app.marlboroadvance.mpvex.domain.network.NetworkFile
 import com.hierynomus.msdtyp.AccessMask
@@ -59,9 +61,9 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
             java.net.InetAddress.getByName(connection.host)
           }
         } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-          return@withContext Result.failure(Exception("Host resolution timeout for ${connection.host}"))
+          return@withContext Result.failure(Exception(localizedString(R.string.error_host_resolution_timeout, connection.host)))
         } catch (e: java.net.UnknownHostException) {
-          return@withContext Result.failure(Exception("Host not found: ${connection.host}"))
+          return@withContext Result.failure(Exception(localizedString(R.string.error_host_not_found, connection.host)))
         }
 
         // Check if the resolved host is reachable
@@ -76,7 +78,7 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
         }
 
         if (!isHostReachable) {
-          return@withContext Result.failure(Exception("Host ${connection.host} is not reachable on the network"))
+          return@withContext Result.failure(Exception(localizedString(R.string.error_host_unreachable, connection.host)))
         }
 
         // Use the resolved IP address
@@ -89,14 +91,14 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
 
         if (shareName.isEmpty()) {
           return@withContext Result.failure(
-            Exception("Share name required. Path should be just the share name.\n\nExample: /Media or /Public\n\nDo not include folders, navigate to them after connecting."),
+            Exception(localizedString(R.string.error_smb_share_required)),
           )
         }
 
         // Reject paths with subfolders
         if (shareName.contains('/')) {
           return@withContext Result.failure(
-            Exception("Path should be ONLY the share name, not a folder path.\n\nExample: Use /Media, not /Media/Movies\n\nYou can navigate to folders after connecting."),
+            Exception(localizedString(R.string.error_smb_share_path)),
           )
         }
 
@@ -123,7 +125,7 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
 
             // Test connection by connecting to the share
             val diskShare = session!!.connectShare(shareName) as? DiskShare
-              ?: return@withTimeout Result.failure<Unit>(Exception("Share '$shareName' is not a disk share"))
+              ?: return@withTimeout Result.failure<Unit>(Exception(localizedString(R.string.error_smb_not_disk_share, shareName)))
 
             try {
               // Test access by listing the share root
@@ -137,20 +139,20 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
               if (e.message?.contains("STATUS_ACCESS_DENIED", ignoreCase = true) == true ||
                 e.message?.contains("Access is denied", ignoreCase = true) == true
               ) {
-                Result.failure<Unit>(Exception("Authentication failed. Check username and password."))
+                Result.failure<Unit>(Exception(localizedString(R.string.error_smb_auth)))
               } else if (e.message?.contains("STATUS_OBJECT_NAME_NOT_FOUND", ignoreCase = true) == true ||
                 e.message?.contains("does not exist", ignoreCase = true) == true
               ) {
-                Result.failure<Unit>(Exception("Share does not exist"))
+                Result.failure<Unit>(Exception(localizedString(R.string.error_smb_share_not_found)))
               } else {
-                Result.failure<Unit>(Exception("Connection failed: ${e.message}"))
+                Result.failure<Unit>(Exception(localizedString(R.string.error_connection_failed_reason, e.message ?: localizedString(R.string.ui_unknown_error))))
               }
             }
           }
         } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-          Result.failure(Exception("Connection timeout. Server not responding."))
+          Result.failure(Exception(localizedString(R.string.error_connection_timeout)))
         } catch (e: Exception) {
-          Result.failure(Exception("Connection failed: ${e.message ?: "Unknown error"}"))
+          Result.failure(Exception(localizedString(R.string.error_connection_failed_reason, e.message ?: localizedString(R.string.ui_unknown_error))))
         }
 
         connectionResult
@@ -193,11 +195,11 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
           disconnect()
           val reconnectResult = connect()
           if (reconnectResult.isFailure) {
-            return@withContext Result.failure(Exception("Failed to reconnect: ${reconnectResult.exceptionOrNull()?.message}"))
+            return@withContext Result.failure(Exception(localizedString(R.string.error_reconnect_reason, reconnectResult.exceptionOrNull()?.message ?: localizedString(R.string.ui_unknown_error))))
           }
         }
 
-        val sess = session ?: return@withContext Result.failure(Exception("Not connected"))
+        val sess = session ?: return@withContext Result.failure(Exception(localizedString(R.string.error_not_connected)))
 
         android.util.Log.d("SmbClient", "=== listFiles called ===")
         android.util.Log.d("SmbClient", "  Input path: '$path'")
@@ -256,10 +258,10 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
 
         val diskShare = try {
           sess.connectShare(shareName) as? DiskShare
-            ?: return@withContext Result.failure(Exception("Share '$shareName' is not a disk share"))
+            ?: return@withContext Result.failure(Exception(localizedString(R.string.error_smb_not_disk_share, shareName)))
         } catch (e: Exception) {
           android.util.Log.e("SmbClient", "Failed to connect to share: ${e.message}", e)
-          return@withContext Result.failure(Exception("Failed to connect to share: ${e.message}"))
+          return@withContext Result.failure(Exception(localizedString(R.string.error_smb_connect_reason, e.message ?: localizedString(R.string.ui_unknown_error))))
         }
 
         try {
@@ -270,7 +272,7 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
             }
           } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
             diskShare.close()
-            return@withContext Result.failure(Exception("Operation timed out. The server may be slow or unresponsive."))
+            return@withContext Result.failure(Exception(localizedString(R.string.error_operation_timeout)))
           }
 
           android.util.Log.d("SmbClient", "  Listed ${rawFiles.size} items")
@@ -326,7 +328,7 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
           Result.success(files)
         } catch (e: Exception) {
           diskShare.close()
-          Result.failure(Exception("Failed to list files: ${e.message}"))
+          Result.failure(Exception(localizedString(R.string.error_list_files_reason, e.message ?: localizedString(R.string.ui_unknown_error))))
         }
       } catch (e: Exception) {
         Result.failure(e)
@@ -336,7 +338,7 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
   override suspend fun getFileStream(path: String): Result<InputStream> =
     withContext(Dispatchers.IO) {
       try {
-        val sess = session ?: return@withContext Result.failure(Exception("Not connected"))
+        val sess = session ?: return@withContext Result.failure(Exception(localizedString(R.string.error_not_connected)))
 
         // Parse the SMB path to get relative path within share
         val relativePath = when {
@@ -362,7 +364,7 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
         }
 
         val diskShare = sess.connectShare(shareName) as? DiskShare
-          ?: return@withContext Result.failure(Exception("Share '$shareName' is not a disk share"))
+          ?: return@withContext Result.failure(Exception(localizedString(R.string.error_smb_not_disk_share, shareName)))
 
         try {
           val file = diskShare.openFile(
@@ -402,7 +404,7 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
           Result.success(wrappedStream)
         } catch (e: Exception) {
           diskShare.close()
-          Result.failure(Exception("Failed to open file: ${e.message}"))
+          Result.failure(Exception(localizedString(R.string.error_open_file_reason, e.message ?: localizedString(R.string.ui_unknown_error))))
         }
       } catch (e: Exception) {
         Result.failure(e)

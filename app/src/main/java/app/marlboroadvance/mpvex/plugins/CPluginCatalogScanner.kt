@@ -2,6 +2,7 @@ package app.marlboroadvance.mpvex.plugins
 
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
+import app.marlboroadvance.mpvex.R
 import java.io.IOException
 
 object CPluginCatalogScanner {
@@ -71,7 +72,7 @@ object CPluginCatalogScanner {
     file: DocumentFile,
   ): String {
     val input = context.contentResolver.openInputStream(file.uri)
-      ?: throw IOException("Could not open ${file.name ?: "plugin manifest"}")
+      ?: throw IOException(context.getString(R.string.plugin_could_not_open_manifest, file.name ?: context.getString(R.string.plugin_manifest)))
     return input.bufferedReader(Charsets.UTF_8).use { reader ->
       val content = CharArray(MAX_MANIFEST_CHARS + 1)
       var total = 0
@@ -81,7 +82,7 @@ object CPluginCatalogScanner {
         total += read
       }
       if (total > MAX_MANIFEST_CHARS || reader.read() >= 0) {
-        throw IOException("Plugin manifest exceeds 256 KiB")
+        throw IOException(context.getString(R.string.plugin_manifest_too_large))
       }
       String(content, 0, total)
     }

@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -68,13 +70,13 @@ data class CPluginSettingsScreen(
       loadState =
         withContext(Dispatchers.IO) {
           runCatching {
-            require(mpvDirectoryUri.isNotBlank()) { "MPV configuration directory is not set" }
+            require(mpvDirectoryUri.isNotBlank()) { localizedString(R.string.ui_mpv_directory_not_set) }
             val root = DocumentFile.fromTreeUri(context, mpvDirectoryUri.toUri())
-              ?: error("MPV configuration directory is unavailable")
-            require(root.exists() && root.canRead()) { "MPV configuration directory is not readable" }
+              ?: error(localizedString(R.string.ui_mpv_directory_unavailable))
+            require(root.exists() && root.canRead()) { localizedString(R.string.ui_mpv_directory_not_readable) }
             val descriptor = CPluginCatalogScanner.scan(context, root).firstOrNull {
               it.fileName == pluginFileName
-            } ?: error("Plugin '$pluginFileName' was not found")
+            } ?: error(localizedString(R.string.ui_plugin_not_found, pluginFileName))
             CPluginSettingsLoadState.Loaded(descriptor)
           }.getOrElse { error ->
             CPluginSettingsLoadState.Error(error.message ?: error::class.java.simpleName)
@@ -107,7 +109,7 @@ data class CPluginSettingsScreen(
           }
         is CPluginSettingsLoadState.Error ->
           CPluginSettingsMessage(
-            title = "Plugin settings unavailable",
+            title = localizedString(R.string.ui_plugin_settings_unavailable),
             message = state.message,
             modifier = Modifier.fillMaxSize().padding(padding),
           )
@@ -116,20 +118,20 @@ data class CPluginSettingsScreen(
           when {
             descriptor.manifestError != null ->
               CPluginSettingsMessage(
-                title = "Invalid plugin manifest",
+                title = localizedString(R.string.ui_invalid_plugin_manifest),
                 message = descriptor.manifestError,
                 modifier = Modifier.fillMaxSize().padding(padding),
               )
             descriptor.manifest == null ->
               CPluginSettingsMessage(
-                title = "No configuration panel",
-                message = "This legacy plugin does not provide a .mpvex.json manifest.",
+                title = localizedString(R.string.ui_no_configuration_panel),
+                message = localizedString(R.string.ui_this_legacy_plugin_does_not_provide_a_mpvex_json_manifest),
                 modifier = Modifier.fillMaxSize().padding(padding),
               )
             descriptor.manifest.config.isEmpty() ->
               CPluginSettingsMessage(
                 title = descriptor.manifest.name,
-                message = "This plugin does not declare any configurable fields.",
+                message = localizedString(R.string.ui_this_plugin_does_not_declare_any_configurable_fields),
                 modifier = Modifier.fillMaxSize().padding(padding),
               )
             else -> {
@@ -149,7 +151,7 @@ data class CPluginSettingsScreen(
                   )
                   Toast.makeText(
                     context,
-                    "${descriptor.manifest.name} settings saved",
+                    localizedString(R.string.ui_1_s_settings_saved, descriptor.manifest.name),
                     Toast.LENGTH_SHORT,
                   ).show()
                 },
@@ -184,7 +186,7 @@ private fun CPluginSettingsEditor(
   ) {
     CPluginMetadataCard(descriptor)
     Text(
-      text = "Settings in this panel belong only to ${manifest.name}.",
+      text = localizedString(R.string.ui_settings_in_this_panel_belong_only_to_1_s, manifest.name),
       style = MaterialTheme.typography.bodyMedium,
       color = MaterialTheme.colorScheme.outline,
     )
@@ -199,10 +201,10 @@ private fun CPluginSettingsEditor(
       enabled = !hasErrors && hasChanges,
       modifier = Modifier.fillMaxWidth(),
     ) {
-      Text("Save ${manifest.name} settings")
+      Text(localizedString(R.string.ui_save_1_s_settings, manifest.name))
     }
     Text(
-      text = "Changes take effect the next time the player is opened.",
+      text = localizedString(R.string.ui_changes_take_effect_the_next_time_the_player_is_opened),
       style = MaterialTheme.typography.bodySmall,
       color = MaterialTheme.colorScheme.outline,
     )

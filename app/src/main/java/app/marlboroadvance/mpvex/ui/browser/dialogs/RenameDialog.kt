@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.dialogs
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,12 +53,12 @@ fun RenameDialog(
     when {
       baseName.value.isBlank() -> {
         isError.value = true
-        errorMessage.value = "Name cannot be empty"
+        errorMessage.value = localizedString(R.string.ui_name_required)
       }
 
       baseName.value.contains("/") || baseName.value.contains("\\") -> {
         isError.value = true
-        errorMessage.value = "Name cannot contain / or \\"
+        errorMessage.value = localizedString(R.string.ui_name_has_path_separator)
       }
 
       else -> {
@@ -70,7 +72,7 @@ fun RenameDialog(
     onDismissRequest = onDismiss,
     title = {
       Text(
-        text = "Rename $itemType",
+        text = localizedString(R.string.ui_rename_1_s, itemType),
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
       )
@@ -92,7 +94,7 @@ fun RenameDialog(
               Modifier
                 .fillMaxWidth()
                 .focusRequester(focusRequester),
-            label = { Text("New name", fontWeight = FontWeight.Medium) },
+            label = { Text(localizedString(R.string.new_name), fontWeight = FontWeight.Medium) },
             singleLine = false,
             maxLines = 5,
             isError = isError.value,
@@ -131,7 +133,7 @@ fun RenameDialog(
         shape = MaterialTheme.shapes.extraLarge,
       ) {
         Text(
-          text = "Rename",
+          text = localizedString(R.string.rename),
           fontWeight = FontWeight.Bold,
         )
       }
@@ -141,7 +143,7 @@ fun RenameDialog(
         onClick = onDismiss,
         shape = MaterialTheme.shapes.extraLarge,
       ) {
-        Text("Cancel", fontWeight = FontWeight.Medium)
+        Text(localizedString(R.string.generic_cancel), fontWeight = FontWeight.Medium)
       }
     },
     containerColor = MaterialTheme.colorScheme.surface,

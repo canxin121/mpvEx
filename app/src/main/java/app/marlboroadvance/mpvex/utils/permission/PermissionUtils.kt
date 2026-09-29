@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.utils.permission
 
+import app.marlboroadvance.mpvex.R
 import android.app.Activity
 import android.content.Context
 import android.content.ContentValues
@@ -430,7 +431,7 @@ object PermissionUtils {
             Result.success(Unit)
           } else {
             Log.w(TAG, "✗ Rename failed: ${video.displayName}")
-            Result.failure(IllegalStateException("Rename operation failed"))
+            Result.failure(IllegalStateException(context.getString(R.string.ui_rename_operation_failed)))
           }
         } catch (e: Exception) {
           Log.e(TAG, "✗ Error renaming ${video.displayName}", e)
@@ -456,7 +457,7 @@ object PermissionUtils {
             val granted = requestWriteAccess(context, listOf(video.uri))
             if (!granted) {
               Log.w(TAG, "✗ Rename request denied/cancelled: ${video.displayName}")
-              return@withContext Result.failure(SecurityException("Rename permission denied"))
+              return@withContext Result.failure(SecurityException(context.getString(R.string.ui_rename_permission_denied)))
             }
           }
 
@@ -479,7 +480,7 @@ object PermissionUtils {
             Result.success(Unit)
           } else {
             Log.w(TAG, "✗ Rename failed (scoped): ${video.displayName}")
-            Result.failure(IllegalStateException("Rename operation failed"))
+            Result.failure(IllegalStateException(context.getString(R.string.ui_rename_operation_failed)))
           }
         } catch (e: Exception) {
           Log.e(TAG, "✗ Error renaming (scoped) ${video.displayName}", e)

@@ -1,6 +1,7 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
 // import androidx.compose.material.icons.outlined.VideoLabel // No longer needed here
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -131,7 +132,7 @@ object PlayerControlsPreferencesScreen : Screen {
         ) {
           // Landscape Controls Section
           item {
-            PreferenceSectionHeader(title = "Landscape Controls")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_landscape_controls))
           }
           
           item {
@@ -168,7 +169,7 @@ object PlayerControlsPreferencesScreen : Screen {
           
           // Portrait Controls Section
           item {
-            PreferenceSectionHeader(title = "Portrait Controls")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_portrait_controls))
           }
 
           item {
@@ -199,7 +200,7 @@ object PlayerControlsPreferencesScreen : Screen {
           
           // Seekbar Section
           item {
-            PreferenceSectionHeader(title = "Seekbar Style")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_seekbar_style))
           }
 
           item {
@@ -232,7 +233,7 @@ object PlayerControlsPreferencesScreen : Screen {
           
           // Appearance Section
           item {
-            PreferenceSectionHeader(title = "Appearance")
+            PreferenceSectionHeader(title = localizedString(R.string.pref_appearance_title))
           }
           
           item {
@@ -275,18 +276,16 @@ object PlayerControlsPreferencesScreen : Screen {
                 values = predefinedTimeValues + listOf(-1),
                 valueToText = { value ->
                   if (value == -1) {
-                    AnnotatedString("Custom")
+                    AnnotatedString(localizedString(R.string.pref_gesture_double_tap_custom))
                   } else {
-                    AnnotatedString("$value ms")
+                    AnnotatedString(localizedString(R.string.ui_duration_ms, value))
                   }
                 },
                 title = { Text(text = stringResource(R.string.pref_player_display_hide_player_control_time)) },
                 summary = {
                   Text(
-                    text = if (isCustomTimeValue) {
-                      "Custom ($playerTimeToDisappear ms)"
-                    } else {
-                      "$playerTimeToDisappear ms"
+                    text = localizedString(R.string.ui_duration_ms, playerTimeToDisappear).let { duration ->
+                      if (isCustomTimeValue) localizedString(R.string.ui_custom_with_value, duration) else duration
                     },
                   )
                 },
@@ -304,13 +303,13 @@ object PlayerControlsPreferencesScreen : Screen {
                       .verticalScroll(rememberScrollState()),
                   ) {
                     Text(
-                      text = "Enter custom hide time in milliseconds",
+                      text = localizedString(R.string.ui_enter_custom_hide_time_in_milliseconds),
                       modifier = Modifier.padding(bottom = 8.dp),
                     )
                     OutlinedTextField(
                       value = customTimeValue,
                       onValueChange = { customTimeValue = it },
-                      label = { Text("Milliseconds") },
+                      label = { Text(localizedString(R.string.milliseconds)) },
                       keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                       modifier = Modifier.fillMaxWidth(),
                       singleLine = true,
@@ -368,7 +367,7 @@ object PlayerControlsPreferencesScreen : Screen {
       IconButton(onClick = onClick) {
         Icon(
           imageVector = Icons.Outlined.Edit,
-          contentDescription = "Edit $title",
+          contentDescription = localizedString(R.string.ui_edit_1_s, title),
           tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
       }
@@ -391,7 +390,7 @@ object PlayerControlsPreferencesScreen : Screen {
     ) {
       if (buttons.isEmpty()) {
         Text(
-          "None", // TODO: strings
+          localizedString(R.string.pref_gesture_double_tap_none), // TODO: strings
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.outline,
         )

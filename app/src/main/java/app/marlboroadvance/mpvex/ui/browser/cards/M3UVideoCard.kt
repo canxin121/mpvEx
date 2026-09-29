@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.cards
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -92,7 +94,7 @@ fun M3UVideoCard(
         // Play icon overlay
         Icon(
           Icons.Filled.PlayArrow,
-          contentDescription = "Play",
+          contentDescription = localizedString(R.string.ui_play),
           modifier = Modifier.size(48.dp),
           tint = MaterialTheme.colorScheme.secondary,
         )

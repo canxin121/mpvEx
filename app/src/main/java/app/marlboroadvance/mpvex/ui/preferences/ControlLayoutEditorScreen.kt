@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -147,10 +149,10 @@ data class ControlLayoutEditorScreen(
     val title =
       remember(region) {
         when (region) {
-          ControlRegion.TOP_RIGHT -> "Edit Top Right"
-          ControlRegion.BOTTOM_RIGHT -> "Edit Bottom Right"
-          ControlRegion.BOTTOM_LEFT -> "Edit Bottom Left"
-          ControlRegion.PORTRAIT_BOTTOM -> "Edit Portrait Bottom"
+          ControlRegion.TOP_RIGHT -> localizedString(R.string.ui_edit_top_right)
+          ControlRegion.BOTTOM_RIGHT -> localizedString(R.string.ui_edit_bottom_right)
+          ControlRegion.BOTTOM_LEFT -> localizedString(R.string.ui_edit_bottom_left)
+          ControlRegion.PORTRAIT_BOTTOM -> localizedString(R.string.ui_edit_portrait_bottom)
         }
       }
 
@@ -158,8 +160,8 @@ data class ControlLayoutEditorScreen(
 
     if (showResetDialog) {
       ConfirmDialog(
-        title = "Reset to default?",
-        subtitle = "This will reset the controls in this region to their default configuration.",
+        title = localizedString(R.string.ui_reset_to_default),
+        subtitle = localizedString(R.string.ui_this_will_reset_the_controls_in_this_region_to_their_default_configura),
         onConfirm = {
           prefToEdit.delete()
           selectedButtons = prefToEdit
@@ -187,12 +189,12 @@ data class ControlLayoutEditorScreen(
           title = { Text(text = title) },
           navigationIcon = {
             IconButton(onClick = backstack::removeLastOrNull) {
-              Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+              Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = localizedString(R.string.back))
             }
           },
           actions = {
             IconButton(onClick = { showResetDialog = true }) {
-              Icon(Icons.Outlined.Restore, contentDescription = "Reset to default")
+              Icon(Icons.Outlined.Restore, contentDescription = localizedString(R.string.pref_layout_reset_default))
             }
           },
         )
@@ -228,7 +230,7 @@ data class ControlLayoutEditorScreen(
             // --- 1. Header & Active Selected Zone ---
             item(span = { GridItemSpan(maxLineSpan) }) {
               androidx.compose.material3.Text(
-                      text = "Long press to reorder items. Tap the '-' icon to remove them.",
+                      text = localizedString(R.string.ui_long_press_to_reorder_items_tap_the_icon_to_remove_them),
                       style = MaterialTheme.typography.bodySmall,
                       color = MaterialTheme.colorScheme.onSurfaceVariant,
                       modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
@@ -263,13 +265,13 @@ data class ControlLayoutEditorScreen(
                                  tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                              )
                              androidx.compose.material3.Text(
-                                  text = "Drop zone is empty",
+                                  text = localizedString(R.string.ui_drop_zone_is_empty),
                                   style = MaterialTheme.typography.bodyMedium,
                                   fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
                                   color = MaterialTheme.colorScheme.onSurfaceVariant,
                              )
                              androidx.compose.material3.Text(
-                                  text = "Tap buttons from the 'Available Palette' below",
+                                  text = localizedString(R.string.ui_tap_buttons_from_the_available_palette_below),
                                   style = MaterialTheme.typography.labelSmall,
                                   color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                              )
@@ -363,7 +365,7 @@ data class ControlLayoutEditorScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 androidx.compose.material3.Text(
-                                    text = "All available buttons are in use.",
+                                    text = localizedString(R.string.ui_all_available_buttons_are_in_use),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -407,7 +409,7 @@ private fun IconsLegend() {
         ) {
             // Header
             Text(
-                text = "Icons Legend",
+                text = localizedString(R.string.ui_icons_legend),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -463,5 +465,4 @@ private fun IconsLegend() {
         }
     }
 }
-
 

@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components.sheets
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.utils.media.MediaFormatUtils
 import app.marlboroadvance.mpvex.preferences.PlayerPreferences
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.presentation.components.PlayerSheet
@@ -128,13 +130,13 @@ private fun ZoomVideoSheet(
         },
         modifier = Modifier.size(36.dp),
       ) {
-        Icon(Icons.Default.Remove, contentDescription = "Decrease zoom", modifier = Modifier.size(18.dp))
+        Icon(Icons.Default.Remove, contentDescription = localizedString(R.string.ui_decrease_zoom), modifier = Modifier.size(18.dp))
       }
 
       SliderItem(
         label = stringResource(id = R.string.player_sheets_zoom_slider_label),
         value = zoom,
-        valueText = "%.2fx".format(zoom),
+        valueText = localizedString(R.string.ui_1_sx, MediaFormatUtils.formatDecimal(zoom, 2, 2)),
         onChange = onZoomChange,
         max = 3f,
         min = -1f,
@@ -148,7 +150,7 @@ private fun ZoomVideoSheet(
         },
         modifier = Modifier.size(36.dp),
       ) {
-        Icon(Icons.Default.Add, contentDescription = "Increase zoom", modifier = Modifier.size(18.dp))
+        Icon(Icons.Default.Add, contentDescription = localizedString(R.string.ui_increase_zoom), modifier = Modifier.size(18.dp))
       }
     }
 
@@ -175,7 +177,7 @@ private fun ZoomVideoSheet(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-          text = "Pan & Zoom",
+          text = localizedString(R.string.ui_pan_zoom),
           style = MaterialTheme.typography.bodyMedium,
           color = if (panAndZoomEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         )

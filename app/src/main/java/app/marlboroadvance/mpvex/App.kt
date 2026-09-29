@@ -20,11 +20,17 @@ import org.koin.core.annotation.KoinExperimentalAPI
 
 @OptIn(KoinExperimentalAPI::class)
 class App : Application() {
+  companion object {
+    lateinit var instance: App
+      private set
+  }
+
   private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
   private val metadataCache: VideoMetadataCacheRepository by inject()
 
   override fun onCreate() {
     super.onCreate()
+    instance = this
 
     // Initialize Koin
     startKoin {

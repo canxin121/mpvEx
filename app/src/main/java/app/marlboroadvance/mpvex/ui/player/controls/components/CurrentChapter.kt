@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
@@ -85,7 +87,7 @@ fun CurrentChapter(
           SizeTransform(clip = false),
         )
       },
-      label = "Chapter",
+      label = localizedString(R.string.ui_chapter),
     ) { currentChapter ->
       Row(
         verticalAlignment = Alignment.CenterVertically,

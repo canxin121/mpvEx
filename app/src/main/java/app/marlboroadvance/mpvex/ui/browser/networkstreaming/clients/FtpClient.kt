@@ -1,6 +1,8 @@
 package app.marlboroadvance.mpvex.ui.browser.networkstreaming.clients
 
 import android.net.Uri
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import app.marlboroadvance.mpvex.domain.network.NetworkConnection
 import app.marlboroadvance.mpvex.domain.network.NetworkFile
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +39,7 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
         val reply = client.replyCode
         if (!FTPReply.isPositiveCompletion(reply)) {
           client.disconnect()
-          return@withContext Result.failure(Exception("FTP server refused connection"))
+          return@withContext Result.failure(Exception(localizedString(R.string.error_ftp_refused)))
         }
 
         // Login
@@ -50,7 +52,7 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
 
         if (!success) {
           client.disconnect()
-          return@withContext Result.failure(Exception("Login failed"))
+          return@withContext Result.failure(Exception(localizedString(R.string.error_login_failed)))
         }
 
         // Set binary mode for file transfers
@@ -107,11 +109,11 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
   override suspend fun listFiles(path: String): Result<List<NetworkFile>> =
     withContext(Dispatchers.IO) {
       try {
-        val client = ftpClient ?: return@withContext Result.failure(Exception("Not connected"))
+        val client = ftpClient ?: return@withContext Result.failure(Exception(localizedString(R.string.error_not_connected)))
 
         // Check if connection is still alive
         if (!client.isConnected) {
-          return@withContext Result.failure(Exception("Connection lost"))
+          return@withContext Result.failure(Exception(localizedString(R.string.error_connection_lost)))
         }
 
         // Send NOOP to check connection health
@@ -121,7 +123,7 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
           // Try to reconnect
           val reconnectResult = connect()
           if (reconnectResult.isFailure) {
-            return@withContext Result.failure(Exception("Connection broken and reconnect failed"))
+            return@withContext Result.failure(Exception(localizedString(R.string.error_reconnect_failed)))
           }
         }
 
@@ -161,14 +163,14 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
   suspend fun getFileSize(path: String): Result<Long> =
     withContext(Dispatchers.IO) {
       try {
-        val client = ftpClient ?: return@withContext Result.failure(Exception("Not connected"))
+        val client = ftpClient ?: return@withContext Result.failure(Exception(localizedString(R.string.error_not_connected)))
 
         // Try to get file info
         val files = client.listFiles(path)
         if (files.isNotEmpty() && !files[0].isDirectory) {
           Result.success(files[0].size)
         } else {
-          Result.failure(Exception("File not found or is a directory"))
+          Result.failure(Exception(localizedString(R.string.error_file_missing_or_directory)))
         }
       } catch (e: Exception) {
         Result.failure(e)
@@ -197,7 +199,7 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
         val reply = streamClient.replyCode
         if (!FTPReply.isPositiveCompletion(reply)) {
           streamClient.disconnect()
-          return@withContext Result.failure(Exception("FTP server refused connection (code: $reply)"))
+          return@withContext Result.failure(Exception(localizedString(R.string.error_ftp_refused_code, reply)))
         }
 
         // Login
@@ -210,7 +212,7 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
 
         if (!success) {
           streamClient.disconnect()
-          return@withContext Result.failure(Exception("Login failed"))
+          return@withContext Result.failure(Exception(localizedString(R.string.error_login_failed)))
         }
 
         // Set binary mode and passive mode
@@ -291,7 +293,7 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
 
               return@withContext Result.success(wrappedStream)
             } else {
-              lastError = "No stream returned"
+              lastError = localizedString(R.string.error_no_stream)
             }
           } catch (e: Exception) {
             lastError = e.message ?: e.toString()
@@ -304,7 +306,7 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
         } catch (_: Exception) {
         }
 
-        return@withContext Result.failure(Exception("Failed to open FTP file stream. $lastError"))
+        return@withContext Result.failure(Exception(localizedString(R.string.error_ftp_open_stream, lastError)))
       } catch (e: Exception) {
         android.util.Log.e("FtpClient", "Exception getting file stream", e)
         return@withContext Result.failure(e)

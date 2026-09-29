@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -100,7 +102,7 @@ object LuaScriptsScreen : Screen {
               }
             }
           } else {
-            error("MPV configuration directory is unavailable")
+            error(localizedString(R.string.ui_mpv_directory_unavailable))
           }
           scripts.distinct().sortedWith(String.CASE_INSENSITIVE_ORDER)
         }
@@ -115,7 +117,7 @@ object LuaScriptsScreen : Screen {
           preferences.selectedLuaScripts.set(validSelection.toSet())
         }
       }.onFailure { e ->
-        Toast.makeText(context, "Error loading scripts: ${e.message}", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, localizedString(R.string.ui_error_loading_scripts_1_s, e.message), Toast.LENGTH_LONG).show()
       }
       isLoading = false
     }
@@ -131,7 +133,7 @@ object LuaScriptsScreen : Screen {
 
     fun shareScript(scriptName: String) {
       if (mpvConfStorageLocation.isBlank()) {
-        Toast.makeText(context, "No storage location configured", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, localizedString(R.string.ui_no_storage_location_configured), Toast.LENGTH_SHORT).show()
         return
       }
 
@@ -139,16 +141,16 @@ object LuaScriptsScreen : Screen {
         runCatching {
           withContext(Dispatchers.IO) {
             val tree = checkNotNull(DocumentFile.fromTreeUri(context, mpvConfStorageLocation.toUri()))
-            check(tree.exists() && tree.canRead()) { "MPV configuration directory is unavailable" }
+            check(tree.exists() && tree.canRead()) { localizedString(R.string.ui_mpv_directory_unavailable) }
             val scriptsDir = tree.listFiles().firstOrNull {
               it.isDirectory && it.name?.equals("scripts", ignoreCase = true) == true
             } ?: tree
-            val scriptFile = checkNotNull(scriptsDir.findFile(scriptName)) { "Script file not found" }
+            val scriptFile = checkNotNull(scriptsDir.findFile(scriptName)) { localizedString(R.string.ui_script_not_found) }
 
             // Copy to cache directory for sharing
             val cacheFile = File(context.cacheDir, scriptName)
             val input = checkNotNull(context.contentResolver.openInputStream(scriptFile.uri)) {
-              "Could not read $scriptName"
+              localizedString(R.string.ui_could_not_read_script, scriptName)
             }
             input.use { input ->
               cacheFile.outputStream().use { output ->
@@ -170,9 +172,9 @@ object LuaScriptsScreen : Screen {
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
           }
 
-          context.startActivity(Intent.createChooser(shareIntent, "Share script"))
+          context.startActivity(Intent.createChooser(shareIntent, localizedString(R.string.ui_share_script)))
         }.onFailure { e ->
-          Toast.makeText(context, "Error sharing script: ${e.message}", Toast.LENGTH_LONG).show()
+          Toast.makeText(context, localizedString(R.string.ui_error_sharing_script_1_s, e.message), Toast.LENGTH_LONG).show()
         }
       }
     }
@@ -182,7 +184,7 @@ object LuaScriptsScreen : Screen {
         TopAppBar(
           title = {
             Text(
-              text = "Lua Scripts",
+              text = localizedString(R.string.ui_lua_scripts),
               style = MaterialTheme.typography.headlineSmall,
               fontWeight = FontWeight.ExtraBold,
               color = MaterialTheme.colorScheme.primary,
@@ -192,7 +194,7 @@ object LuaScriptsScreen : Screen {
             IconButton(onClick = backStack::removeLastOrNull) {
               Icon(
                 Icons.AutoMirrored.Default.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = localizedString(R.string.back),
                 tint = MaterialTheme.colorScheme.secondary,
               )
             }
@@ -208,7 +210,7 @@ object LuaScriptsScreen : Screen {
         ) {
           Icon(
             Icons.Default.Add,
-            contentDescription = "Create new script",
+            contentDescription = localizedString(R.string.ui_create_new_script),
             tint = MaterialTheme.colorScheme.onPrimary,
           )
         }
@@ -222,7 +224,7 @@ object LuaScriptsScreen : Screen {
         if (availableScripts.isEmpty() && !isLoading) {
           item {
             Text(
-              "No Lua or JavaScript files found in the scripts folder.",
+              localizedString(R.string.ui_no_lua_or_javascript_files_found_in_the_scripts_folder),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
               modifier = Modifier.padding(16.dp),
@@ -266,7 +268,7 @@ object LuaScriptsScreen : Screen {
                 ) {
                   Icon(
                     Icons.Default.Share,
-                    contentDescription = "Share",
+                    contentDescription = localizedString(R.string.generic_share),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                   )
                 }
@@ -277,7 +279,7 @@ object LuaScriptsScreen : Screen {
                 ) {
                   Icon(
                     Icons.Default.Edit,
-                    contentDescription = "Edit",
+                    contentDescription = localizedString(R.string.ui_edit),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                   )
                 }

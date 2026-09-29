@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.R
@@ -270,7 +271,7 @@ object SubtitlesPreferencesScreen : Screen {
                     } else {
                       if (availableFonts.isNotEmpty()) {
                         Text(
-                          stringResource(R.string.fonts_loaded, availableFonts.size),
+                          pluralStringResource(R.plurals.fonts_loaded, availableFonts.size, availableFonts.size),
                           style = MaterialTheme.typography.bodySmall,
                           color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         )
@@ -339,4 +340,3 @@ object SubtitlesPreferencesScreen : Screen {
     }
   }
 }
-

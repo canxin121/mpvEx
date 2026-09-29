@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -275,7 +276,7 @@ object DecoderPreferencesScreen : Screen {
                       color = MaterialTheme.colorScheme.outline,
                     )
                     Text(
-                      text = "github.com/bloc97/Anime4K",
+                      text = localizedString(R.string.ui_github_com_bloc97_anime4k),
                       color = MaterialTheme.colorScheme.primary,
                       style = MaterialTheme.typography.bodySmall,
                       textDecoration = TextDecoration.Underline,

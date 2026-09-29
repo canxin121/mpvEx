@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.repository
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import app.marlboroadvance.mpvex.database.dao.NetworkConnectionDao
 import app.marlboroadvance.mpvex.domain.network.ConnectionStatus
 import app.marlboroadvance.mpvex.domain.network.NetworkConnection
@@ -130,7 +132,7 @@ class NetworkRepository(
             connectionId = connection.id,
             isConnected = false,
             isConnecting = false,
-            error = e.message ?: "Connection failed",
+            error = e.message ?: localizedString(R.string.error_connection_failed),
           ),
         )
         throw e
@@ -144,7 +146,7 @@ class NetworkRepository(
           connectionId = connection.id,
           isConnected = false,
           isConnecting = false,
-          error = e.message ?: "Connection failed",
+          error = e.message ?: localizedString(R.string.error_connection_failed),
         ),
       )
       Result.failure(e)

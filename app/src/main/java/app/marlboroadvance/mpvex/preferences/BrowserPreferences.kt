@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.preferences
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import app.marlboroadvance.mpvex.preferences.preference.PreferenceStore
 import app.marlboroadvance.mpvex.preferences.preference.getEnum
 
@@ -77,10 +79,10 @@ enum class FolderSortType {
   val displayName: String
     get() =
       when (this) {
-        Title -> "Title"
-        Date -> "Date"
-        Size -> "Size"
-        VideoCount -> "Count"
+        Title -> localizedString(R.string.sort_title)
+        Date -> localizedString(R.string.ui_date)
+        Size -> localizedString(R.string.ui_size)
+        VideoCount -> localizedString(R.string.sort_count)
       }
 }
 
@@ -97,10 +99,10 @@ enum class VideoSortType {
   val displayName: String
     get() =
       when (this) {
-        Title -> "Title"
-        Duration -> "Duration"
-        Date -> "Date"
-        Size -> "Size"
+        Title -> localizedString(R.string.sort_title)
+        Duration -> localizedString(R.string.sort_duration)
+        Date -> localizedString(R.string.ui_date)
+        Size -> localizedString(R.string.ui_size)
       }
 }
 
@@ -115,8 +117,8 @@ enum class FolderViewMode {
   val displayName: String
     get() =
       when (this) {
-        AlbumView -> "Folder View"
-        FileManager -> "Tree View"
+        AlbumView -> localizedString(R.string.sort_folder_view)
+        FileManager -> localizedString(R.string.ui_tree_view)
       }
 }
 
@@ -127,7 +129,7 @@ enum class MediaLayoutMode {
 
   val displayName:  String
     get() = when (this) {
-      LIST -> "List"
-      GRID -> "Grid"
+      LIST -> localizedString(R.string.sort_list)
+      GRID -> localizedString(R.string.sort_grid)
     }
 }

@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.dialogs
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,19 +30,15 @@ fun DeleteConfirmationDialog(
   isOpen: Boolean,
   onDismiss: () -> Unit,
   onConfirm: () -> Unit,
-  itemType: String,
-  itemCount: Int,
   itemNames: List<String> = emptyList(),
 ) {
   if (!isOpen) return
-
-  val itemText = if (itemCount == 1) itemType else "${itemType}s"
 
   AlertDialog(
     onDismissRequest = onDismiss,
     title = {
       Text(
-        text = "Delete $itemCount $itemText?",
+        text = localizedString(R.string.ui_delete_selected_items),
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
       )
@@ -58,7 +56,7 @@ fun DeleteConfirmationDialog(
           modifier = Modifier.fillMaxWidth(),
         ) {
           Text(
-            text = "This action cannot be undone. The selected item${if (itemCount == 1) "" else "s"} will be permanently deleted.",
+            text = localizedString(R.string.ui_delete_selected_items_warning),
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onErrorContainer,
@@ -125,7 +123,7 @@ fun DeleteConfirmationDialog(
         shape = MaterialTheme.shapes.extraLarge,
       ) {
         Text(
-          text = "Delete",
+          text = localizedString(R.string.delete),
           fontWeight = FontWeight.Bold,
         )
       }
@@ -135,7 +133,7 @@ fun DeleteConfirmationDialog(
         onClick = onDismiss,
         shape = MaterialTheme.shapes.extraLarge,
       ) {
-        Text("Cancel", fontWeight = FontWeight.Medium)
+        Text(localizedString(R.string.generic_cancel), fontWeight = FontWeight.Medium)
       }
     },
     containerColor = MaterialTheme.colorScheme.surface,

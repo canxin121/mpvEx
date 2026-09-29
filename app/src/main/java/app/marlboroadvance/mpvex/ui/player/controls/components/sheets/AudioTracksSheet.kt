@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components.sheets
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,7 +28,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.preferences.AudioChannels
 import app.marlboroadvance.mpvex.preferences.AudioPreferences
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
@@ -225,23 +226,23 @@ private fun formatAudioChannels(track: TrackNode): String? {
   val raw = track.demuxChannels?.lowercase(Locale.US)?.trim()
   if (!raw.isNullOrBlank()) {
     when {
-      raw == "stereo" -> return "Stereo"
-      raw == "mono" -> return "Mono"
-      raw.startsWith("5.1") -> return "5.1 ch"
-      raw.startsWith("7.1") -> return "7.1 ch"
-      raw.startsWith("2.1") -> return "2.1 ch"
+      raw == "stereo" -> return localizedString(R.string.pref_audio_channels_stereo)
+      raw == "mono" -> return localizedString(R.string.pref_audio_channels_mono)
+      raw.startsWith("5.1") -> return localizedString(R.string.ui_audio_channel_layout, "5.1")
+      raw.startsWith("7.1") -> return localizedString(R.string.ui_audio_channel_layout, "7.1")
+      raw.startsWith("2.1") -> return localizedString(R.string.ui_audio_channel_layout, "2.1")
       raw.endsWith("ch") || raw.endsWith("channels") -> return raw
     }
   }
 
   val count = track.demuxChannelCount ?: track.audioChannels
   return when (count) {
-    1L -> "Mono"
-    2L -> "Stereo"
-    6L -> "5.1 ch"
-    8L -> "7.1 ch"
+    1L -> localizedString(R.string.pref_audio_channels_mono)
+    2L -> localizedString(R.string.pref_audio_channels_stereo)
+    6L -> localizedString(R.string.ui_audio_channel_layout, "5.1")
+    8L -> localizedString(R.string.ui_audio_channel_layout, "7.1")
     null -> raw?.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString() }
-    else -> "$count ch"
+    else -> localizedString(R.string.ui_audio_channel_count, count)
   }
 }
 
@@ -250,6 +251,6 @@ private fun formatAudioSampleRate(track: TrackNode): String? {
   return if (sr % 1000L == 0L) {
     "${sr / 1000} kHz"
   } else {
-    String.format(Locale.US, "%.1f kHz", sr / 1000.0)
+    String.format(Locale.getDefault(), "%.1f kHz", sr / 1000.0)
   }
 }

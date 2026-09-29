@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.browser.cards
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -173,14 +174,14 @@ fun VideoCard(
             thumbnail?.let {
               Image(
                 bitmap = it.asImageBitmap(),
-                contentDescription = "Thumbnail",
+                contentDescription = localizedString(R.string.ui_thumbnail),
                 modifier = Modifier.matchParentSize(),
                 contentScale = ContentScale.Crop,
               )
             } ?: run {
               Icon(
                 Icons.Filled.PlayArrow,
-                contentDescription = "Play",
+                contentDescription = localizedString(R.string.ui_play),
                 modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.secondary,
               )
@@ -188,7 +189,7 @@ fun VideoCard(
           } else {
             Icon(
               Icons.Filled.PlayArrow,
-              contentDescription = "Play",
+              contentDescription = localizedString(R.string.ui_play),
               modifier = Modifier.size(48.dp),
               tint = MaterialTheme.colorScheme.secondary,
             )
@@ -342,7 +343,7 @@ fun VideoCard(
               }
             } else if (showFramerateInResolution && hasFps) {
                  Text(
-                   "$fpsOnly FPS",
+                   localizedString(R.string.ui_1_s_fps, fpsOnly),
                    style = MaterialTheme.typography.labelSmall,
                    modifier = Modifier
                      .background(
@@ -445,14 +446,14 @@ fun VideoCard(
             thumbnail?.let {
               Image(
                 bitmap = it.asImageBitmap(),
-                contentDescription = "Thumbnail",
+                contentDescription = localizedString(R.string.ui_thumbnail),
                 modifier = Modifier.matchParentSize(),
                 contentScale = ContentScale.Crop,
               )
             } ?: run {
               Icon(
                 Icons.Filled.PlayArrow,
-                contentDescription = "Play",
+                contentDescription = localizedString(R.string.ui_play),
                 modifier = Modifier.size(48.dp),
                 tint = MaterialTheme.colorScheme.secondary,
               )
@@ -460,7 +461,7 @@ fun VideoCard(
           } else {
             Icon(
               Icons.Filled.PlayArrow,
-              contentDescription = "Play",
+              contentDescription = localizedString(R.string.ui_play),
               modifier = Modifier.size(48.dp),
               tint = MaterialTheme.colorScheme.secondary,
             )
@@ -621,7 +622,7 @@ fun VideoCard(
             } else if (showFramerateInResolution && hasFps) {
               // Resolution is hidden, but framerate is enabled -> show only framerate
               Text(
-                "$fpsOnly FPS",
+                localizedString(R.string.ui_1_s_fps, fpsOnly),
                 style = MaterialTheme.typography.labelSmall,
                 modifier =
                   Modifier
@@ -656,6 +657,6 @@ fun VideoCard(
 }
 
 private fun formatDate(timestampSeconds: Long): String {
-  val sdf = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
+  val sdf = java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM, java.util.Locale.getDefault())
   return sdf.format(java.util.Date(timestampSeconds * 1000))
 }

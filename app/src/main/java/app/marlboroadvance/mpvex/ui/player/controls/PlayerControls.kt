@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.player.controls
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -531,7 +532,7 @@ fun PlayerControls(
             is PlayerUpdates.VideoZoom -> {
               val zoomPercentage = (videoZoom * 100).toInt()
               TextPlayerUpdate(
-                text = String.format("Zoom:%3d%%", zoomPercentage), 
+                text = localizedString(R.string.ui_zoom_percent, zoomPercentage),
                 modifier = Modifier, // Let content size determine width
               )
             }
@@ -548,13 +549,13 @@ fun PlayerControls(
             is PlayerUpdates.RepeatMode -> {
               val mode = (currentPlayerUpdate as PlayerUpdates.RepeatMode).mode
               val text = when (mode) {
-                app.marlboroadvance.mpvex.ui.player.RepeatMode.OFF -> "Repeat: Off"
-                app.marlboroadvance.mpvex.ui.player.RepeatMode.ONE -> "Repeat: Current file"
+                app.marlboroadvance.mpvex.ui.player.RepeatMode.OFF -> localizedString(R.string.ui_repeat_off)
+                app.marlboroadvance.mpvex.ui.player.RepeatMode.ONE -> localizedString(R.string.ui_repeat_current_file)
                 app.marlboroadvance.mpvex.ui.player.RepeatMode.ALL -> {
                   if (playlistMode && viewModel.hasPlaylistSupport()) {
-                    "Repeat: All playlist"
+                    localizedString(R.string.ui_repeat_playlist)
                   } else {
-                    "Repeat: Current file"
+                    localizedString(R.string.ui_repeat_current_file)
                   }
                 }
               }
@@ -565,12 +566,12 @@ fun PlayerControls(
               val enabled = (currentPlayerUpdate as PlayerUpdates.Shuffle).enabled
               val text = if (enabled) {
                 if (playlistMode && viewModel.hasPlaylistSupport()) {
-                  "Shuffle: On"
+                  localizedString(R.string.ui_shuffle_on)
                 } else {
-                  "Shuffle: Not available"
+                  localizedString(R.string.ui_shuffle_unavailable)
                 }
               } else {
-                "Shuffle: Off"
+                localizedString(R.string.ui_shuffle_off)
               }
               TextPlayerUpdate(text)
             }
@@ -578,9 +579,9 @@ fun PlayerControls(
             is PlayerUpdates.FrameInfo -> {
               val frameInfo = (currentPlayerUpdate as PlayerUpdates.FrameInfo)
               val text = if (frameInfo.totalFrames > 0) {
-                "Frame: ${frameInfo.currentFrame}/${frameInfo.totalFrames}"
+                localizedString(R.string.ui_frame_count, frameInfo.currentFrame, frameInfo.totalFrames)
               } else {
-                "Frame: ${frameInfo.currentFrame}"
+                localizedString(R.string.ui_frame_number, frameInfo.currentFrame)
               }
               TextPlayerUpdate(text)
             }
@@ -687,7 +688,7 @@ fun PlayerControls(
                   ) {
                     Icon(
                       imageVector = Icons.Default.SkipPrevious,
-                      contentDescription = "Previous",
+                      contentDescription = localizedString(R.string.pref_gesture_media_previous),
                       tint =
                         if (viewModel.hasPrevious()) {
                           if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface
@@ -785,7 +786,7 @@ fun PlayerControls(
                   ) {
                     Icon(
                       imageVector = Icons.Default.SkipNext,
-                      contentDescription = "Next",
+                      contentDescription = localizedString(R.string.pref_gesture_media_next),
                       tint =
                         if (viewModel.hasNext()) {
                           if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface

@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
@@ -103,7 +104,7 @@ object AdvancedPreferencesScreen : Screen {
               onFailure = { error ->
                 Toast.makeText(
                   context,
-                  "Export failed: ${error.message}",
+                  localizedString(R.string.ui_export_failed_1_s, error.message),
                   Toast.LENGTH_LONG,
                 ).show()
               },
@@ -127,7 +128,7 @@ object AdvancedPreferencesScreen : Screen {
               onFailure = { error ->
                 Toast.makeText(
                   context,
-                  "Import failed: ${error.message}",
+                  localizedString(R.string.ui_import_failed_1_s, error.message),
                   Toast.LENGTH_LONG,
                 ).show()
               },
@@ -140,7 +141,7 @@ object AdvancedPreferencesScreen : Screen {
     if (showExportDialog && exportStats != null) {
       AlertDialog(
         onDismissRequest = { showExportDialog = false },
-        title = { Text("Export Complete") },
+        title = { Text(localizedString(R.string.ui_export_complete)) },
         text = {
           Column(
             modifier = Modifier
@@ -148,13 +149,13 @@ object AdvancedPreferencesScreen : Screen {
               .verticalScroll(rememberScrollState()),
           ) {
             Text(
-              "Successfully exported ${exportStats?.totalExported} items!\n\n"
+              localizedString(R.string.ui_successfully_exported_1_s_items, exportStats?.totalExported)
             )
           }
         },
         confirmButton = {
           TextButton(onClick = { showExportDialog = false }) {
-            Text("OK")
+            Text(localizedString(R.string.generic_ok))
           }
         },
       )
@@ -164,18 +165,20 @@ object AdvancedPreferencesScreen : Screen {
     if (showImportDialog && importStats != null) {
       AlertDialog(
         onDismissRequest = { showImportDialog = false },
-        title = { Text("Import Complete") },
+        title = { Text(localizedString(R.string.ui_import_complete)) },
         text = {
           Text(
-            "Successfully imported: ${importStats?.imported}\n" +
-              "Failed: ${importStats?.failed}\n" +
-              "Version: ${importStats?.version}\n\n" +
-              "Please restart the app for all changes to take effect.",
+            localizedString(
+              R.string.ui_import_result,
+              importStats?.imported,
+              importStats?.failed,
+              importStats?.version,
+            ),
           )
         },
         confirmButton = {
           TextButton(onClick = { showImportDialog = false }) {
-            Text("OK")
+            Text(localizedString(R.string.generic_ok))
           }
         },
       )
@@ -237,7 +240,7 @@ object AdvancedPreferencesScreen : Screen {
                     tree.createFile("application/octet-stream", "mpv.conf")
                   }
                   withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "MPV directory ready ✓", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, localizedString(R.string.ui_mpv_directory_ready), Toast.LENGTH_SHORT).show()
                   }
                 }
               }.onFailure { e ->
@@ -253,16 +256,16 @@ object AdvancedPreferencesScreen : Screen {
         ) {
           // Backup & Restore Section
           item {
-            PreferenceSectionHeader(title = "Backup & Restore")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_backup_restore))
           }
           
           item {
             PreferenceCard {
               Preference(
-                title = { Text(text = "Export Settings") },
+                title = { Text(text = localizedString(R.string.pref_export_settings_title)) },
                 summary = { 
                   Text(
-                    text = "Export settings to an XML file",
+                    text = localizedString(R.string.pref_export_settings_summary),
                     color = MaterialTheme.colorScheme.outline,
                   ) 
                 },
@@ -281,10 +284,10 @@ object AdvancedPreferencesScreen : Screen {
               PreferenceDivider()
               
               Preference(
-                title = { Text(text = "Import Settings") },
+                title = { Text(text = localizedString(R.string.pref_import_settings_title)) },
                 summary = { 
                   Text(
-                    text = "Import settings from an XML file",
+                    text = localizedString(R.string.pref_import_settings_summary),
                     color = MaterialTheme.colorScheme.outline,
                   ) 
                 },
@@ -304,7 +307,7 @@ object AdvancedPreferencesScreen : Screen {
           
           // MPV Configuration Section
           item {
-            PreferenceSectionHeader(title = "MPV Configuration")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_mpv_configuration))
           }
           
           item {
@@ -405,7 +408,7 @@ object AdvancedPreferencesScreen : Screen {
                     )
                   } else {
                     Text(
-                      "Tap to edit configuration",
+                      localizedString(R.string.ui_tap_to_edit_configuration),
                       color = MaterialTheme.colorScheme.outline,
                     )
                   }
@@ -428,7 +431,7 @@ object AdvancedPreferencesScreen : Screen {
                     )
                   } else {
                     Text(
-                      "Tap to edit configuration",
+                      localizedString(R.string.ui_tap_to_edit_configuration),
                       color = MaterialTheme.colorScheme.outline,
                     )
                   }
@@ -442,7 +445,7 @@ object AdvancedPreferencesScreen : Screen {
           
           // Lua Scripts Section
           item {
-            PreferenceSectionHeader(title = "Lua Scripts")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_lua_scripts))
           }
 
           item {
@@ -466,7 +469,9 @@ object AdvancedPreferencesScreen : Screen {
                     if (mpvConfStorageLocation.isBlank()) {
                       stringResource(R.string.pref_lua_pick_directory)
                     } else {
-                      stringResource(R.string.pref_lua_selected_count, selected.size)
+                      app.marlboroadvance.mpvex.i18n.localizedQuantityString(
+                        R.plurals.lua_selected_count, selected.size, selected.size,
+                      )
                     },
                     color = MaterialTheme.colorScheme.outline,
                   )
@@ -486,7 +491,7 @@ object AdvancedPreferencesScreen : Screen {
 
           // C Plugins Section
           item {
-            PreferenceSectionHeader(title = "C Plugins")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_c_plugins))
           }
 
           item {
@@ -517,10 +522,10 @@ object AdvancedPreferencesScreen : Screen {
               SwitchPreference(
                 value = enableCPlugins,
                 onValueChange = preferences.enableCPlugins::set,
-                title = { Text("Enable C Plugins") },
+                title = { Text(localizedString(R.string.ui_enable_c_plugins)) },
                 summary = {
                   Text(
-                    "Load selected MPV C plugins (.so) when the player starts",
+                    localizedString(R.string.ui_load_selected_mpv_c_plugins_so_when_the_player_starts),
                     color = MaterialTheme.colorScheme.outline,
                   )
                 },
@@ -529,19 +534,19 @@ object AdvancedPreferencesScreen : Screen {
               PreferenceDivider()
 
               Preference(
-                title = { Text("Manage C Plugins") },
+                title = { Text(localizedString(R.string.ui_manage_c_plugins)) },
                 summary = {
                   when {
                     !enableCPlugins -> Text(
-                      "Enable C plugins first",
+                      localizedString(R.string.ui_enable_c_plugins_first),
                       color = MaterialTheme.colorScheme.outline,
                     )
                     mpvConfStorageLocation.isBlank() -> Text(
-                      "Set MPV config storage location first",
+                      localizedString(R.string.ui_set_mpv_config_storage_location_first),
                       color = MaterialTheme.colorScheme.outline,
                     )
                     selectedCPlugins.isEmpty() -> Text(
-                      "No plugins selected",
+                      localizedString(R.string.ui_no_plugins_selected),
                       color = MaterialTheme.colorScheme.outline,
                     )
                     else -> Text(
@@ -563,7 +568,7 @@ object AdvancedPreferencesScreen : Screen {
                       withContext(Dispatchers.Main) {
                         Toast.makeText(
                           context,
-                          "Error reading plugins directory: ${error.message}",
+                          localizedString(R.string.ui_error_reading_plugins_directory_1_s, error.message),
                           Toast.LENGTH_LONG,
                         ).show()
                       }
@@ -575,7 +580,7 @@ object AdvancedPreferencesScreen : Screen {
                       if (plugins.isEmpty()) {
                         Toast.makeText(
                           context,
-                          "No .so files found in the MPV directory or its scripts folder",
+                          localizedString(R.string.ui_no_so_files_found_in_the_mpv_directory_or_its_scripts_folder),
                           Toast.LENGTH_SHORT,
                         ).show()
                       }
@@ -605,13 +610,13 @@ object AdvancedPreferencesScreen : Screen {
                         Text(
                           text =
                             when {
-                              descriptor == null -> "Plugin file is not available"
+                              descriptor == null -> localizedString(R.string.ui_plugin_file_unavailable)
                               descriptor.manifestError != null ->
-                                "Invalid manifest: ${descriptor.manifestError}"
-                              manifest == null -> "Legacy plugin • no independent settings panel"
-                              manifest.config.isEmpty() -> "This plugin declares no settings"
+                                localizedString(R.string.ui_invalid_manifest_reason, descriptor.manifestError)
+                              manifest == null -> localizedString(R.string.ui_legacy_plugin_no_panel)
+                              manifest.config.isEmpty() -> localizedString(R.string.ui_plugin_declares_no_settings)
                               else ->
-                                "${manifest.config.size} independent setting(s) • ${manifest.id}"
+                                localizedString(R.string.ui_independent_settings, manifest.config.size, manifest.id)
                             },
                           color =
                             if (descriptor?.manifestError != null) {
@@ -648,7 +653,7 @@ object AdvancedPreferencesScreen : Screen {
 
           // History Section
           item {
-            PreferenceSectionHeader(title = "History")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_history))
           }
           
           item {
@@ -691,7 +696,7 @@ object AdvancedPreferencesScreen : Screen {
                           Toast
                             .makeText(
                               context,
-                              context.getString(R.string.pref_advanced_cleared_playback_history),
+                              localizedString(R.string.pref_advanced_cleared_playback_history),
                               Toast.LENGTH_SHORT,
                             ).show()
                         }
@@ -701,7 +706,7 @@ object AdvancedPreferencesScreen : Screen {
                           Toast
                             .makeText(
                               context,
-                              "Failed to clear: ${error.message}",
+                              localizedString(R.string.ui_failed_to_clear_1_s, error.message ?: localizedString(R.string.ui_unknown_error)),
                               Toast.LENGTH_LONG,
                             ).show()
                         }
@@ -716,7 +721,7 @@ object AdvancedPreferencesScreen : Screen {
           
           // Cache Section
           item {
-            PreferenceSectionHeader(title = "Cache")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_cache))
           }
           
           item {
@@ -726,10 +731,10 @@ object AdvancedPreferencesScreen : Screen {
               val thumbnailRepository = koinInject<ThumbnailRepository>()
               
               Preference(
-                title = { Text(text = "Clear config cache") },
+                title = { Text(text = localizedString(R.string.pref_clear_config_cache_title)) },
                 summary = { 
                   Text(
-                    text = "Clear the cached mpv.conf settings",
+                    text = localizedString(R.string.pref_clear_config_cache_summary),
                     color = MaterialTheme.colorScheme.outline,
                   ) 
                 },
@@ -744,7 +749,7 @@ object AdvancedPreferencesScreen : Screen {
                       Toast
                         .makeText(
                           context,
-                          "Config cache cleared",
+                          localizedString(R.string.ui_config_cache_cleared),
                           Toast.LENGTH_SHORT,
                         ).show()
                     }
@@ -755,10 +760,10 @@ object AdvancedPreferencesScreen : Screen {
               PreferenceDivider()
 
               Preference(
-                title = { Text(text = "Clear thumbnail cache") },
+                title = { Text(text = localizedString(R.string.pref_clear_thumbnail_cache_title)) },
                 summary = {
                   Text(
-                    text = "Delete all cached video thumbnails (will regenerate as you browse folders)",
+                    text = localizedString(R.string.pref_clear_thumbnail_cache_summary),
                     color = MaterialTheme.colorScheme.outline,
                   )
                 },
@@ -767,8 +772,8 @@ object AdvancedPreferencesScreen : Screen {
 
               if (isClearThumbsConfirmShown) {
                 ConfirmDialog(
-                  title = "Clear thumbnail cache?",
-                  subtitle = "This will delete cached thumbnails from storage and memory.",
+                  title = localizedString(R.string.ui_clear_thumbnail_cache),
+                  subtitle = localizedString(R.string.ui_this_will_delete_cached_thumbnails_from_storage_and_memory),
                   onConfirm = {
                     scope.launch(Dispatchers.IO) {
                       runCatching {
@@ -776,12 +781,12 @@ object AdvancedPreferencesScreen : Screen {
                       }.onSuccess {
                         withContext(Dispatchers.Main) {
                           isClearThumbsConfirmShown = false
-                          Toast.makeText(context, "Thumbnail cache cleared", Toast.LENGTH_SHORT).show()
+                          Toast.makeText(context, localizedString(R.string.ui_thumbnail_cache_cleared), Toast.LENGTH_SHORT).show()
                         }
                       }.onFailure { error ->
                         withContext(Dispatchers.Main) {
                           isClearThumbsConfirmShown = false
-                          Toast.makeText(context, "Failed to clear: ${error.message}", Toast.LENGTH_LONG).show()
+                          Toast.makeText(context, localizedString(R.string.ui_failed_to_clear_1_s, error.message), Toast.LENGTH_LONG).show()
                         }
                       }
                     }
@@ -796,7 +801,7 @@ object AdvancedPreferencesScreen : Screen {
                 title = { Text(text = stringResource(id = R.string.pref_advanced_clear_fonts_cache)) },
                 summary = { 
                   Text(
-                    text = "Remove all cached subtitle fonts",
+                    text = localizedString(R.string.ui_remove_all_cached_subtitle_fonts),
                     color = MaterialTheme.colorScheme.outline,
                   ) 
                 },
@@ -819,7 +824,7 @@ object AdvancedPreferencesScreen : Screen {
                       Toast
                         .makeText(
                           context,
-                          context.getString(R.string.pref_advanced_cleared_fonts_cache),
+                          localizedString(R.string.pref_advanced_cleared_fonts_cache),
                           Toast.LENGTH_SHORT,
                         ).show()
                     }
@@ -831,7 +836,7 @@ object AdvancedPreferencesScreen : Screen {
           
           // Logging Section
           item {
-            PreferenceSectionHeader(title = "Logging")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_logging))
           }
           
           item {

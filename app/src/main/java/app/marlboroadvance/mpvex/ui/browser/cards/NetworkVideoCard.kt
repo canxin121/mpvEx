@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.cards
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -95,7 +97,7 @@ fun NetworkVideoCard(
         // Play icon overlay
         Icon(
           Icons.Filled.PlayArrow,
-          contentDescription = "Play",
+          contentDescription = localizedString(R.string.ui_play),
           modifier = Modifier.size(48.dp),
           tint = MaterialTheme.colorScheme.secondary,
         )
@@ -161,6 +163,6 @@ private fun formatFileSize(bytes: Long): String {
 
 private fun formatDate(timestamp: Long): String {
   val date = Date(timestamp)
-  val format = SimpleDateFormat("MMM dd", Locale.getDefault())
+  val format = java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM, Locale.getDefault())
   return format.format(date)
 }

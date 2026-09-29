@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.presentation.crash
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -347,7 +348,7 @@ class CrashActivity : ComponentActivity() {
         )
         LogsContainer(exceptionString)
         Text(
-          "Logcat:",
+          localizedString(R.string.ui_logcat),
           style = MaterialTheme.typography.headlineSmall,
         )
         LogsContainer(logcat)

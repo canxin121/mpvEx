@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.components
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -77,7 +79,7 @@ fun BrowserBottomBar(
         ) {
           Icon(
             Icons.Filled.ContentCopy, 
-            contentDescription = "Copy",
+            contentDescription = localizedString(R.string.copy),
             modifier = Modifier.size(24.dp)
           )
         }
@@ -93,7 +95,7 @@ fun BrowserBottomBar(
         ) {
           Icon(
             Icons.AutoMirrored.Filled.DriveFileMove, 
-            contentDescription = "Move",
+            contentDescription = localizedString(R.string.ui_move),
             modifier = Modifier.size(24.dp)
           )
         }
@@ -109,7 +111,7 @@ fun BrowserBottomBar(
         ) {
           Icon(
             Icons.Filled.DriveFileRenameOutline, 
-            contentDescription = "Rename",
+            contentDescription = localizedString(R.string.rename),
             modifier = Modifier.size(24.dp)
           )
         }
@@ -122,7 +124,7 @@ fun BrowserBottomBar(
         ) {
           Icon(
             Icons.AutoMirrored.Filled.PlaylistAdd, 
-            contentDescription = "Add to Playlist",
+            contentDescription = localizedString(R.string.ui_add_to_playlist),
             modifier = Modifier.size(24.dp)
           )
         }
@@ -138,7 +140,7 @@ fun BrowserBottomBar(
         ) {
           Icon(
             Icons.Filled.Delete, 
-            contentDescription = "Delete",
+            contentDescription = localizedString(R.string.delete),
             modifier = Modifier.size(24.dp)
           )
         }

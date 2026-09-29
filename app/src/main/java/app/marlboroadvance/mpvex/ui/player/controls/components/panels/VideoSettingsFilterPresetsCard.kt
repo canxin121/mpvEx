@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components.panels
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -65,7 +67,7 @@ fun VideoSettingsFilterPresetsCard(modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
       ) {
         Icon(Icons.Default.AutoAwesome, null)
-        Text("Filter Presets")
+        Text(localizedString(R.string.ui_filter_presets))
       }
     },
     colors = panelCardsColors(),

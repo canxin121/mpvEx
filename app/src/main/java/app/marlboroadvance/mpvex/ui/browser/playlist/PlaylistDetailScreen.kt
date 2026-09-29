@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.playlist
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -198,11 +200,11 @@ data class PlaylistDetailScreen(val playlistId: Int) : Screen {
                 onSearch = { },
                 expanded = false,
                 onExpandedChange = { },
-                placeholder = { Text("Search videos...") },
+                placeholder = { Text(localizedString(R.string.ui_search_videos)) },
                 leadingIcon = {
                   Icon(
                     imageVector = Icons.Filled.Search,
-                    contentDescription = "Search",
+                    contentDescription = localizedString(R.string.settings_search_title),
                   )
                 },
                 trailingIcon = {
@@ -214,7 +216,7 @@ data class PlaylistDetailScreen(val playlistId: Int) : Screen {
                   ) {
                     Icon(
                       imageVector = Icons.Filled.Close,
-                      contentDescription = "Cancel",
+                      contentDescription = localizedString(R.string.generic_cancel),
                     )
                   }
                 },
@@ -233,7 +235,7 @@ data class PlaylistDetailScreen(val playlistId: Int) : Screen {
           }
         } else {
           BrowserTopBar(
-            title = playlist?.name ?: "Playlist",
+            title = playlist?.name ?: localizedString(R.string.playlist),
             isInSelectionMode = selectionManager.isInSelectionMode,
             selectedCount = selectionManager.selectedCount,
             totalCount = videos.size,
@@ -293,7 +295,7 @@ data class PlaylistDetailScreen(val playlistId: Int) : Screen {
                   ) {
                     Icon(
                       imageVector = Icons.Filled.Check,
-                      contentDescription = "Done reordering",
+                      contentDescription = localizedString(R.string.ui_done_reordering),
                       tint = MaterialTheme.colorScheme.primary,
                     )
                   }
@@ -309,7 +311,7 @@ data class PlaylistDetailScreen(val playlistId: Int) : Screen {
                     ) {
                       Icon(
                         imageVector = Icons.Filled.Search,
-                        contentDescription = "Search videos",
+                        contentDescription = localizedString(R.string.ui_search_videos_2),
                         tint = MaterialTheme.colorScheme.onSurface,
                       )
                     }
@@ -322,7 +324,7 @@ data class PlaylistDetailScreen(val playlistId: Int) : Screen {
                       ) {
                         Icon(
                           imageVector = Icons.Outlined.SwapVert,
-                          contentDescription = "Reorder playlist",
+                          contentDescription = localizedString(R.string.ui_reorder_playlist),
                           tint = MaterialTheme.colorScheme.onSurface,
                         )
                       }
@@ -397,7 +399,7 @@ data class PlaylistDetailScreen(val playlistId: Int) : Screen {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                          text = "Play",
+                          text = localizedString(R.string.ui_play),
                           style = MaterialTheme.typography.labelLarge,
                           fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                         )
@@ -431,12 +433,12 @@ data class PlaylistDetailScreen(val playlistId: Int) : Screen {
               tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-              text = "No videos found",
+              text = localizedString(R.string.ui_no_videos_found),
               style = MaterialTheme.typography.titleMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-              text = "Try a different search term",
+              text = localizedString(R.string.ui_try_a_different_search_term),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -457,10 +459,10 @@ data class PlaylistDetailScreen(val playlistId: Int) : Screen {
               val result = viewModel.refreshM3UPlaylist()
               result
                 .onSuccess {
-                  Toast.makeText(context, "Playlist refreshed successfully", Toast.LENGTH_SHORT).show()
+                  Toast.makeText(context, localizedString(R.string.playlist_refresh_success), Toast.LENGTH_SHORT).show()
                 }
                 .onFailure { error ->
-                  Toast.makeText(context, "Failed to refresh: ${error.message}", Toast.LENGTH_LONG).show()
+                  Toast.makeText(context, localizedString(R.string.ui_failed_to_refresh_1_s, error.message), Toast.LENGTH_LONG).show()
                 }
             } else {
               viewModel.refreshNow()
@@ -519,7 +521,6 @@ data class PlaylistDetailScreen(val playlistId: Int) : Screen {
         isOpen = deleteDialogOpen.value,
         onDismiss = { deleteDialogOpen.value = false },
         onConfirm = { selectionManager.deleteSelected() },
-        itemCount = selectionManager.selectedCount,
       )
 
       // URL Dialog for M3U streams
@@ -529,9 +530,9 @@ data class PlaylistDetailScreen(val playlistId: Int) : Screen {
           onDismiss = { showUrlDialog = false },
           onCopy = {
             val clipboardManager = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-            val clip = android.content.ClipData.newPlainText("Stream URL", urlDialogContent)
+            val clip = android.content.ClipData.newPlainText(localizedString(R.string.ui_stream_url), urlDialogContent)
             clipboardManager.setPrimaryClip(clip)
-            android.widget.Toast.makeText(context, "URL copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(context, localizedString(R.string.ui_url_copied_to_clipboard), android.widget.Toast.LENGTH_SHORT).show()
           }
         )
       }
@@ -592,12 +593,12 @@ private fun PlaylistVideoListContent(
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
           )
           Text(
-            text = "No videos in playlist",
+            text = localizedString(R.string.ui_no_videos_in_playlist),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
           )
           Text(
-            text = "Add videos to get started",
+            text = localizedString(R.string.ui_add_videos_to_get_started),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
           )
@@ -690,7 +691,7 @@ private fun PlaylistVideoListContent(
                   ) {
                     Icon(
                       imageVector = Icons.Filled.DragHandle,
-                      contentDescription = "Drag to reorder",
+                      contentDescription = localizedString(R.string.ui_drag_to_reorder),
                       tint = MaterialTheme.colorScheme.primary,
                     )
                   }
@@ -712,7 +713,7 @@ private fun StreamUrlDialog(
 ) {
   androidx.compose.material3.AlertDialog(
     onDismissRequest = onDismiss,
-    title = { Text("Stream URL") },
+    title = { Text(localizedString(R.string.stream_url)) },
     text = {
       Text(
         text = url,
@@ -732,12 +733,12 @@ private fun StreamUrlDialog(
           contentDescription = null,
           modifier = Modifier.padding(end = 4.dp).size(18.dp)
         )
-        Text("Copy")
+        Text(localizedString(R.string.copy))
       }
     },
     dismissButton = {
       androidx.compose.material3.TextButton(onClick = onDismiss) {
-        Text("Close")
+        Text(localizedString(R.string.close))
       }
     },
   )
@@ -748,17 +749,14 @@ private fun RemoveFromPlaylistDialog(
   isOpen: Boolean,
   onDismiss: () -> Unit,
   onConfirm: () -> Unit,
-  itemCount: Int,
 ) {
   if (!isOpen) return
-
-  val itemText = if (itemCount == 1) "video" else "videos"
 
   androidx.compose.material3.AlertDialog(
     onDismissRequest = onDismiss,
     title = {
       Text(
-        text = "Remove $itemCount $itemText from playlist?",
+        text = localizedString(R.string.ui_remove_selected_videos),
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
       )
@@ -775,7 +773,7 @@ private fun RemoveFromPlaylistDialog(
           shape = MaterialTheme.shapes.extraLarge,
         ) {
           Text(
-            text = "The selected $itemText will be removed from this playlist. The original ${if (itemCount == 1) "file" else "files"} will not be deleted.",
+            text = localizedString(R.string.ui_remove_selected_videos_warning),
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -798,7 +796,7 @@ private fun RemoveFromPlaylistDialog(
         shape = MaterialTheme.shapes.extraLarge,
       ) {
         Text(
-          text = "Remove from Playlist",
+          text = localizedString(R.string.ui_remove_from_playlist),
           fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
         )
       }
@@ -808,7 +806,7 @@ private fun RemoveFromPlaylistDialog(
         onClick = onDismiss,
         shape = MaterialTheme.shapes.extraLarge,
       ) {
-        Text("Cancel", fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
+        Text(localizedString(R.string.generic_cancel), fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
       }
     },
     containerColor = MaterialTheme.colorScheme.surface,

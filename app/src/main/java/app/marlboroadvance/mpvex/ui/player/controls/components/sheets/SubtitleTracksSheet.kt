@@ -35,7 +35,10 @@ fun SubtitlesSheet(
   onDismissRequest: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val items = remember(tracks) {
+  val embeddedHeader = stringResource(R.string.ui_embedded_subtitles)
+  val localHeader = stringResource(R.string.ui_local_subtitles)
+  val externalHeader = stringResource(R.string.ui_external_subtitles)
+  val items = remember(tracks, embeddedHeader, localHeader, externalHeader) {
     val list = mutableListOf<SubtitleItem>()
     
     // Internal/Local tracks section
@@ -43,10 +46,10 @@ fun SubtitlesSheet(
     val external = tracks.filter { it.external == true }
     
     if (internal.isNotEmpty() || external.isNotEmpty()) {
-        list.add(SubtitleItem.Header(if (internal.isNotEmpty()) "Embedded Subtitles" else "Local Subtitles"))
+        list.add(SubtitleItem.Header(if (internal.isNotEmpty()) embeddedHeader else localHeader))
         list.addAll(internal.map { SubtitleItem.Track(it) })
         if (internal.isNotEmpty() && external.isNotEmpty()) {
-          list.add(SubtitleItem.Header("External Subtitles"))
+          list.add(SubtitleItem.Header(externalHeader))
         }
         list.addAll(external.map { SubtitleItem.Track(it) })
     }

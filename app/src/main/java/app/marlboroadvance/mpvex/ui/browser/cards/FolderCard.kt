@@ -1,5 +1,8 @@
 package app.marlboroadvance.mpvex.ui.browser.cards
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
+import app.marlboroadvance.mpvex.utils.media.MediaFormatUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -123,7 +126,7 @@ fun FolderCard(
         ) {
           Icon(
             customIcon ?: Icons.Filled.Folder,
-            contentDescription = "Folder",
+            contentDescription = localizedString(R.string.ui_folder),
             modifier = Modifier.size(56.dp),
             tint = MaterialTheme.colorScheme.secondary,
           )
@@ -210,7 +213,7 @@ fun FolderCard(
         ) {
           Icon(
             customIcon ?: Icons.Filled.Folder,
-            contentDescription = "Folder",
+            contentDescription = localizedString(R.string.ui_folder),
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.secondary,
           )
@@ -345,16 +348,7 @@ fun FolderCard(
 }
 
 private fun formatDuration(durationMs: Long): String {
-  val seconds = durationMs / 1000
-  val hours = seconds / 3600
-  val minutes = (seconds % 3600) / 60
-  val secs = seconds % 60
-
-  return when {
-    hours > 0 -> "${hours}h ${minutes}m"
-    minutes > 0 -> "${minutes}m"
-    else -> "${secs}s"
-  }
+  return MediaFormatUtils.formatDuration(durationMs)
 }
 
 private fun formatFileSize(bytes: Long): String {
@@ -366,6 +360,6 @@ private fun formatFileSize(bytes: Long): String {
 }
 
 private fun formatDate(timestampSeconds: Long): String {
-  val sdf = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
+  val sdf = java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM, java.util.Locale.getDefault())
   return sdf.format(java.util.Date(timestampSeconds * 1000))
 }

@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.plugins
 
+import app.marlboroadvance.mpvex.R
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -87,39 +89,40 @@ object CPluginManifestParser {
   fun parse(
     content: String,
     pluginFileName: String,
+    messages: CPluginMessages = AndroidCPluginMessages,
   ): CPluginManifest {
     val manifest = json.decodeFromString<CPluginManifest>(content)
-    validate(manifest, pluginFileName)
+    validate(manifest, pluginFileName, messages)
     return manifest
   }
 
   fun validate(
     manifest: CPluginManifest,
     pluginFileName: String,
+    messages: CPluginMessages = AndroidCPluginMessages,
   ) {
     val errors = mutableListOf<String>()
 
     if (!isSafeCPluginFileName(pluginFileName)) {
-      errors += "Invalid plugin filename '$pluginFileName'"
+      errors += messages.get(R.string.plugin_invalid_filename, pluginFileName)
     }
     if (manifest.schemaVersion != CPluginManifest.SUPPORTED_SCHEMA_VERSION) {
       errors +=
-        "Unsupported schemaVersion ${manifest.schemaVersion}; " +
-        "expected ${CPluginManifest.SUPPORTED_SCHEMA_VERSION}"
+        messages.get(R.string.plugin_unsupported_schema_version, manifest.schemaVersion, CPluginManifest.SUPPORTED_SCHEMA_VERSION)
     }
     if (!pluginIdPattern.matches(manifest.id)) {
-      errors += "Invalid plugin id '${manifest.id}'"
+      errors += messages.get(R.string.plugin_invalid_id, manifest.id)
     }
     if (manifest.name.isBlank()) {
-      errors += "Plugin name must not be blank"
+      errors += messages.get(R.string.plugin_name_required)
     }
     if (manifest.entry != pluginFileName) {
-      errors += "Manifest entry '${manifest.entry}' does not match '$pluginFileName'"
+      errors += messages.get(R.string.plugin_entry_mismatch, manifest.entry, pluginFileName)
     }
 
     val duplicateFieldIds = manifest.config.groupBy { it.id }.filterValues { it.size > 1 }.keys
     if (duplicateFieldIds.isNotEmpty()) {
-      errors += "Duplicate field ids: ${duplicateFieldIds.sorted().joinToString()}"
+      errors += messages.get(R.string.plugin_duplicate_field_ids, duplicateFieldIds.sorted().joinToString())
     }
 
     val duplicateEnvironmentNames =
@@ -128,64 +131,64 @@ object CPluginManifestParser {
         .filterValues { it.size > 1 }
         .keys
     if (duplicateEnvironmentNames.isNotEmpty()) {
-      errors += "Duplicate environment names: ${duplicateEnvironmentNames.sorted().joinToString()}"
+      errors += messages.get(R.string.plugin_duplicate_environment_names, duplicateEnvironmentNames.sorted().joinToString())
     }
 
     manifest.config.forEach { field ->
       if (!fieldIdPattern.matches(field.id)) {
-        errors += "Invalid field id '${field.id}'"
+        errors += messages.get(R.string.plugin_invalid_field_id, field.id)
       }
       if (field.title.isBlank()) {
-        errors += "Field '${field.id}' has a blank title"
+        errors += messages.get(R.string.plugin_field_title_required, field.id)
       }
       if (field.type !in CPluginFieldType.supported) {
-        errors += "Field '${field.id}' has unsupported type '${field.type}'"
+        errors += messages.get(R.string.plugin_field_unsupported_type, field.id, field.type)
       }
       if (field.binding.type != CPluginBindingType.ENVIRONMENT) {
-        errors += "Field '${field.id}' has unsupported binding type '${field.binding.type}'"
+        errors += messages.get(R.string.plugin_field_unsupported_binding, field.id, field.binding.type)
       }
       if (!environmentNamePattern.matches(field.binding.name)) {
-        errors += "Field '${field.id}' has invalid environment name '${field.binding.name}'"
+        errors += messages.get(R.string.plugin_field_invalid_environment, field.id, field.binding.name)
       }
       if (field.minimum != null && field.maximum != null && field.minimum > field.maximum) {
-        errors += "Field '${field.id}' has minimum greater than maximum"
+        errors += messages.get(R.string.plugin_field_min_exceeds_max, field.id)
       }
       if (
         (field.minimum != null || field.maximum != null) &&
         field.type !in setOf(CPluginFieldType.INTEGER, CPluginFieldType.NUMBER)
       ) {
-        errors += "Field '${field.id}' uses numeric bounds with a non-numeric type"
+        errors += messages.get(R.string.plugin_field_bounds_wrong_type, field.id)
       }
       if (field.pattern != null && field.type !in setOf(CPluginFieldType.STRING, CPluginFieldType.PATH)) {
-        errors += "Field '${field.id}' uses a pattern with a non-text type"
+        errors += messages.get(R.string.plugin_field_pattern_wrong_type, field.id)
       }
       if (field.options.isNotEmpty() && field.type != CPluginFieldType.ENUM) {
-        errors += "Field '${field.id}' defines options but is not an enum"
+        errors += messages.get(R.string.plugin_field_options_wrong_type, field.id)
       }
       if (field.type == CPluginFieldType.ENUM) {
         if (field.options.isEmpty()) {
-          errors += "Enum field '${field.id}' must define at least one option"
+          errors += messages.get(R.string.plugin_enum_options_required, field.id)
         }
         val duplicateOptions = field.options.groupBy { it.value }.filterValues { it.size > 1 }.keys
         if (duplicateOptions.isNotEmpty()) {
-          errors += "Enum field '${field.id}' has duplicate option values"
+          errors += messages.get(R.string.plugin_enum_duplicate_options, field.id)
         }
         if (field.options.any { it.value.isBlank() || it.label.isBlank() }) {
-          errors += "Enum field '${field.id}' has a blank option value or label"
+          errors += messages.get(R.string.plugin_enum_blank_option, field.id)
         }
       }
       field.pattern?.let { pattern ->
         runCatching { Regex(pattern) }
-          .onFailure { errors += "Field '${field.id}' has an invalid regular expression" }
+          .onFailure { errors += messages.get(R.string.plugin_field_invalid_regex, field.id) }
       }
 
       if (field.defaultValue != null && field.defaultValue !is JsonNull) {
         val defaultString = field.defaultValueAsString()
         if (defaultString == null) {
-          errors += "Field '${field.id}' has an invalid default value"
+          errors += messages.get(R.string.plugin_field_invalid_default, field.id)
         } else {
-          val result = CPluginValueValidator.validate(field, defaultString)
-          result.error?.let { errors += "Field '${field.id}' default: $it" }
+          val result = CPluginValueValidator.validate(field, defaultString, messages)
+          result.error?.let { errors += messages.get(R.string.plugin_field_default_error, field.id, it) }
         }
       }
     }
@@ -198,10 +201,11 @@ object CPluginValueValidator {
   fun validate(
     field: CPluginConfigField,
     rawValue: String?,
+    messages: CPluginMessages = AndroidCPluginMessages,
   ): CPluginValueValidation {
     if (rawValue == null || rawValue.isBlank()) {
       return if (field.required) {
-        CPluginValueValidation(error = "A value is required")
+        CPluginValueValidation(error = messages.get(R.string.plugin_value_required))
       } else {
         CPluginValueValidation(normalizedValue = null)
       }
@@ -210,63 +214,67 @@ object CPluginValueValidator {
     return when (field.type) {
       CPluginFieldType.STRING,
       CPluginFieldType.PATH,
-        -> validateString(field, rawValue)
-      CPluginFieldType.BOOLEAN -> validateBoolean(rawValue)
-      CPluginFieldType.INTEGER -> validateInteger(field, rawValue)
-      CPluginFieldType.NUMBER -> validateNumber(field, rawValue)
-      CPluginFieldType.ENUM -> validateEnum(field, rawValue)
-      else -> CPluginValueValidation(error = "Unsupported field type '${field.type}'")
+        -> validateString(field, rawValue, messages)
+      CPluginFieldType.BOOLEAN -> validateBoolean(rawValue, messages)
+      CPluginFieldType.INTEGER -> validateInteger(field, rawValue, messages)
+      CPluginFieldType.NUMBER -> validateNumber(field, rawValue, messages)
+      CPluginFieldType.ENUM -> validateEnum(field, rawValue, messages)
+      else -> CPluginValueValidation(error = messages.get(R.string.plugin_unsupported_type, field.type))
     }
   }
 
   private fun validateString(
     field: CPluginConfigField,
     rawValue: String,
+    messages: CPluginMessages,
   ): CPluginValueValidation {
     val pattern = field.pattern ?: return CPluginValueValidation(normalizedValue = rawValue)
     val matches = runCatching { Regex(pattern).matches(rawValue) }.getOrDefault(false)
     return if (matches) {
       CPluginValueValidation(normalizedValue = rawValue)
     } else {
-      CPluginValueValidation(error = "Value does not match the required pattern")
+      CPluginValueValidation(error = messages.get(R.string.plugin_value_pattern_mismatch))
     }
   }
 
-  private fun validateBoolean(rawValue: String): CPluginValueValidation =
+  private fun validateBoolean(rawValue: String, messages: CPluginMessages): CPluginValueValidation =
     when (rawValue.trim().lowercase()) {
       "true" -> CPluginValueValidation(normalizedValue = "true")
       "false" -> CPluginValueValidation(normalizedValue = "false")
-      else -> CPluginValueValidation(error = "Expected true or false")
+      else -> CPluginValueValidation(error = messages.get(R.string.plugin_expected_boolean))
     }
 
   private fun validateInteger(
     field: CPluginConfigField,
     rawValue: String,
+    messages: CPluginMessages,
   ): CPluginValueValidation {
     val value = rawValue.trim().toLongOrNull()
-      ?: return CPluginValueValidation(error = "Expected an integer")
-    return validateRange(field, value.toDouble(), value.toString())
+      ?: return CPluginValueValidation(error = messages.get(R.string.plugin_expected_integer))
+    return validateRange(field, value.toDouble(), value.toString(), messages)
   }
 
   private fun validateNumber(
     field: CPluginConfigField,
     rawValue: String,
+    messages: CPluginMessages,
   ): CPluginValueValidation {
     val value = rawValue.trim().toDoubleOrNull()?.takeIf { it.isFinite() }
-      ?: return CPluginValueValidation(error = "Expected a finite number")
-    return validateRange(field, value, rawValue.trim())
+      ?: return CPluginValueValidation(error = messages.get(R.string.plugin_expected_number))
+    return validateRange(field, value, rawValue.trim(), messages)
   }
 
   private fun validateRange(
     field: CPluginConfigField,
     numericValue: Double,
     normalizedValue: String,
+    messages: CPluginMessages,
   ): CPluginValueValidation {
     if (field.minimum != null && numericValue < field.minimum) {
-      return CPluginValueValidation(error = "Value must be at least ${field.minimum.formatForMessage()}")
+      return CPluginValueValidation(error = messages.get(R.string.plugin_value_minimum, field.minimum.formatForMessage()))
     }
     if (field.maximum != null && numericValue > field.maximum) {
-      return CPluginValueValidation(error = "Value must be at most ${field.maximum.formatForMessage()}")
+      return CPluginValueValidation(error = messages.get(R.string.plugin_value_maximum, field.maximum.formatForMessage()))
     }
     return CPluginValueValidation(normalizedValue = normalizedValue)
   }
@@ -274,11 +282,12 @@ object CPluginValueValidator {
   private fun validateEnum(
     field: CPluginConfigField,
     rawValue: String,
+    messages: CPluginMessages,
   ): CPluginValueValidation =
     if (field.options.any { it.value == rawValue }) {
       CPluginValueValidation(normalizedValue = rawValue)
     } else {
-      CPluginValueValidation(error = "Select one of the available values")
+      CPluginValueValidation(error = messages.get(R.string.plugin_select_available_value))
     }
 }
 

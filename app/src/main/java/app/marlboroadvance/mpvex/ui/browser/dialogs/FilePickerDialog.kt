@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.dialogs
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Environment
@@ -182,12 +184,12 @@ fun FilePickerDialog(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                   Column(modifier = Modifier.fillMaxWidth()) {
                       Text(
-                        text = "Select Subtitle",
+                        text = localizedString(R.string.ui_select_subtitle),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                       )
                       Text(
-                        text = selectedPath ?: "Select a storage location",
+                        text = selectedPath ?: localizedString(R.string.ui_select_storage_location),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -220,12 +222,12 @@ fun FilePickerDialog(
                   ) {
                       Column(modifier = Modifier.weight(1f)) {
                           Text(
-                            text = "Select Subtitle",
+                            text = localizedString(R.string.ui_select_subtitle),
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                           )
                           Text(
-                            text = selectedPath ?: "Select a storage location",
+                            text = selectedPath ?: localizedString(R.string.ui_select_storage_location),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -276,7 +278,7 @@ fun FilePickerDialog(
                     }
                     if (storageVolumes.isEmpty()) {
                       item {
-                         Text("No storage devices found", modifier = Modifier.padding(16.dp))
+                         Text(localizedString(R.string.no_storage_devices_found), modifier = Modifier.padding(16.dp))
                       }
                     }
                   } else {
@@ -296,7 +298,7 @@ fun FilePickerDialog(
                     }
                     if (folders.isEmpty() && files.isEmpty()) {
                       item {
-                         Text("No folders or supported files", modifier = Modifier.padding(16.dp))
+                         Text(localizedString(R.string.no_folders_or_supported_files), modifier = Modifier.padding(16.dp))
                       }
                     }
                   }
@@ -313,7 +315,7 @@ fun FilePickerDialog(
                     shape = MaterialTheme.shapes.extraLarge,
                     // Reduced padding for the button itself if needed, or rely on Row padding
                   ) {
-                    Text("Cancel", fontWeight = FontWeight.Medium)
+                    Text(localizedString(R.string.generic_cancel), fontWeight = FontWeight.Medium)
                   }
               }
           }
@@ -466,7 +468,7 @@ private fun NavigationButtons(
         contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
       )
     ) {
-      Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", modifier = Modifier.size(iconSize))
+      Icon(Icons.AutoMirrored.Filled.ArrowBack, localizedString(R.string.back), modifier = Modifier.size(iconSize))
     }
   }
 
@@ -478,7 +480,7 @@ private fun NavigationButtons(
       contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
     )
   ) {
-    Icon(Icons.Default.Home, "Home", modifier = Modifier.size(iconSize))
+    Icon(Icons.Default.Home, localizedString(R.string.home), modifier = Modifier.size(iconSize))
   }
 
   FilledTonalIconButton(
@@ -489,7 +491,6 @@ private fun NavigationButtons(
       contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
     )
   ) {
-    Icon(Icons.Default.DriveFolderUpload, "System Picker", modifier = Modifier.size(iconSize))
+    Icon(Icons.Default.DriveFolderUpload, localizedString(R.string.ui_system_picker), modifier = Modifier.size(iconSize))
   }
 }
-

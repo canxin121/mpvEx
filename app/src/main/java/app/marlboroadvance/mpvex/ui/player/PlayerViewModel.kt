@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.player
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -377,16 +378,16 @@ class PlayerViewModel(
         val path =
           uri.resolveUri(host.context)
             ?: return@launch withContext(Dispatchers.Main) {
-              showToast("Failed to load audio file: Invalid URI")
+              showToast(host.context.getString(R.string.failed_load_audio_invalid_uri))
             }
 
         MPVLib.command("audio-add", path, "cached")
         withContext(Dispatchers.Main) {
-          showToast("Audio track added")
+          showToast(host.context.getString(R.string.audio_track_added))
         }
       }.onFailure { e ->
         withContext(Dispatchers.Main) {
-          showToast("Failed to load audio: ${e.message}")
+          showToast(host.context.getString(R.string.failed_load_audio, e.message))
         }
         android.util.Log.e("PlayerViewModel", "Error adding audio", e)
       }
@@ -406,7 +407,7 @@ class PlayerViewModel(
 
         if (!isValidSubtitleFile(fileName)) {
           return@launch withContext(Dispatchers.Main) {
-            showToast("Invalid subtitle file format")
+            showToast(host.context.getString(R.string.invalid_subtitle_format))
           }
         }
 
@@ -440,13 +441,13 @@ class PlayerViewModel(
         val displayName = fileName.take(30).let { if (fileName.length > 30) "$it..." else it }
         if (!silent) {
           withContext(Dispatchers.Main) {
-            showToast("$displayName added")
+            showToast(host.context.getString(R.string.subtitle_added, displayName))
           }
         }
       }.onFailure {
         if (!silent) {
           withContext(Dispatchers.Main) {
-            showToast("Failed to load subtitle")
+            showToast(host.context.getString(R.string.failed_load_subtitle))
           }
         }
       }
@@ -1216,7 +1217,7 @@ class PlayerViewModel(
         // Check if file was created
         if (!tempFile.exists() || tempFile.length() == 0L) {
           withContext(Dispatchers.Main) {
-            Toast.makeText(context, "Failed to create screenshot", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, localizedString(R.string.ui_failed_to_create_screenshot), Toast.LENGTH_SHORT).show()
           }
           return@launch
         }
@@ -1263,12 +1264,12 @@ class PlayerViewModel(
               Toast
                 .makeText(
                   context,
-                  context.getString(R.string.player_sheets_frame_navigation_snapshot_saved),
+                  context.getString(R.string.player_sheets_frame_navigation_snapshot_saved, "Pictures/mpvSnaps"),
                   Toast.LENGTH_SHORT,
                 ).show()
             }
           } else {
-            throw Exception("Failed to create MediaStore entry")
+            throw Exception(host.context.getString(R.string.ui_screenshot_entry_failed))
           }
         } else {
           // Android 9 and below - Use legacy external storage
@@ -1282,7 +1283,7 @@ class PlayerViewModel(
           if (!snapshotsDir.exists()) {
             val created = snapshotsDir.mkdirs()
             if (!created && !snapshotsDir.exists()) {
-              throw Exception("Failed to create mpvSnaps directory")
+              throw Exception(host.context.getString(R.string.ui_screenshot_folder_failed))
             }
           }
 
@@ -1302,14 +1303,14 @@ class PlayerViewModel(
             Toast
               .makeText(
                 context,
-                context.getString(R.string.player_sheets_frame_navigation_snapshot_saved),
+                context.getString(R.string.player_sheets_frame_navigation_snapshot_saved, "Pictures/mpvSnaps"),
                 Toast.LENGTH_SHORT,
               ).show()
           }
         }
       } catch (e: Exception) {
         withContext(Dispatchers.Main) {
-          Toast.makeText(context, "Failed to save snapshot: ${e.message}", Toast.LENGTH_LONG).show()
+          Toast.makeText(context, localizedString(R.string.ui_failed_to_save_snapshot_1_s, e.message), Toast.LENGTH_LONG).show()
         }
       } finally {
         _isSnapshotLoading.value = false
@@ -1765,7 +1766,7 @@ class PlayerViewModel(
     } else {
       MPVLib.command("vf", "remove", "@mpvex_hflip")
     }
-    playerUpdate.value = PlayerUpdates.ShowText(if (newMirrorState) "H-Flip On" else "H-Flip Off")
+    playerUpdate.value = PlayerUpdates.ShowText(localizedString(if (newMirrorState) R.string.ui_horizontal_flip_on else R.string.ui_horizontal_flip_off))
   }
 
   fun toggleVerticalFlip() {
@@ -1779,7 +1780,7 @@ class PlayerViewModel(
       MPVLib.command("vf", "remove", "@mpvex_vflip")
     }
 
-    playerUpdate.value = PlayerUpdates.ShowText(if (newState) "V-Flip On" else "V-Flip Off")
+    playerUpdate.value = PlayerUpdates.ShowText(localizedString(if (newState) R.string.ui_vertical_flip_on else R.string.ui_vertical_flip_off))
   }
 
   // ==================== Utility ====================

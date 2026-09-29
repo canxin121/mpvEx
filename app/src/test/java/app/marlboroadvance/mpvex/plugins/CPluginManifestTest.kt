@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.plugins
 
+import app.marlboroadvance.mpvex.R
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
@@ -9,7 +10,7 @@ import org.junit.Test
 class CPluginManifestTest {
   @Test
   fun `parses and validates a version one manifest`() {
-    val manifest = CPluginManifestParser.parse(VALID_MANIFEST, "example.so")
+    val manifest = parseForTest(VALID_MANIFEST, "example.so")
 
     assertEquals("org.example.plugin", manifest.id)
     assertEquals(3, manifest.config.size)
@@ -21,7 +22,7 @@ class CPluginManifestTest {
   @Test
   fun `rejects a manifest whose entry does not match the plugin`() {
     val error = assertThrows(IllegalArgumentException::class.java) {
-      CPluginManifestParser.parse(
+      parseForTest(
         VALID_MANIFEST.replace("example.so", "other.so"),
         "example.so",
       )
@@ -33,7 +34,7 @@ class CPluginManifestTest {
   @Test
   fun `rejects a default whose JSON type does not match the field`() {
     val error = assertThrows(IllegalArgumentException::class.java) {
-      CPluginManifestParser.parse(
+      parseForTest(
         VALID_MANIFEST.replace(
           "\"default\": \"https://example.com\"",
           "\"default\": 42",
@@ -47,11 +48,11 @@ class CPluginManifestTest {
 
   @Test
   fun `uses stored values and defaults when building an environment plan`() {
-    val manifest = CPluginManifestParser.parse(VALID_MANIFEST, "example.so")
+    val manifest = parseForTest(VALID_MANIFEST, "example.so")
     val descriptor = CPluginDescriptor("example.so", manifest, "example.so.mpvex.json")
 
     val plan =
-      CPluginEnvironmentPlanBuilder.build(
+      buildForTest(
         selectedPluginFileNames = setOf("example.so"),
         descriptors = listOf(descriptor),
         configuredValues =
@@ -78,10 +79,10 @@ class CPluginManifestTest {
         "\"default\": \"https://example.com\",",
         "",
       )
-    val manifest = CPluginManifestParser.parse(content, "example.so")
+    val manifest = parseForTest(content, "example.so")
 
     val plan =
-      CPluginEnvironmentPlanBuilder.build(
+      buildForTest(
         selectedPluginFileNames = setOf("example.so"),
         descriptors = listOf(CPluginDescriptor("example.so", manifest, "example.so.mpvex.json")),
         configuredValues = emptyMap(),
@@ -94,17 +95,17 @@ class CPluginManifestTest {
 
   @Test
   fun `excludes all plugins that claim the same environment variable`() {
-    val first = CPluginManifestParser.parse(VALID_MANIFEST, "example.so")
+    val first = parseForTest(VALID_MANIFEST, "example.so")
     val secondContent =
       VALID_MANIFEST
         .replace("org.example.plugin", "org.example.second")
         .replace("example.so", "second.so")
         .replace("MPVEX_EXAMPLE_TIMEOUT", "MPVEX_SECOND_TIMEOUT")
         .replace("MPVEX_EXAMPLE_MODE", "MPVEX_SECOND_MODE")
-    val second = CPluginManifestParser.parse(secondContent, "second.so")
+    val second = parseForTest(secondContent, "second.so")
 
     val plan =
-      CPluginEnvironmentPlanBuilder.build(
+      buildForTest(
         selectedPluginFileNames = setOf("example.so", "second.so"),
         descriptors =
           listOf(
@@ -121,13 +122,13 @@ class CPluginManifestTest {
 
   @Test
   fun `validates ranges and optional empty values`() {
-    val manifest = CPluginManifestParser.parse(VALID_MANIFEST, "example.so")
+    val manifest = parseForTest(VALID_MANIFEST, "example.so")
     val timeout = manifest.config.first { it.id == "timeout" }
     val optionalField = timeout.copy(required = false, defaultValue = null)
 
-    assertEquals("Value must be at most 60", CPluginValueValidator.validate(timeout, "61").error)
-    assertNull(CPluginValueValidator.validate(optionalField, "").normalizedValue)
-    assertTrue(CPluginValueValidator.validate(optionalField, "").isValid)
+    assertEquals("Value must be at most 60", validateForTest(timeout, "61").error)
+    assertNull(validateForTest(optionalField, "").normalizedValue)
+    assertTrue(validateForTest(optionalField, "").isValid)
   }
 
   @Test
@@ -185,7 +186,7 @@ class CPluginManifestTest {
       )
 
     val result =
-      CPluginEnvironmentApplicator.apply(
+      applyForTest(
         plan = plan,
         previouslyManagedEnvironmentNames = setOf("MPVEX_OLD"),
         environment = environment,
@@ -214,7 +215,7 @@ class CPluginManifestTest {
       )
 
     val result =
-      CPluginEnvironmentApplicator.apply(
+      applyForTest(
         plan = plan,
         previouslyManagedEnvironmentNames = emptySet(),
         environment = environment,
@@ -224,6 +225,36 @@ class CPluginManifestTest {
     assertTrue(result.managedEnvironmentNames.isEmpty())
     assertTrue(environment.operations.takeLast(2).containsAll(listOf("unset:MPVEX_FIRST", "unset:MPVEX_SECOND")))
   }
+
+  private val testMessages = object : CPluginMessages {
+    override fun get(id: Int, vararg args: Any?): String = when (id) {
+      R.string.plugin_entry_mismatch -> "Manifest entry ${args[0]} does not match plugin file ${args[1]}"
+      R.string.plugin_field_invalid_default -> "Field ${args[0]} has an invalid default value"
+      R.string.plugin_value_required -> "A value is required"
+      R.string.plugin_value_maximum -> "Value must be at most ${args[0]}"
+      else -> "$id: ${args.joinToString()}"
+    }
+  }
+
+  private fun parseForTest(content: String, fileName: String): CPluginManifest =
+    CPluginManifestParser.parse(content, fileName, testMessages)
+
+  private fun buildForTest(
+    selectedPluginFileNames: Set<String>,
+    descriptors: List<CPluginDescriptor>,
+    configuredValues: Map<String, Map<String, String>>,
+  ): CPluginEnvironmentPlan =
+    CPluginEnvironmentPlanBuilder.build(selectedPluginFileNames, descriptors, configuredValues, testMessages)
+
+  private fun validateForTest(field: CPluginConfigField, value: String?): CPluginValueValidation =
+    CPluginValueValidator.validate(field, value, testMessages)
+
+  private fun applyForTest(
+    plan: CPluginEnvironmentPlan,
+    previouslyManagedEnvironmentNames: Set<String>,
+    environment: CPluginEnvironmentAccess,
+  ): CPluginEnvironmentApplyResult =
+    CPluginEnvironmentApplicator.apply(plan, previouslyManagedEnvironmentNames, environment, testMessages)
 
   private class FakeEnvironment(
     private val failingSetName: String? = null,

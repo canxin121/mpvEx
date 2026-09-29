@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.dialogs
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -83,7 +85,7 @@ fun AddConnectionSheet(
     modifier = Modifier.widthIn(min = 400.dp, max = 600.dp),
     title = {
       Text(
-        text = "Add Network Connection",
+        text = localizedString(R.string.ui_add_network_connection),
         style = MaterialTheme.typography.headlineSmall,
         fontWeight = FontWeight.Medium,
       )
@@ -105,7 +107,7 @@ fun AddConnectionSheet(
               OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Name", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = { Text(localizedString(R.string.name), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 modifier = Modifier.weight(0.50f),
                 singleLine = true,
               )
@@ -120,7 +122,7 @@ fun AddConnectionSheet(
                   value = protocol.displayName,
                   onValueChange = { },
                   readOnly = true,
-                  label = { Text("Protocol", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                  label = { Text(localizedString(R.string.protocol), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                   trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = protocolMenuExpanded) },
                   modifier = Modifier
                     .fillMaxWidth()
@@ -148,7 +150,7 @@ fun AddConnectionSheet(
       OutlinedTextField(
         value = host,
         onValueChange = { host = it },
-        label = { Text("Host/IP Address", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        label = { Text(localizedString(R.string.ui_host_ip_address), maxLines = 1, overflow = TextOverflow.Ellipsis) },
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
         placeholder = { Text("192.168.1.100", maxLines = 1, overflow = TextOverflow.Ellipsis) },
@@ -163,7 +165,7 @@ fun AddConnectionSheet(
               OutlinedTextField(
                 value = port,
                 onValueChange = { port = it },
-                label = { Text("Port", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = { Text(localizedString(R.string.port), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 modifier = Modifier.weight(0.3f),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -173,7 +175,7 @@ fun AddConnectionSheet(
               OutlinedTextField(
                 value = path,
                 onValueChange = { path = it },
-                label = { Text("Path", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = { Text(localizedString(R.string.path), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 modifier = Modifier.weight(0.7f),
                 singleLine = true,
                 placeholder = { Text("/", maxLines = 1, overflow = TextOverflow.Ellipsis) },
@@ -190,7 +192,7 @@ fun AddConnectionSheet(
           onCheckedChange = { isAnonymous = it },
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text("Anonymous/Guest Access")
+        Text(localizedString(R.string.ui_anonymous_guest_access))
       }
       
       // HTTPS checkbox (only for WebDAV)
@@ -212,7 +214,7 @@ fun AddConnectionSheet(
             },
           )
           Spacer(modifier = Modifier.width(8.dp))
-          Text("Use HTTPS (Secure Connection)")
+          Text(localizedString(R.string.ui_use_https_secure_connection))
         }
       }
 
@@ -225,7 +227,7 @@ fun AddConnectionSheet(
               OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
-                label = { Text("Username", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = { Text(localizedString(R.string.username), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 modifier = Modifier.weight(0.50f),
                 singleLine = true,
                 enabled = !isAnonymous,
@@ -235,7 +237,7 @@ fun AddConnectionSheet(
               OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = { Text("Password", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = { Text(localizedString(R.string.password), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 modifier = Modifier.weight(0.50f),
                 singleLine = true,
                 enabled = !isAnonymous,
@@ -250,7 +252,7 @@ fun AddConnectionSheet(
         enabled = host.isNotBlank() && (isAnonymous || username.isNotBlank()),
       ) {
         Text(
-          text = "Save",
+          text = localizedString(R.string.ui_save),
           fontWeight = FontWeight.SemiBold,
         )
       }
@@ -258,7 +260,7 @@ fun AddConnectionSheet(
     dismissButton = {
       TextButton(onClick = handleDismiss) {
         Text(
-          text = "Cancel",
+          text = localizedString(R.string.generic_cancel),
           fontWeight = FontWeight.Medium,
         )
       }

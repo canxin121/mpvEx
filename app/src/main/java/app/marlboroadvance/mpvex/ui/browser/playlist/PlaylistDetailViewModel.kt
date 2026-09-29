@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.database.entities.PlaylistEntity
 import app.marlboroadvance.mpvex.database.entities.PlaylistItemEntity
 import app.marlboroadvance.mpvex.database.repository.PlaylistRepository
@@ -101,7 +102,7 @@ class PlaylistDetailViewModel(
                     width = 0,
                     height = 0,
                     fps = 0f,
-                    resolution = "Unknown"
+                    resolution = getApplication<Application>().getString(R.string.ui_unknown),
                   )
                   PlaylistVideoItem(item, video)
                 } catch (e: Exception) {
@@ -185,7 +186,7 @@ class PlaylistDetailViewModel(
                 width = 0,
                 height = 0,
                 fps = 0f,
-                resolution = "Unknown"
+                resolution = getApplication<Application>().getString(R.string.ui_unknown),
               )
               PlaylistVideoItem(item, video)
             } catch (e: Exception) {

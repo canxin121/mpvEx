@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.domain.browser.FileSystemItem
 import app.marlboroadvance.mpvex.domain.browser.PathComponent
 import app.marlboroadvance.mpvex.domain.media.model.Video
@@ -416,13 +417,13 @@ object MediaFileRepository {
         val directory = File(path)
 
         if (!directory.exists()) {
-          return@withContext Result.failure(Exception("Directory does not exist: $path"))
+          return@withContext Result.failure(Exception(context.getString(R.string.ui_directory_not_found, path)))
         }
         if (!directory.canRead()) {
-          return@withContext Result.failure(Exception("Cannot read directory: $path"))
+          return@withContext Result.failure(Exception(context.getString(R.string.ui_directory_not_readable, path)))
         }
         if (!directory.isDirectory) {
-          return@withContext Result.failure(Exception("Path is not a directory: $path"))
+          return@withContext Result.failure(Exception(context.getString(R.string.ui_path_not_directory, path)))
         }
 
         // Ensure index is populated for fast recursive counts and filtering
@@ -497,7 +498,7 @@ object MediaFileRepository {
         Result.success(items)
       } catch (e: SecurityException) {
         Log.e(TAG, "Security exception scanning directory: $path", e)
-        Result.failure(Exception("Permission denied: ${e.message}"))
+        Result.failure(Exception(context.getString(R.string.ui_permission_denied_reason, e.message ?: context.getString(R.string.ui_unknown_error))))
       } catch (e: Exception) {
         Log.e(TAG, "Error scanning directory: $path", e)
         Result.failure(e)
@@ -522,7 +523,7 @@ object MediaFileRepository {
           val primaryCount = cachedRecursiveCounts[primaryPath] ?: cachedFolderCounts.values.sum()
           roots.add(
             FileSystemItem.Folder(
-              name = "Internal Storage",
+              name = context.getString(R.string.ui_internal_storage),
               path = primaryPath,
               lastModified = primaryStorage.lastModified(),
               videoCount = primaryCount,

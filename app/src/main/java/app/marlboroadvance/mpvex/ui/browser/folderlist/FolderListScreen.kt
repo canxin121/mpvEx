@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.folderlist
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -331,11 +333,11 @@ object FolderListScreen : Screen {
                 onSearch = { },
                 expanded = false,
                 onExpandedChange = { },
-                placeholder = { Text("Search folders and videos...") },
+                placeholder = { Text(localizedString(R.string.ui_search_folders_and_videos)) },
                 leadingIcon = {
                   Icon(
                     imageVector = Icons.Filled.Search,
-                    contentDescription = "Search",
+                    contentDescription = localizedString(R.string.settings_search_title),
                   )
                 },
                 trailingIcon = {
@@ -347,7 +349,7 @@ object FolderListScreen : Screen {
                   ) {
                     Icon(
                       imageVector = Icons.Filled.Close,
-                      contentDescription = "Cancel",
+                      contentDescription = localizedString(R.string.generic_cancel),
                     )
                   }
                 },
@@ -424,7 +426,7 @@ object FolderListScreen : Screen {
                 viewModel.refresh()
                 android.widget.Toast.makeText(
                   context,
-                  context.getString(app.marlboroadvance.mpvex.R.string.pref_folders_blacklisted),
+                  localizedString(app.marlboroadvance.mpvex.R.string.pref_folders_blacklisted),
                   android.widget.Toast.LENGTH_SHORT,
                 ).show()
               }
@@ -448,7 +450,7 @@ object FolderListScreen : Screen {
                   TooltipAnchorPosition.Above
                 }
               ),
-              tooltip = { PlainTooltip { Text("Toggle menu") } },
+              tooltip = { PlainTooltip { Text(localizedString(R.string.toggle_menu)) } },
               state = rememberTooltipState(),
             ) {
               ToggleFloatingActionButton(
@@ -479,7 +481,7 @@ object FolderListScreen : Screen {
               filePicker.launch(arrayOf("video/*"))
             },
             icon = { Icon(Icons.Filled.FileOpen, contentDescription = null) },
-            text = { Text(text = "Open File") },
+            text = { Text(text = localizedString(R.string.ui_open_file)) },
           )
 
           FloatingActionButtonMenuItem(
@@ -494,7 +496,7 @@ object FolderListScreen : Screen {
               }
             },
             icon = { Icon(Icons.Filled.History, contentDescription = null) },
-            text = { Text(text = "Recently Played") },
+            text = { Text(text = localizedString(R.string.pref_advanced_enable_recently_played_title)) },
           )
 
           FloatingActionButtonMenuItem(
@@ -503,7 +505,7 @@ object FolderListScreen : Screen {
               showLinkDialog.value = true
             },
             icon = { Icon(Icons.Filled.Link, contentDescription = null) },
-            text = { Text(text = "Open Link") },
+            text = { Text(text = localizedString(R.string.ui_open_link)) },
           )
         }
       },
@@ -526,8 +528,8 @@ object FolderListScreen : Screen {
                   // No results
                   EmptyState(
                     icon = Icons.Filled.Search,
-                    title = "No results found",
-                    message = "No folders or videos match your search query",
+                    title = localizedString(R.string.ui_no_results_found),
+                    message = localizedString(R.string.ui_no_folders_or_videos_match_your_search_query),
                     modifier = Modifier.fillMaxSize(),
                   )
                 } else {
@@ -607,8 +609,6 @@ object FolderListScreen : Screen {
         isOpen = deleteDialogOpen.value,
         onDismiss = { deleteDialogOpen.value = false },
         onConfirm = { selectionManager.deleteSelected() },
-        itemType = "folder",
-        itemCount = selectionManager.selectedCount,
         itemNames = selectionManager.getSelectedItems().map { it.name },
       )
     }
@@ -672,14 +672,14 @@ private fun FolderListContent(
         if (showLoading) {
           LoadingState(
             icon = Icons.Filled.Folder,
-            title = "Scanning for videos...",
-            message = scanStatus ?: "Please wait while we search your device",
+            title = localizedString(R.string.ui_scanning_for_videos),
+            message = scanStatus ?: localizedString(R.string.ui_wait_for_device_search),
           )
         } else if (showEmpty) {
           EmptyState(
             icon = Icons.Filled.Folder,
-            title = "No video folders found",
-            message = "Add some video files to your device to see them here",
+            title = localizedString(R.string.ui_no_video_folders_found),
+            message = localizedString(R.string.ui_add_some_video_files_to_your_device_to_see_them_here),
           )
         }
       }
@@ -902,7 +902,10 @@ private fun FolderSortDialog(
 
   val folderGridColumnSelector = if (mediaLayoutMode == MediaLayoutMode.GRID) {
     GridColumnSelector(
-      label = "Grid Columns (${if (isLandscape) "Landscape" else "Portrait"})",
+      label = localizedString(
+        R.string.ui_grid_columns_orientation,
+        localizedString(if (isLandscape) R.string.pref_player_orientation_landscape else R.string.pref_player_orientation_portrait),
+      ),
       currentValue = folderGridColumns,
       onValueChange = {
         if (isLandscape) browserPreferences.folderGridColumnsLandscape.set(it)
@@ -915,7 +918,10 @@ private fun FolderSortDialog(
 
   val videoGridColumnSelector = if (mediaLayoutMode == MediaLayoutMode.GRID) {
     GridColumnSelector(
-      label = "Video Grid Columns (${if (isLandscape) "Landscape" else "Portrait"})",
+      label = localizedString(
+        R.string.ui_video_grid_columns_orientation,
+        localizedString(if (isLandscape) R.string.pref_player_orientation_landscape else R.string.pref_player_orientation_portrait),
+      ),
       currentValue = videoGridColumns,
       onValueChange = {
         if (isLandscape) browserPreferences.videoGridColumnsLandscape.set(it)
@@ -931,7 +937,7 @@ private fun FolderSortDialog(
   SortDialog(
     isOpen = isOpen,
     onDismiss = onDismiss,
-    title = if (isAlbumView) "Sort & View Options" else "View Options",
+    title = localizedString(if (isAlbumView) R.string.ui_sort_view_options else R.string.ui_view_options),
     sortType = sortType.displayName,
     onSortTypeChange = { typeName ->
       FolderSortType.entries
@@ -954,17 +960,17 @@ private fun FolderSortDialog(
     ),
     getLabelForType = { type, _ ->
       when (type) {
-        FolderSortType.Title.displayName -> Pair("A-Z", "Z-A")
-        FolderSortType.Date.displayName -> Pair("Oldest", "Newest")
-        FolderSortType.Size.displayName -> Pair("Smallest", "Largest")
-        else -> Pair("Asc", "Desc")
+        FolderSortType.Title.displayName -> Pair(localizedString(R.string.sort_ascending), localizedString(R.string.sort_descending))
+        FolderSortType.Date.displayName -> Pair(localizedString(R.string.sort_oldest), localizedString(R.string.sort_newest))
+        FolderSortType.Size.displayName -> Pair(localizedString(R.string.sort_smallest), localizedString(R.string.sort_largest))
+        else -> Pair(localizedString(R.string.sort_ascending), localizedString(R.string.sort_descending))
       }
     },
     showSortOptions = isAlbumView,
     viewModeSelector = ViewModeSelector(
-      label = "View Mode",
-      firstOptionLabel = "Folder",
-      secondOptionLabel = "Tree",
+      label = localizedString(R.string.ui_view_mode),
+      firstOptionLabel = localizedString(R.string.ui_folder),
+      secondOptionLabel = localizedString(R.string.sort_tree),
       firstOptionIcon = Icons.Filled.ViewModule,
       secondOptionIcon = Icons.Filled.AccountTree,
       isFirstOptionSelected = folderViewMode == FolderViewMode.AlbumView,
@@ -975,9 +981,9 @@ private fun FolderSortDialog(
       },
     ),
     layoutModeSelector = ViewModeSelector(
-      label = "Layout",
-      firstOptionLabel = "List",
-      secondOptionLabel = "Grid",
+      label = localizedString(R.string.ui_layout),
+      firstOptionLabel = localizedString(R.string.sort_list),
+      secondOptionLabel = localizedString(R.string.sort_grid),
       firstOptionIcon = Icons.AutoMirrored.Filled.ViewList,
       secondOptionIcon = Icons.Filled.GridView,
       isFirstOptionSelected = mediaLayoutMode == MediaLayoutMode.LIST,
@@ -989,32 +995,32 @@ private fun FolderSortDialog(
     ),
     visibilityToggles = listOf(
       VisibilityToggle(
-        label = "Full Name",
+        label = localizedString(R.string.ui_full_name),
         checked = unlimitedNameLines,
         onCheckedChange = { appearancePreferences.unlimitedNameLines.set(it) },
       ),
       VisibilityToggle(
-        label = "Path",
+        label = localizedString(R.string.path),
         checked = showFolderPath,
         onCheckedChange = { browserPreferences.showFolderPath.set(it) },
       ),
       VisibilityToggle(
-        label = "Total Videos",
+        label = localizedString(R.string.ui_total_videos),
         checked = showTotalVideosChip,
         onCheckedChange = { browserPreferences.showTotalVideosChip.set(it) },
       ),
       VisibilityToggle(
-        label = "Total Duration",
+        label = localizedString(R.string.ui_total_duration),
         checked = showTotalDurationChip,
         onCheckedChange = { browserPreferences.showTotalDurationChip.set(it) },
       ),
       VisibilityToggle(
-        label = "Folder Size",
+        label = localizedString(R.string.ui_folder_size),
         checked = showTotalSizeChip,
         onCheckedChange = { browserPreferences.showTotalSizeChip.set(it) },
       ),
       VisibilityToggle(
-        label = "Date",
+        label = localizedString(R.string.ui_date),
         checked = showDateChip,
         onCheckedChange = { browserPreferences.showDateChip.set(it) },
       ),

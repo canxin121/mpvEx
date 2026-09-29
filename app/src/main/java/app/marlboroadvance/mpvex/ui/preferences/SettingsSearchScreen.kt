@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -46,7 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -63,17 +64,17 @@ object SettingsSearchScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val context = LocalContext.current
+        val resources = LocalResources.current
         val backstack = LocalBackStack.current
         val keyboardController = LocalSoftwareKeyboardController.current
         val focusRequester = remember { FocusRequester() }
 
         var searchQuery by rememberSaveable { mutableStateOf("") }
 
-        val searchResults by remember(searchQuery) {
+        val searchResults by remember(searchQuery, resources) {
             derivedStateOf {
                 SearchablePreferences.search(searchQuery) { resId ->
-                    context.getString(resId)
+                    resources.getString(resId)
                 }
             }
         }
@@ -141,7 +142,7 @@ object SettingsSearchScreen : Screen {
                             IconButton(onClick = { searchQuery = "" }) {
                                 Icon(
                                     imageVector = Icons.Outlined.Clear,
-                                    contentDescription = "Clear",
+                                    contentDescription = localizedString(R.string.ui_clear),
                                     tint = MaterialTheme.colorScheme.outline,
                                 )
                             }
@@ -212,7 +213,7 @@ object SettingsSearchScreen : Screen {
                     ) {
                         itemsIndexed(
                             items = searchResults,
-                            key = { index, pref -> "${pref.titleRes}_${pref.category}_${pref.screen}_$index".hashCode() }
+                            key = { index, pref -> "${pref.titleRes}_${pref.categoryRes}_${pref.screen}_$index".hashCode() }
                         ) { _, preference ->
                             SearchResultItem(
                                 preference = preference,
@@ -288,7 +289,7 @@ private fun SearchResultItem(
                 }
 
                 Text(
-                    text = preference.category,
+                    text = stringResource(preference.categoryRes),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                 )

@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.filesystem
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -444,16 +446,19 @@ fun FileSystemBrowserScreen(path: String? = null) {
                 placeholder = {
                   Text(
                     if (isAtRoot) {
-                      "Search in all storage volumes..."
+                      localizedString(R.string.ui_search_all_storage)
                     } else {
-                      "Search in ${breadcrumbs.lastOrNull()?.name ?: "folder"}..."
+                      localizedString(
+                        R.string.ui_search_in_folder,
+                        breadcrumbs.lastOrNull()?.name ?: localizedString(R.string.ui_folder_generic),
+                      )
                     }
                   )
                 },
                 leadingIcon = {
                   Icon(
                     imageVector = Icons.Filled.Search,
-                    contentDescription = "Search",
+                    contentDescription = localizedString(R.string.settings_search_title),
                   )
                 },
                 trailingIcon = {
@@ -465,7 +470,7 @@ fun FileSystemBrowserScreen(path: String? = null) {
                   ) {
                     Icon(
                       imageVector = Icons.Filled.Close,
-                      contentDescription = "Cancel",
+                      contentDescription = localizedString(R.string.generic_cancel),
                     )
                   }
                 },
@@ -487,7 +492,7 @@ fun FileSystemBrowserScreen(path: String? = null) {
             title = if (isAtRoot) {
               stringResource(app.marlboroadvance.mpvex.R.string.app_name)
             } else {
-              breadcrumbs.lastOrNull()?.name ?: "Tree View"
+              breadcrumbs.lastOrNull()?.name ?: localizedString(R.string.ui_tree_view)
             },
             isInSelectionMode = isInSelectionMode,
             selectedCount = selectedCount,
@@ -651,7 +656,7 @@ fun FileSystemBrowserScreen(path: String? = null) {
                     TooltipAnchorPosition.Above
                   }
                 ),
-                tooltip = { PlainTooltip { Text("Toggle menu") } },
+                tooltip = { PlainTooltip { Text(localizedString(R.string.toggle_menu)) } },
                 state = rememberTooltipState(),
               ) {
                 ToggleFloatingActionButton(
@@ -683,7 +688,7 @@ fun FileSystemBrowserScreen(path: String? = null) {
                 filePicker.launch(arrayOf("video/*"))
               },
               icon = { Icon(Icons.Filled.FileOpen, contentDescription = null) },
-              text = { Text(text = "Open File") },
+              text = { Text(text = localizedString(R.string.ui_open_file)) },
             )
 
             FloatingActionButtonMenuItem(
@@ -698,7 +703,7 @@ fun FileSystemBrowserScreen(path: String? = null) {
                 }
               },
               icon = { Icon(Icons.Filled.History, contentDescription = null) },
-              text = { Text(text = "Recently Played") },
+              text = { Text(text = localizedString(R.string.pref_advanced_enable_recently_played_title)) },
             )
 
             FloatingActionButtonMenuItem(
@@ -707,7 +712,7 @@ fun FileSystemBrowserScreen(path: String? = null) {
                 showLinkDialog.value = true
               },
               icon = { Icon(Icons.Filled.Link, contentDescription = null) },
-              text = { Text(text = "Open Link") },
+              text = { Text(text = localizedString(R.string.ui_open_link)) },
             )
           }
         }
@@ -883,12 +888,6 @@ fun FileSystemBrowserScreen(path: String? = null) {
           videoSelectionManager.deleteSelected()
         }
       },
-      itemType = when {
-        folderSelectionManager.isInSelectionMode && videoSelectionManager.isInSelectionMode -> "item"
-        folderSelectionManager.isInSelectionMode -> "folder"
-        else -> "video"
-      },
-      itemCount = selectedCount,
       itemNames = (folderSelectionManager.getSelectedItems().map { it.name } +
         videoSelectionManager.getSelectedItems().map { it.displayName }),
     )
@@ -1082,7 +1081,7 @@ private fun FileSystemBrowserContent(
       ) {
         EmptyState(
           icon = Icons.Filled.Folder,
-          title = "Error loading directory",
+          title = localizedString(R.string.ui_error_loading_directory),
           message = error,
         )
       }
@@ -1095,8 +1094,8 @@ private fun FileSystemBrowserContent(
       ) {
         EmptyState(
           icon = Icons.Filled.FolderOpen,
-          title = "Empty folder",
-          message = "This folder contains no videos or subfolders",
+          title = localizedString(R.string.ui_empty_folder),
+          message = localizedString(R.string.ui_this_folder_contains_no_videos_or_subfolders),
         )
       }
     }
@@ -1289,7 +1288,7 @@ private fun FileSystemSearchContent(
               color = MaterialTheme.colorScheme.primary,
             )
             Text(
-              text = if (isAtRoot) "Searching all storage volumes..." else "Searching...",
+              text = localizedString(if (isAtRoot) R.string.ui_searching_all_storage_volumes else R.string.ui_searching),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -1304,8 +1303,8 @@ private fun FileSystemSearchContent(
         ) {
           EmptyState(
             icon = Icons.Filled.Search,
-            title = "No results found",
-            message = "No files or folders match \"$searchQuery\"",
+            title = localizedString(R.string.ui_no_results_found),
+            message = localizedString(R.string.ui_no_files_match, searchQuery),
           )
         }
       }
@@ -1424,7 +1423,7 @@ fun FileSystemSortDialog(
   SortDialog(
     isOpen = isOpen,
     onDismiss = onDismiss,
-    title = "Sort & View Options",
+    title = localizedString(R.string.ui_sort_view_options),
     sortType = folderSortType.displayName,
     onSortTypeChange = { typeName ->
       app.marlboroadvance.mpvex.preferences.FolderSortType.entries.find { it.displayName == typeName }?.let {
@@ -1450,17 +1449,17 @@ fun FileSystemSortDialog(
     ),
     getLabelForType = { type, _ ->
       when (type) {
-        app.marlboroadvance.mpvex.preferences.FolderSortType.Title.displayName -> Pair("A-Z", "Z-A")
-        app.marlboroadvance.mpvex.preferences.FolderSortType.Date.displayName -> Pair("Oldest", "Newest")
-        app.marlboroadvance.mpvex.preferences.FolderSortType.Size.displayName -> Pair("Smallest", "Largest")
-        else -> Pair("Asc", "Desc")
+        app.marlboroadvance.mpvex.preferences.FolderSortType.Title.displayName -> Pair(localizedString(R.string.sort_ascending), localizedString(R.string.sort_descending))
+        app.marlboroadvance.mpvex.preferences.FolderSortType.Date.displayName -> Pair(localizedString(R.string.sort_oldest), localizedString(R.string.sort_newest))
+        app.marlboroadvance.mpvex.preferences.FolderSortType.Size.displayName -> Pair(localizedString(R.string.sort_smallest), localizedString(R.string.sort_largest))
+        else -> Pair(localizedString(R.string.sort_ascending), localizedString(R.string.sort_descending))
       }
     },
     showSortOptions = true,
     viewModeSelector = ViewModeSelector(
-      label = "View Mode",
-      firstOptionLabel = "Folder",
-      secondOptionLabel = "Tree",
+      label = localizedString(R.string.ui_view_mode),
+      firstOptionLabel = localizedString(R.string.ui_folder),
+      secondOptionLabel = localizedString(R.string.sort_tree),
       firstOptionIcon = Icons.Filled.ViewModule,
       secondOptionIcon = Icons.Filled.AccountTree,
       isFirstOptionSelected = folderViewMode == app.marlboroadvance.mpvex.preferences.FolderViewMode.AlbumView,
@@ -1475,9 +1474,9 @@ fun FileSystemSortDialog(
       },
     ),
     layoutModeSelector = ViewModeSelector(
-      label = "Layout",
-      firstOptionLabel = "List",
-      secondOptionLabel = "Grid",
+      label = localizedString(R.string.ui_layout),
+      firstOptionLabel = localizedString(R.string.sort_list),
+      secondOptionLabel = localizedString(R.string.sort_grid),
       firstOptionIcon = Icons.AutoMirrored.Filled.ViewList,
       secondOptionIcon = Icons.Filled.GridView,
       isFirstOptionSelected = true, // Always list mode
@@ -1489,42 +1488,42 @@ fun FileSystemSortDialog(
     enableLayoutModeOptions = false, // Disabled/grayed out
     visibilityToggles = listOf(
       VisibilityToggle(
-        label = "Video Thumbnails",
+        label = localizedString(R.string.ui_video_thumbnails),
         checked = showVideoThumbnails,
         onCheckedChange = { browserPreferences.showVideoThumbnails.set(it) },
       ),
       VisibilityToggle(
-        label = "Full Name",
+        label = localizedString(R.string.ui_full_name),
         checked = unlimitedNameLines,
         onCheckedChange = { appearancePreferences.unlimitedNameLines.set(it) },
       ),
       VisibilityToggle(
-        label = "Path",
+        label = localizedString(R.string.path),
         checked = showFolderPath,
         onCheckedChange = { browserPreferences.showFolderPath.set(it) },
       ),
       VisibilityToggle(
-        label = "Total Videos",
+        label = localizedString(R.string.ui_total_videos),
         checked = showTotalVideosChip,
         onCheckedChange = { browserPreferences.showTotalVideosChip.set(it) },
       ),
       VisibilityToggle(
-        label = "Folder Size",
+        label = localizedString(R.string.ui_folder_size),
         checked = showTotalSizeChip,
         onCheckedChange = { browserPreferences.showTotalSizeChip.set(it) },
       ),
       VisibilityToggle(
-        label = "Size",
+        label = localizedString(R.string.ui_size),
         checked = showSizeChip,
         onCheckedChange = { browserPreferences.showSizeChip.set(it) },
       ),
       VisibilityToggle(
-        label = "Resolution",
+        label = localizedString(R.string.ui_resolution),
         checked = showResolutionChip,
         onCheckedChange = { browserPreferences.showResolutionChip.set(it) },
       ),
       VisibilityToggle(
-        label = "Framerate",
+        label = localizedString(R.string.ui_framerate),
         checked = showFramerateInResolution,
         onCheckedChange = {
           browserPreferences.showFramerateInResolution.set(it)
@@ -1532,7 +1531,7 @@ fun FileSystemSortDialog(
         },
       ),
       VisibilityToggle(
-        label = "Subtitle",
+        label = localizedString(R.string.ui_subtitle),
         checked = showSubtitleIndicator,
         onCheckedChange = {
           browserPreferences.showSubtitleIndicator.set(it)
@@ -1540,7 +1539,7 @@ fun FileSystemSortDialog(
         },
       ),
       VisibilityToggle(
-        label = "Progress Bar",
+        label = localizedString(R.string.ui_progress_bar),
         checked = showProgressBar,
         onCheckedChange = { browserPreferences.showProgressBar.set(it) },
       ),

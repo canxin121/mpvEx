@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.database.MpvExDatabase
 import app.marlboroadvance.mpvex.database.entities.RecentlyPlayedEntity
 import app.marlboroadvance.mpvex.database.repository.PlaylistRepository
@@ -15,6 +16,7 @@ import app.marlboroadvance.mpvex.database.repository.VideoMetadataCacheRepositor
 import app.marlboroadvance.mpvex.domain.media.model.Video
 import app.marlboroadvance.mpvex.domain.recentlyplayed.repository.RecentlyPlayedRepository
 import app.marlboroadvance.mpvex.utils.permission.PermissionUtils
+import app.marlboroadvance.mpvex.utils.media.MediaFormatUtils
 
 
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -371,7 +373,7 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
       )
 
       var id = uriString.hashCode().toLong()
-      var displayName = parsedVideoTitle ?: uri.lastPathSegment ?: "Video"
+      var displayName = parsedVideoTitle ?: uri.lastPathSegment ?: getApplication<Application>().getString(R.string.ui_video_generic)
       var duration = entity?.duration ?: 0L
       var size = entity?.fileSize ?: 0L
       var width = entity?.width ?: 0
@@ -432,7 +434,7 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
         dateAdded = dateModified,
         mimeType = "video/*",
         bucketId = "content",
-        bucketDisplayName = "External",
+        bucketDisplayName = getApplication<Application>().getString(R.string.ui_external_media),
         width = width,
         height = height,
         fps = 0f,
@@ -453,7 +455,7 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
     val uri = Uri.parse(url)
     
     // Use parsed title from database if available, otherwise fallback to URI path
-    val videoTitle = parsedVideoTitle ?: uri.lastPathSegment ?: "Stream"
+    val videoTitle = parsedVideoTitle ?: uri.lastPathSegment ?: getApplication<Application>().getString(R.string.ui_network_stream)
     val displayName = videoTitle
     
     // Use metadata from entity if available
@@ -468,7 +470,7 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
     
     // Use host as bucket ID (grouping by domain)
     val bucketId = (uri.host ?: "network").hashCode().toString()
-    val bucketDisplayName = uri.host ?: "Network Streams"
+    val bucketDisplayName = uri.host ?: getApplication<Application>().getString(R.string.ui_network_streams)
     
     // Determine mime type based on URL extension, default to generic video
     val extension = uri.lastPathSegment?.substringAfterLast('.', "")?.lowercase() ?: ""
@@ -586,16 +588,7 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
 
   private fun formatDuration(durationMs: Long): String {
     if (durationMs <= 0) return "--"
-    val seconds = durationMs / 1000
-    val hours = seconds / 3600
-    val minutes = (seconds % 3600) / 60
-    val secs = seconds % 60
-
-    return when {
-      hours > 0 -> "${hours}h ${minutes}m ${secs}s"
-      minutes > 0 -> "${minutes}m ${secs}s"
-      else -> "${secs}s"
-    }
+    return MediaFormatUtils.formatDuration(durationMs)
   }
 
   private fun formatFileSize(bytes: Long): String {

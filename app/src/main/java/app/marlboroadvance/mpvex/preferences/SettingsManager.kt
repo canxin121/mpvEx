@@ -3,6 +3,7 @@ package app.marlboroadvance.mpvex.preferences
 import android.content.Context
 import android.net.Uri
 import android.util.Xml
+import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.database.MpvExDatabase
 import app.marlboroadvance.mpvex.domain.network.NetworkConnection
 import app.marlboroadvance.mpvex.domain.network.NetworkProtocol
@@ -53,7 +54,7 @@ class SettingsManager(
         context.contentResolver.openOutputStream(outputUri)?.use { outputStream ->
           val stats = writeSettingsToXml(outputStream)
           Result.success(stats)
-        } ?: Result.failure(Exception("Failed to open output stream"))
+        } ?: Result.failure(Exception(context.getString(R.string.ui_failed_open_output_stream)))
       } catch (e: Exception) {
         Result.failure(e)
       }
@@ -66,7 +67,7 @@ class SettingsManager(
         context.contentResolver.openInputStream(inputUri)?.use { inputStream ->
           val stats = readSettingsFromXml(inputStream)
           Result.success(stats)
-        } ?: Result.failure(Exception("Failed to open input stream"))
+        } ?: Result.failure(Exception(context.getString(R.string.ui_failed_open_input_stream)))
       } catch (e: Exception) {
         Result.failure(e)
       }
@@ -211,7 +212,7 @@ class SettingsManager(
                 stats.imported++
               } catch (e: Exception) {
                 stats.failed++
-                stats.errors.add("Failed to import preference: ${e.message}")
+                stats.errors.add(context.getString(R.string.ui_import_preference_failed, e.message ?: context.getString(R.string.ui_unknown_error)))
               }
             }
             TAG_NETWORK_CONNECTION -> {
@@ -220,7 +221,7 @@ class SettingsManager(
                 stats.imported++
               } catch (e: Exception) {
                 stats.failed++
-                stats.errors.add("Failed to import network connection: ${e.message}")
+                stats.errors.add(context.getString(R.string.ui_import_connection_failed, e.message ?: context.getString(R.string.ui_unknown_error)))
               }
             }
           }
@@ -236,7 +237,7 @@ class SettingsManager(
       }
     } catch (e: Exception) {
       stats.failed++
-      stats.errors.add("Failed to insert database data: ${e.message}")
+      stats.errors.add(context.getString(R.string.ui_import_database_failed, e.message ?: context.getString(R.string.ui_unknown_error)))
     }
 
     return stats

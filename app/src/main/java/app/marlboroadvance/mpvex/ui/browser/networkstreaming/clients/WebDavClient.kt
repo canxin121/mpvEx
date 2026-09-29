@@ -2,6 +2,8 @@ package app.marlboroadvance.mpvex.ui.browser.networkstreaming.clients
 
 import android.net.Uri
 import android.util.Log
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import app.marlboroadvance.mpvex.domain.network.NetworkConnection
 import app.marlboroadvance.mpvex.domain.network.NetworkFile
 import com.thegrizzlylabs.sardineandroid.Sardine
@@ -74,7 +76,7 @@ class WebDavClient(private val connection: NetworkConnection) : NetworkClient {
   override suspend fun listFiles(path: String): Result<List<NetworkFile>> =
     withContext(Dispatchers.IO) {
       try {
-        val client = sardine ?: return@withContext Result.failure(Exception("Not connected"))
+        val client = sardine ?: return@withContext Result.failure(Exception(localizedString(R.string.error_not_connected)))
 
         val url = buildUrl(path)
         val resources = client.list(url)
@@ -115,7 +117,7 @@ class WebDavClient(private val connection: NetworkConnection) : NetworkClient {
   suspend fun getFileSize(path: String): Result<Long> =
     withContext(Dispatchers.IO) {
       try {
-        val client = sardine ?: return@withContext Result.failure(Exception("Not connected"))
+        val client = sardine ?: return@withContext Result.failure(Exception(localizedString(R.string.error_not_connected)))
 
         val url = buildUrl(path)
         
@@ -125,7 +127,7 @@ class WebDavClient(private val connection: NetworkConnection) : NetworkClient {
           val size = resources[0].contentLength ?: -1L
           Result.success(size)
         } else {
-          Result.failure(Exception("File not found or is a directory"))
+          Result.failure(Exception(localizedString(R.string.error_file_missing_or_directory)))
         }
       } catch (e: Exception) {
         Result.failure(e)
@@ -146,7 +148,7 @@ class WebDavClient(private val connection: NetworkConnection) : NetworkClient {
         val rawStream = streamClient.get(url)
 
         if (rawStream == null) {
-          return@withContext Result.failure(Exception("Failed to open WebDAV stream"))
+          return@withContext Result.failure(Exception(localizedString(R.string.error_webdav_open_stream)))
         }
 
         // Wrap the stream

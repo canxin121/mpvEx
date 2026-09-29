@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.sheets
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -100,7 +102,7 @@ fun PlayLinkSheet(
     ) {
       // Title
       Text(
-        text = "Play Link",
+        text = localizedString(R.string.ui_play_link),
         style = MaterialTheme.typography.headlineSmall,
         fontWeight = FontWeight.Medium,
         color = MaterialTheme.colorScheme.onSurface,
@@ -117,7 +119,7 @@ fun PlayLinkSheet(
             isLinkInputUrlValid = newValue.isBlank() || MediaUtils.isURLValid(newValue)
           },
           modifier = Modifier.fillMaxWidth(),
-          label = { Text("Enter URL") },
+          label = { Text(localizedString(R.string.enter_url)) },
           placeholder = { Text("https://example.com/video.mp4") },
           singleLine = true,
           isError = linkInputUrl.isNotBlank() && !isLinkInputUrlValid,
@@ -130,7 +132,7 @@ fun PlayLinkSheet(
 
         if (linkInputUrl.isNotBlank() && !isLinkInputUrlValid) {
           Text(
-            text = "Invalid URL protocol",
+            text = localizedString(R.string.ui_invalid_url_protocol),
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
@@ -145,7 +147,7 @@ fun PlayLinkSheet(
       ) {
         TextButton(onClick = handleDismiss) {
           Text(
-            text = "Cancel",
+            text = localizedString(R.string.generic_cancel),
             fontWeight = FontWeight.Medium,
           )
         }
@@ -159,7 +161,7 @@ fun PlayLinkSheet(
             ),
         ) {
           Text(
-            text = "Play",
+            text = localizedString(R.string.ui_play),
             fontWeight = FontWeight.SemiBold,
           )
         }
@@ -175,13 +177,13 @@ private fun ValidationIcon(isValid: Boolean) {
   if (isValid) {
     Icon(
       Icons.Filled.CheckCircle,
-      contentDescription = "Valid URL",
+      contentDescription = localizedString(R.string.ui_valid_url),
       tint = MaterialTheme.colorScheme.primary,
     )
   } else {
     Icon(
       Icons.Filled.Info,
-      contentDescription = "Invalid URL",
+      contentDescription = localizedString(R.string.ui_invalid_url),
       tint = MaterialTheme.colorScheme.error,
     )
   }

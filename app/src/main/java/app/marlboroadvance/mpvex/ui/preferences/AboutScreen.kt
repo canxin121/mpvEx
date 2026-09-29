@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.widget.ImageView
@@ -95,7 +96,7 @@ object AboutScreen : Screen {
     // Show toast when no update is available after manual check (only if update feature is enabled)
     LaunchedEffect(updateState) {
         if (BuildConfig.ENABLE_UPDATE_FEATURE && updateViewModel != null && updateState is UpdateViewModel.UpdateState.NoUpdate) {
-            Toast.makeText(context, "Already using latest version", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, localizedString(R.string.ui_already_using_latest_version), Toast.LENGTH_SHORT).show()
             updateViewModel.dismissNoUpdate()
         }
     }
@@ -189,14 +190,14 @@ object AboutScreen : Screen {
 
                 Column(modifier = Modifier.weight(1f)) {
                   Text(
-                    text = "mpvExtended",
+                    text = localizedString(R.string.ui_mpvextended),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = cs.onPrimaryContainer,
                   )
                   Spacer(Modifier.height(4.dp))
                   Text(
-                    text = "v$versionName $buildType",
+                    text = localizedString(R.string.ui_v_1_s_2_s, versionName, buildType),
                     style = MaterialTheme.typography.bodyMedium,
                     color = cs.onPrimaryContainer.copy(alpha = 0.85f),
                   )
@@ -236,7 +237,7 @@ object AboutScreen : Screen {
                     context.startActivity(
                       Intent(
                         Intent.ACTION_VIEW,
-                        context.getString(R.string.github_repo_url).toUri(),
+                        localizedString(R.string.github_repo_url).toUri(),
                       ),
                     )
                   },
@@ -252,7 +253,7 @@ object AboutScreen : Screen {
                     ),
                 ) {
                   Text(
-                    text = "GitHub",
+                    text = localizedString(R.string.ui_github),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                   )
@@ -275,13 +276,13 @@ object AboutScreen : Screen {
                 ) {
                   Icon(
                     imageVector = Icons.Filled.Info,
-                    contentDescription = "Device Info",
+                    contentDescription = localizedString(R.string.ui_device_info),
                     modifier = Modifier.size(20.dp),
                     tint = cs.onPrimaryContainer,
                   )
                   Spacer(modifier = Modifier.width(8.dp))
                   Text(
-                    text = "Device Info",
+                    text = localizedString(R.string.ui_device_info),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = cs.onPrimaryContainer,
@@ -301,7 +302,7 @@ object AboutScreen : Screen {
 
         // Updates Section (only show if update feature is enabled)
         if (BuildConfig.ENABLE_UPDATE_FEATURE && updateViewModel != null) {
-          PreferenceSectionHeader(title = "Updates")
+          PreferenceSectionHeader(title = localizedString(R.string.ui_updates))
           PreferenceCard {
                 val isAutoUpdateEnabled by updateViewModel.isAutoUpdateEnabled.collectAsState()
                 Column {
@@ -317,14 +318,14 @@ object AboutScreen : Screen {
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = "Auto Check for Updates",
+                                text = localizedString(R.string.ui_auto_check_for_updates),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = cs.onSurface
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Check on startup",
+                                text = localizedString(R.string.ui_check_on_startup),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = cs.outline
                             )
@@ -350,7 +351,7 @@ object AboutScreen : Screen {
                         ) {
                              Icon(Icons.Default.Update, null, modifier = Modifier.size(18.dp))
                              Spacer(Modifier.width(8.dp))
-                             Text("Check for Updates Now", fontWeight = FontWeight.SemiBold)
+                             Text(localizedString(R.string.ui_check_for_updates_now), fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -373,7 +374,7 @@ object AboutScreen : Screen {
                 context.startActivity(
                   Intent(
                     Intent.ACTION_VIEW,
-                    context.getString(R.string.pref_about_donate_kofi_url).toUri(),
+                    localizedString(R.string.pref_about_donate_kofi_url).toUri(),
                   ),
                 )
               }
@@ -411,7 +412,7 @@ object AboutScreen : Screen {
                 context.startActivity(
                   Intent(
                     Intent.ACTION_VIEW,
-                    context.getString(R.string.pref_about_donate_paypal_url).toUri(),
+                    localizedString(R.string.pref_about_donate_paypal_url).toUri(),
                   ),
                 )
               }
@@ -447,7 +448,7 @@ object AboutScreen : Screen {
               .fillMaxWidth()
               .clickable {
                 clipboardManager.setText(
-                  AnnotatedString(context.getString(R.string.pref_about_donate_upi_id)),
+                  AnnotatedString(localizedString(R.string.pref_about_donate_upi_id)),
                 )
               }
               .padding(16.dp),

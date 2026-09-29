@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.player.controls.components.sheets
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
@@ -336,7 +338,7 @@ fun PlaylistSheet(
           ) {
             if (currentItem != null) {
               Text(
-                text = "Now Playing",
+                text = localizedString(R.string.ui_now_playing),
                 style = MaterialTheme.typography.titleSmall.copy(
                   fontWeight = FontWeight.Bold,
                   color = accentColor,
@@ -349,7 +351,7 @@ fun PlaylistSheet(
               )
             }
             Text(
-              text = "$totalCount items",
+              text = app.marlboroadvance.mpvex.i18n.localizedQuantityString(R.plurals.items_count, totalCount, totalCount),
               style = MaterialTheme.typography.bodyMedium,
               color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -362,7 +364,9 @@ fun PlaylistSheet(
             ) {
               Icon(
                 imageVector = if (isListMode) Icons.Default.GridView else Icons.AutoMirrored.Filled.ViewList,
-                contentDescription = if (isListMode) "Switch to Grid View" else "Switch to List View",
+                contentDescription = localizedString(
+                  if (isListMode) R.string.ui_switch_to_grid_view else R.string.ui_switch_to_list_view,
+                ),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
               )
             }
@@ -491,7 +495,7 @@ fun PlaylistTrackListItem(
         thumbnail?.let { bmp ->
           Image(
             bitmap = bmp.asImageBitmap(),
-            contentDescription = "Thumbnail",
+            contentDescription = localizedString(R.string.ui_thumbnail),
             modifier = Modifier.matchParentSize(),
             contentScale = ContentScale.Crop,
           )
@@ -600,7 +604,7 @@ fun PlaylistTrackListItem(
             shape = RoundedCornerShape(16.dp),
           ) {
             Text(
-              text = "Playing",
+              text = localizedString(R.string.notification_playing),
               modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
               style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.SemiBold,
@@ -681,7 +685,7 @@ fun PlaylistTrackGridItem(
         thumbnail?.let { bmp ->
           Image(
             bitmap = bmp.asImageBitmap(),
-            contentDescription = "Thumbnail",
+            contentDescription = localizedString(R.string.ui_thumbnail),
             modifier = Modifier.matchParentSize(),
             contentScale = ContentScale.Crop,
           )
@@ -817,7 +821,7 @@ fun PlaylistTrackGridItem(
               shape = RoundedCornerShape(4.dp),
             ) {
               Text(
-                text = "Playing",
+                text = localizedString(R.string.notification_playing),
                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                 style = MaterialTheme.typography.labelSmall.copy(
                   fontSize = 10.sp,

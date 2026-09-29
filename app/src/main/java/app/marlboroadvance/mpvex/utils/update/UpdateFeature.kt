@@ -1,4 +1,6 @@
 package app.marlboroadvance.mpvex.utils.update
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -119,10 +121,10 @@ class UpdateManager(
     private suspend fun getLatestRelease(url: String): Release = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(url).build()
         val response = client.newCall(request).execute()
-        if (!response.isSuccessful) throw IOException("Unexpected code $response")
+        if (!response.isSuccessful) throw IOException(context.getString(R.string.ui_server_error_code, response.code))
 
         val responseBody = response.body.string()
-        if (responseBody.isEmpty()) throw IOException("Empty body")
+        if (responseBody.isEmpty()) throw IOException(context.getString(R.string.ui_empty_server_response))
         json.decodeFromString<Release>(responseBody)
     }
 
@@ -146,7 +148,7 @@ class UpdateManager(
         }
         
         val asset = selectBestApkAsset(release.assets)
-            ?: throw Exception("No compatible APK asset found")
+            ?: throw Exception(context.getString(R.string.ui_no_compatible_apk))
         
         val destination = File(context.externalCacheDir, asset.name)
         return downloadApk(asset.downloadUrl, destination)
@@ -199,7 +201,7 @@ class UpdateManager(
     private fun downloadApk(url: String, destination: File): Flow<Float> = flow {
         val request = Request.Builder().url(url).build()
         val response = client.newCall(request).execute()
-        if (!response.isSuccessful) throw IOException("Unexpected code $response")
+        if (!response.isSuccessful) throw IOException(context.getString(R.string.ui_server_error_code, response.code))
 
         val body = response.body
         val contentLength = body.contentLength()
@@ -397,7 +399,7 @@ fun UpdateDialog(
     release: Release,
     isDownloading: Boolean,
     progress: Float,
-    actionLabel: String,
+    isReadyToInstall: Boolean,
     currentVersion: String,
     onDismiss: () -> Unit,
     onAction: () -> Unit,
@@ -410,7 +412,7 @@ fun UpdateDialog(
         onDismissRequest = onDismiss,
         icon = {
             Icon(
-                imageVector = if (actionLabel == "Install") Icons.Filled.SystemUpdate else Icons.Filled.CloudDownload,
+                imageVector = if (isReadyToInstall) Icons.Filled.SystemUpdate else Icons.Filled.CloudDownload,
                 contentDescription = null,
                 modifier = Modifier.size(24.dp)
             )
@@ -418,7 +420,7 @@ fun UpdateDialog(
         title = {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = if (actionLabel == "Install") "Ready to Install" else "Update Available",
+                    text = localizedString(if (isReadyToInstall) R.string.ui_ready_to_install else R.string.ui_update_available),
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -435,12 +437,12 @@ fun UpdateDialog(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
-                if (actionLabel != "Install") {
+                if (!isReadyToInstall) {
                     // Show version info for update available state
-                    InfoRow(label = "Current Version", value = currentVersion)
-                    InfoRow(label = "Latest Version", value = release.tagName.removePrefix("v"))
-                    InfoRow(label = "Release Date", value = formattedDate)
-                    InfoRow(label = "Size", value = formatFileSize(downloadSize))
+                    InfoRow(label = localizedString(R.string.ui_current_version), value = currentVersion)
+                    InfoRow(label = localizedString(R.string.ui_latest_version), value = release.tagName.removePrefix("v"))
+                    InfoRow(label = localizedString(R.string.ui_release_date), value = formattedDate)
+                    InfoRow(label = localizedString(R.string.ui_size), value = formatFileSize(downloadSize))
                 }
 
                 if (isDownloading) {
@@ -449,7 +451,7 @@ fun UpdateDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Downloading...", style = MaterialTheme.typography.bodySmall)
+                        Text(text = localizedString(R.string.ui_downloading), style = MaterialTheme.typography.bodySmall)
                         Text(text = "${progress.toInt()}%", style = MaterialTheme.typography.bodySmall)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -465,20 +467,20 @@ fun UpdateDialog(
         confirmButton = {
             if (!isDownloading) {
                 Button(onClick = onAction) {
-                    Text(if (actionLabel == "Install") "Install" else "Download")
+                    Text(localizedString(if (isReadyToInstall) R.string.install else R.string.download))
                 }
             }
         },
         dismissButton = {
             if (!isDownloading) {
                 Row {
-                    if (actionLabel != "Install") {
+                    if (!isReadyToInstall) {
                         TextButton(onClick = onIgnore) {
-                            Text("Ignore")
+                            Text(localizedString(R.string.ignore))
                         }
                     }
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel")
+                        Text(localizedString(R.string.generic_cancel))
                     }
                 }
             }
@@ -508,7 +510,7 @@ private fun InfoRow(label: String, value: String) {
 }
 
 private fun formatFileSize(size: Long): String {
-    if (size <= 0) return "Unknown size"
+    if (size <= 0) return localizedString(R.string.ui_unknown_size)
     val units = arrayOf("B", "KB", "MB", "GB", "TB")
     val digitGroups = (Math.log10(size.toDouble()) / Math.log10(1024.0)).toInt()
     return String.format("%.1f %s", size / Math.pow(1024.0, digitGroups.toDouble()), units[digitGroups])
@@ -521,7 +523,7 @@ private fun formatDate(dateString: String): String {
         inputFormat.timeZone = TimeZone.getTimeZone("UTC")
         val date = inputFormat.parse(dateString) ?: return dateString
 
-        val outputFormat = SimpleDateFormat("MMM dd, yyyy", Locale.US)
+        val outputFormat = java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM, Locale.getDefault())
         outputFormat.format(date)
     } catch (e: Exception) {
         dateString

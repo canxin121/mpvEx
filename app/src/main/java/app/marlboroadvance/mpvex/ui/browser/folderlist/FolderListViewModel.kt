@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.database.repository.VideoMetadataCacheRepository
 import app.marlboroadvance.mpvex.domain.media.model.VideoFolder
 import app.marlboroadvance.mpvex.domain.playbackstate.repository.PlaybackStateRepository
@@ -320,7 +321,7 @@ class FolderListViewModel(
         
         if (!hasExistingData) {
           _isLoading.value = true
-          _scanStatus.value = "Scanning storage..."
+          _scanStatus.value = getApplication<Application>().getString(R.string.ui_scanning_storage)
         }
 
         // Capture current state for comparison
@@ -333,7 +334,7 @@ class FolderListViewModel(
             onProgress = { count ->
               // Only show progress if we don't have existing data (silent refresh)
               if (!hasExistingData) {
-                _scanStatus.value = "Found $count folders..."
+                _scanStatus.value = app.marlboroadvance.mpvex.i18n.localizedQuantityString(R.plurals.folders_found, count, count)
               }
             }
           )
@@ -403,7 +404,7 @@ class FolderListViewModel(
 
         // PHASE 2: Background Enrichment (only if duration chip is enabled)
         _isEnriching.value = true
-        _scanStatus.value = "Processing metadata..."
+        _scanStatus.value = getApplication<Application>().getString(R.string.ui_processing_metadata)
         
         val enrichedFolders = MetadataRetrieval.enrichFoldersIfNeeded(
             context = getApplication(),
@@ -411,7 +412,7 @@ class FolderListViewModel(
             browserPreferences = browserPreferences,
             metadataCache = metadataCache,
             onProgress = { processed, total ->
-               _scanStatus.value = "Processing metadata $processed/$total"
+               _scanStatus.value = getApplication<Application>().getString(R.string.ui_processing_metadata_progress, processed, total)
             }
           )
 

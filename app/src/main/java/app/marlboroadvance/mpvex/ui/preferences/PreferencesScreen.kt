@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.i18n.localizedString
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -113,7 +114,7 @@ object PreferencesScreen : Screen {
           
           // UI & Appearance Section
           item {
-            PreferenceSectionHeader(title = "UI & Appearance")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_ui_appearance))
           }
           
           item {
@@ -161,7 +162,7 @@ object PreferencesScreen : Screen {
           
           // Playback & Controls Section
           item {
-            PreferenceSectionHeader(title = "Playback & Controls")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_playback_controls))
           }
           
           item {
@@ -210,7 +211,7 @@ object PreferencesScreen : Screen {
           
           // File Management Section
           item {
-            PreferenceSectionHeader(title = "File Management")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_file_management))
           }
           
           item {
@@ -238,7 +239,7 @@ object PreferencesScreen : Screen {
           
           // Media Settings Section
           item {
-            PreferenceSectionHeader(title = "Media Settings")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_media_settings))
           }
           
           item {
@@ -308,7 +309,7 @@ object PreferencesScreen : Screen {
           
           // Advanced & About Section
           item {
-            PreferenceSectionHeader(title = "Advanced & About")
+            PreferenceSectionHeader(title = localizedString(R.string.ui_advanced_about))
           }
           
           item {

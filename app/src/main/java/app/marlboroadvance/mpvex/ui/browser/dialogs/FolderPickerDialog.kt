@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.browser.dialogs
 
+import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Context
 import android.os.Environment
 import androidx.compose.foundation.clickable
@@ -118,12 +120,12 @@ fun FolderPickerDialog(
     title = {
       Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-          text = "Select Folder",
+          text = localizedString(R.string.ui_select_folder),
           style = MaterialTheme.typography.headlineMedium,
           fontWeight = FontWeight.Bold,
         )
         Text(
-          text = selectedPath ?: "Select a storage location",
+          text = selectedPath ?: localizedString(R.string.ui_select_storage_location),
           style = MaterialTheme.typography.bodyMedium,
           fontWeight = FontWeight.Medium,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -133,7 +135,7 @@ fun FolderPickerDialog(
         )
         if (isSameAsSource) {
           Text(
-            text = "Cannot select the same folder",
+            text = localizedString(R.string.ui_cannot_select_the_same_folder),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.error,
@@ -168,7 +170,7 @@ fun FolderPickerDialog(
             ) {
               Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Go back",
+                contentDescription = localizedString(R.string.ui_go_back),
               )
             }
           }
@@ -187,7 +189,7 @@ fun FolderPickerDialog(
           ) {
             Icon(
               imageVector = Icons.Default.Home,
-              contentDescription = "Go to internal storage",
+              contentDescription = localizedString(R.string.ui_go_to_internal_storage),
             )
           }
 
@@ -204,7 +206,7 @@ fun FolderPickerDialog(
           ) {
             Icon(
               imageVector = Icons.Default.CreateNewFolder,
-              contentDescription = "Create folder",
+              contentDescription = localizedString(R.string.ui_create_folder),
             )
           }
         }
@@ -234,7 +236,7 @@ fun FolderPickerDialog(
             if (storageVolumes.isEmpty()) {
               item {
                 Text(
-                  text = "No storage devices found",
+                  text = localizedString(R.string.no_storage_devices_found),
                   style = MaterialTheme.typography.bodyLarge,
                   fontWeight = FontWeight.Medium,
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -254,7 +256,7 @@ fun FolderPickerDialog(
             if (folders.isEmpty()) {
               item {
                 Text(
-                  text = "No subfolders",
+                  text = localizedString(R.string.ui_no_subfolders),
                   style = MaterialTheme.typography.bodyLarge,
                   fontWeight = FontWeight.Medium,
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -276,7 +278,7 @@ fun FolderPickerDialog(
           ),
         shape = MaterialTheme.shapes.extraLarge,
       ) {
-        Text("Select", fontWeight = FontWeight.Bold)
+        Text(localizedString(R.string.select), fontWeight = FontWeight.Bold)
       }
     },
     dismissButton = {
@@ -284,7 +286,7 @@ fun FolderPickerDialog(
         onClick = onDismiss,
         shape = MaterialTheme.shapes.extraLarge,
       ) {
-        Text("Cancel", fontWeight = FontWeight.Medium)
+        Text(localizedString(R.string.generic_cancel), fontWeight = FontWeight.Medium)
       }
     },
     containerColor = MaterialTheme.colorScheme.surface,
@@ -395,7 +397,7 @@ private fun CreateFolderDialog(
     onDismissRequest = onDismiss,
     title = {
       Text(
-        "Create New Folder",
+        localizedString(R.string.ui_create_new_folder),
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
       )
@@ -408,7 +410,7 @@ private fun CreateFolderDialog(
             folderName = it
             error = null
           },
-          label = { Text("Folder name", fontWeight = FontWeight.Medium) },
+          label = { Text(localizedString(R.string.folder_name), fontWeight = FontWeight.Medium) },
           singleLine = true,
           isError = error != null,
           modifier = Modifier.fillMaxWidth(),
@@ -433,13 +435,13 @@ private fun CreateFolderDialog(
       Button(
         onClick = {
           if (folderName.isBlank()) {
-            error = "Folder name cannot be empty"
+            error = localizedString(R.string.ui_folder_name_required)
             return@Button
           }
 
           val newFolder = File(parentPath, folderName)
           if (newFolder.exists()) {
-            error = "Folder already exists"
+            error = localizedString(R.string.ui_folder_already_exists)
             return@Button
           }
 
@@ -447,10 +449,10 @@ private fun CreateFolderDialog(
             if (newFolder.mkdirs()) {
               onFolderCreated(newFolder.absolutePath)
             } else {
-              error = "Failed to create folder"
+              error = localizedString(R.string.ui_failed_to_create_folder)
             }
           } catch (e: Exception) {
-            error = e.message ?: "Unknown error"
+            error = e.message ?: localizedString(R.string.ui_unknown_error)
           }
         },
         enabled = folderName.isNotBlank(),
@@ -460,7 +462,7 @@ private fun CreateFolderDialog(
           ),
         shape = MaterialTheme.shapes.extraLarge,
       ) {
-        Text("Create", fontWeight = FontWeight.Bold)
+        Text(localizedString(R.string.create), fontWeight = FontWeight.Bold)
       }
     },
     dismissButton = {
@@ -468,7 +470,7 @@ private fun CreateFolderDialog(
         onClick = onDismiss,
         shape = MaterialTheme.shapes.extraLarge,
       ) {
-        Text("Cancel", fontWeight = FontWeight.Medium)
+        Text(localizedString(R.string.generic_cancel), fontWeight = FontWeight.Medium)
       }
     },
     containerColor = MaterialTheme.colorScheme.surface,

@@ -1,10 +1,14 @@
 ![banner](fastlane/metadata/android/en-US/images/featureGraphic.png)
 
 # mpvExtended
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/marlboro-advance/mpvex.svg?logo=github&label=GitHub&cacheSeconds=3600)](https://github.com/marlboro-advance/mpvex/releases/latest)
-[![GitHub all releases](https://img.shields.io/github/downloads/marlboro-advance/mpvex/total?logo=github&cacheSeconds=3600)](https://github.com/marlboro-advance/mpvex/releases/latest)
-[![Privacy Policy](https://img.shields.io/badge/Privacy%20Policy-View-brightgreen?logo=shield)](https://marlboro-advance.github.io/mpvEx/privacy-policy.html)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/canxin121/mpvEx.svg?logo=github&label=GitHub&cacheSeconds=3600)](https://github.com/canxin121/mpvEx/releases/latest)
+[![GitHub all releases](https://img.shields.io/github/downloads/canxin121/mpvEx/total?logo=github&cacheSeconds=3600)](https://github.com/canxin121/mpvEx/releases/latest)
+[![Privacy Policy](https://img.shields.io/badge/Privacy%20Policy-View-brightgreen?logo=shield)](https://canxin121.github.io/mpvEx/privacy-policy.html)
 
+
+> **This repository is a personal fork of [marlboro-advance/mpvEx](https://github.com/marlboro-advance/mpvEx).**
+> Everything below describes the app itself; the upstream project is the original, and issues with this
+> fork's build belong in [this fork's Issues](https://github.com/canxin121/mpvEx/issues).
 
 **mpvExtended is a fork of [mpv-android](https://github.com/mpv-android/mpv-android), built on the libmpv library. It aims
 to combine the powerful features of mpv with an easy to use interface and additional
@@ -29,25 +33,24 @@ features.**
 - Custom Playlist management support
 
 **This project is still in development and is expected to have bugs. Please report any bugs you find in
-the [Issues](https://github.com/marlboro-advance/mpvEx/issues) section.**
+the [Issues](https://github.com/canxin121/mpvEx/issues) section.**
 
 ---
 
 ## Installation
 
 ### Stable Release
-Download the latest stable version from the [GitHub releases page](https://github.com/marlboro-advance/mpvEx/releases).
+Download the latest stable version from the [GitHub releases page](https://github.com/canxin121/mpvEx/releases).
 
-[![Download Release](https://img.shields.io/badge/Download-Release-blue?style=for-the-badge)](https://github.com/marlboro-advance/mpvEx/releases)
+[![Download Release](https://img.shields.io/badge/Download-Release-blue?style=for-the-badge)](https://github.com/canxin121/mpvEx/releases)
 
-Or you can get the stable releases here
-
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroidButtonGreyBorder_nofont.png" height="50" alt="Get it at IzzyOnDroid">](https://apt.izzysoft.de/packages/app.marlboroadvance.mpvex)
+This fork has not published a release of its own yet, so the badge above renders empty. Until it does,
+the upstream listed under [Acknowledgments](#acknowledgments) is the place to get a build.
 
 ### Preview Builds
 For testing purposes only
 
-[![Download Preview Builds](https://img.shields.io/badge/Download-Preview%20Builds-red?style=for-the-badge)](https://marlboro-advance.github.io/mpvEx/)
+[![Download Preview Builds](https://img.shields.io/badge/Download-Preview%20Builds-red?style=for-the-badge)](https://canxin121.github.io/mpvEx/)
 
 ---
 
@@ -243,6 +246,10 @@ Delete `keystore.txt` afterwards; it holds the key in plain text.
 
 ## Acknowledgments
 
+**Upstream project:** [marlboro-advance/mpvEx](https://github.com/marlboro-advance/mpvEx) — the original
+mpvExtended this repository is forked from, together with the projects it in turn builds on. The upstream
+author's funding links live in that repository; this fork neither collects nor redirects them.
+
 - [mpv-android](https://github.com/mpv-android)
 - [mpvKt](https://github.com/abdallahmehiz/mpvKt)
 - [Next player](https://github.com/anilbeesetti/nextplayer)
@@ -250,19 +257,12 @@ Delete `keystore.txt` afterwards; it holds the key in plain text.
 
 ---
 
-## Support the Project <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Heart%20with%20Ribbon.png" alt="Heart with Ribbon" width="25" height="25" />
-
-If you find mpvExtended useful, consider supporting the development:
-
-[![UPI](https://img.shields.io/badge/UPI-aadiinarvekar@upi-blue?style=for-the-badge&logo=google-pay&logoColor=white)](upi://pay?pa=aadiinarvekar@upi)
-
----
 ## Star History <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Star.png" alt="Star" width="25" height="25" />
 
-<a href="https://www.star-history.com/#marlboro-advance/mpvEx&type=date&legend=top-left">
+<a href="https://www.star-history.com/#canxin121/mpvEx&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=marlboro-advance/mpvEx&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=marlboro-advance/mpvEx&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=marlboro-advance/mpvEx&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=canxin121/mpvEx&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=canxin121/mpvEx&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=canxin121/mpvEx&type=date&legend=top-left" />
  </picture>
 </a>

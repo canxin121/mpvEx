@@ -3,8 +3,12 @@
 **Effective Date:** September 27, 2026  
 **Application Name:** mpvEx (mpvExtended)  
 **Package Name:** `app.marlboroadvance.mpvex`  
-**Hosted GitHub Pages Version:** [https://marlboro-advance.github.io/mpvEx/privacy-policy.html](https://marlboro-advance.github.io/mpvEx/privacy-policy.html)  
+**Hosted GitHub Pages Version:** [https://canxin121.github.io/mpvEx/privacy-policy.html](https://canxin121.github.io/mpvEx/privacy-policy.html)  
 **License:** Apache License 2.0  
+
+> **Note on this build:** this repository is a fork of
+> [marlboro-advance/mpvEx](https://github.com/marlboro-advance/mpvEx). The privacy practices described
+> here are the app's own — they are unchanged from upstream, and upstream is the original project.
 
 ---
 
@@ -13,7 +17,7 @@
 - **Zero Data Collection:** We do not collect, transmit, store, sell, or share any personal information.
 - **No Ads & No Analytics:** The application contains zero advertising SDKs, zero analytics tracking (no Google/Firebase Analytics), and zero telemetry.
 - **Local Processing:** All media discovery, playback history, thumbnails, and settings remain 100% on your device.
-- **100% Open Source:** mpvEx is free and open-source software. You can inspect the source code anytime on [GitHub](https://github.com/marlboro-advance/mpvEx).
+- **100% Open Source:** mpvEx is free and open-source software. You can inspect the source code anytime on [GitHub](https://github.com/canxin121/mpvEx).
 
 ---
 
@@ -88,12 +92,13 @@ mpvEx does not collect personal information from any user, including children un
 ## 8. Open Source & Transparency
 
 mpvEx is licensed under the **Apache License 2.0**. Our complete source code is public and open for auditing:
-- Repository: [https://github.com/marlboro-advance/mpvEx](https://github.com/marlboro-advance/mpvEx)
+- Repository: [https://github.com/canxin121/mpvEx](https://github.com/canxin121/mpvEx)
+- Upstream project: [https://github.com/marlboro-advance/mpvEx](https://github.com/marlboro-advance/mpvEx)
 
 ---
 
 ## 9. Contact Us
 
 If you have any questions or feedback regarding this Privacy Policy:
-- GitHub Issues: [https://github.com/marlboro-advance/mpvEx/issues](https://github.com/marlboro-advance/mpvEx/issues)
-- GitHub Project: [https://github.com/marlboro-advance/mpvEx](https://github.com/marlboro-advance/mpvEx)
+- GitHub Issues: [https://github.com/canxin121/mpvEx/issues](https://github.com/canxin121/mpvEx/issues)
+- GitHub Project: [https://github.com/canxin121/mpvEx](https://github.com/canxin121/mpvEx)

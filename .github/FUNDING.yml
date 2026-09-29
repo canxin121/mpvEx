@@ -1,9 +1,13 @@
 # These are supported funding model platforms
+#
+# Every entry is deliberately empty in this fork. The upstream project points
+# ko_fi at its own author, and a fork that kept that value would present someone
+# else's personal account as this repository's funding target.
 
 github: # Replace with up to 4 GitHub Sponsors-enabled usernames e.g., [user1, user2]
 patreon: # Replace with a single Patreon username
 open_collective: # Replace with a single Open Collective username
-ko_fi: adityanarvekar
+ko_fi: # Replace with a single Ko-fi username
 tidelift: # Replace with a single Tidelift platform-name/package-name e.g., npm/babel
 community_bridge: # Replace with a single Community Bridge project-name e.g., cloud-foundry
 liberapay: # Replace with a single Liberapay username

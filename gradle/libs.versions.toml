@@ -44,6 +44,11 @@ androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runt
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version = "1.1.0" }
 seeker = "com.github.abdallahmehiz:seeker:2.0.1"
+# Both of these are published by the upstream author and consumed as prebuilt
+# AARs from Maven Central. This repository is a fork, but these coordinates stay
+# as they are: the group is not on the JitPack include list in
+# settings.gradle.kts, so pointing them at a fork would mean publishing new
+# artifacts rather than editing a URL.
 mediainfo-lib = { module = "io.github.marlboro-advance:mediainfo-android", version.ref = "mediainfo-android" }
 mpv-android = { module = "io.github.marlboro-advance:mpv-android", version.ref = "mpv-android" }
 

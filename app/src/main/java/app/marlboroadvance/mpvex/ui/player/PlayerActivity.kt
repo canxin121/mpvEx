@@ -48,6 +48,7 @@ import app.marlboroadvance.mpvex.plugins.EnvironmentVariablesCodec
 import app.marlboroadvance.mpvex.plugins.hasScriptFileExtension
 import app.marlboroadvance.mpvex.plugins.isSafeCPluginFileName
 import app.marlboroadvance.mpvex.plugins.isSafeScriptFileName
+import app.marlboroadvance.mpvex.plugins.mpvScriptClientName
 import app.marlboroadvance.mpvex.ui.player.controls.PlayerControls
 import app.marlboroadvance.mpvex.ui.theme.MpvexTheme
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
@@ -1160,7 +1161,14 @@ class PlayerActivity :
         }
       }.onSuccess {
         successCount++
-        MpvExLog.d(TAG, "Synced C plugin: $pluginName")
+        // The client name is derived from the file name, not from anything the
+        // plugin declares, and it is what `script-message-to` in input.conf has
+        // to match. A plugin downloaded as
+        // `android-arm64-v8a-libmpv_stt_plugin_rs.so` answers to
+        // `android_arm64_v8a_libmpv_stt_plugin_rs`, so the name in the release
+        // notes silently binds nothing. Logging it here is the only place the
+        // user can see which name their key bindings should use.
+        MpvExLog.i(TAG, "Synced C plugin: $pluginName (client name: ${mpvScriptClientName(pluginName)})")
       }.onFailure { error ->
         MpvExLog.e(TAG, error, "Error syncing C plugin: $pluginName")
       }

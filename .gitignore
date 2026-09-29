@@ -9,6 +9,7 @@
 .cxx
 local.properties
 app/release
+/keystore.properties
 /gradle/gradle-daemon-jvm.properties
 /app/standard/
 /app/fdroid/

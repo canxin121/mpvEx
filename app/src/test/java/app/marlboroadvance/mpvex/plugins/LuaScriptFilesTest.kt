@@ -25,4 +25,13 @@ class LuaScriptFilesTest {
     assertFalse(hasScriptFileExtension("plugin.so"))
     assertFalse(hasScriptFileExtension("file.lua.bak"))
   }
+
+  @Test
+  fun `accepts plain C plugin names and rejects everything else`() {
+    assertTrue(isSafeCPluginFileName("danmaku.so"))
+    assertTrue(isSafeCPluginFileName("My.Plugin.SO"))
+
+    listOf("", ".so", "../plugin.so", "sub/plugin.so", "sub\\plugin.so", "plugin.lua")
+      .forEach { assertFalse("Unexpectedly accepted $it", isSafeCPluginFileName(it)) }
+  }
 }

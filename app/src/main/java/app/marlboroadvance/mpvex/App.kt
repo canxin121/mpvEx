@@ -7,9 +7,8 @@ import app.marlboroadvance.mpvex.di.DatabaseModule
 import app.marlboroadvance.mpvex.di.FileManagerModule
 import app.marlboroadvance.mpvex.di.PreferencesModule
 import app.marlboroadvance.mpvex.environment.MpvExEnvironment
+import app.marlboroadvance.mpvex.environment.UserEnvironmentVariables
 import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
-import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentApplicator
-import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentPlan
 import app.marlboroadvance.mpvex.plugins.EnvironmentVariablesCodec
 import app.marlboroadvance.mpvex.presentation.crash.CrashActivity
 import app.marlboroadvance.mpvex.presentation.crash.GlobalExceptionHandler
@@ -54,16 +53,15 @@ class App : Application() {
     Thread.setDefaultUncaughtExceptionHandler(GlobalExceptionHandler(applicationContext, CrashActivity::class.java))
 
     // Native thumbnail code can load before a player is opened. Supply user
-    // variables now; the player later applies plugin-specific overrides.
-    val environmentResult = CPluginEnvironmentApplicator.apply(
-      plan = CPluginEnvironmentPlan(emptyList(), emptySet(), emptyList()),
-      previouslyManagedEnvironmentNames = advancedPreferences.managedCPluginEnvironmentNames.get(),
+    // variables now; the player applies the same values again before mpv starts.
+    val environmentResult = UserEnvironmentVariables.apply(
       userDefinedVariables = EnvironmentVariablesCodec.decode(advancedPreferences.environmentVariables.get()),
       previouslyManagedUserEnvironmentNames = advancedPreferences.managedUserEnvironmentNames.get(),
+      builtInVariables = MpvExEnvironment.builtInValues(advancedPreferences.mpvConfStorageUri.get()),
     )
-    advancedPreferences.managedCPluginEnvironmentNames.set(environmentResult.managedEnvironmentNames)
     advancedPreferences.managedUserEnvironmentNames.set(environmentResult.managedUserEnvironmentNames)
     environmentResult.warnings.forEach { warning -> Log.w("App", warning) }
+    environmentResult.userVariableErrors.forEach { error -> Log.w("App", error.description) }
     MpvExEnvironment.apply(advancedPreferences.mpvConfStorageUri.get())
     applicationScope.launch {
       advancedPreferences.mpvConfStorageUri.changes().collect(MpvExEnvironment::apply)

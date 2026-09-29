@@ -49,6 +49,16 @@ object MpvExEnvironment {
     return if (relativePath.isEmpty()) root else "$root/$relativePath"
   }
 
+  /** Values of the built-in variables, which user-defined values may reference. */
+  fun builtInValues(treeUri: String): Map<String, String> =
+    builtInValues(treeUri, Environment.getExternalStorageDirectory().absolutePath)
+
+  internal fun builtInValues(
+    treeUri: String,
+    primaryStoragePath: String,
+  ): Map<String, String> =
+    selectedConfigLocation(treeUri, primaryStoragePath)?.let { mapOf(CONFIG_DIR to it) }.orEmpty()
+
   /** Reapply after user and plugin settings so the reserved name stays accurate. */
   fun apply(treeUri: String) {
     applyValue(selectedConfigLocation(treeUri), AndroidMpvExEnvironmentAccess)

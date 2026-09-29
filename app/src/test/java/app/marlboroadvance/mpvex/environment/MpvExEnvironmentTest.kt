@@ -2,6 +2,7 @@ package app.marlboroadvance.mpvex.environment
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MpvExEnvironmentTest {
@@ -42,6 +43,17 @@ class MpvExEnvironmentTest {
     )
     assertNull(environment.values[MpvExEnvironment.CONFIG_DIR])
     assertNull(MpvExEnvironment.selectedConfigLocation("file:///data/user/0/config", "/storage/emulated/0"))
+  }
+
+  @Test
+  fun `built in values expose the selected folder and nothing else`() {
+    val treeUri = "content://com.android.externalstorage.documents/tree/primary%3AmpvEx"
+
+    assertEquals(
+      mapOf(MpvExEnvironment.CONFIG_DIR to "/storage/emulated/0/mpvEx"),
+      MpvExEnvironment.builtInValues(treeUri, "/storage/emulated/0"),
+    )
+    assertTrue(MpvExEnvironment.builtInValues("", "/storage/emulated/0").isEmpty())
   }
 
   private class RecordingEnvironment : MpvExEnvironmentAccess {

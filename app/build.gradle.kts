@@ -1,4 +1,5 @@
 import com.android.build.api.variant.FilterConfiguration
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -9,6 +10,19 @@ plugins {
   alias(libs.plugins.room)
   alias(libs.plugins.aboutlibraries)
 }
+
+// Local release signing. `keystore.properties` and the keystore it points at are
+// git-ignored; CI keeps signing with apksigner and the repository secrets.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+  if (keystorePropertiesFile.isFile) {
+    keystorePropertiesFile.inputStream().use(::load)
+  }
+}
+val releaseSigningConfigured =
+  listOf("storeFile", "storePassword", "keyAlias", "keyPassword").all {
+    !keystoreProperties.getProperty(it).isNullOrBlank()
+  }
 
 android {
   namespace = "app.marlboroadvance.mpvex"
@@ -73,6 +87,19 @@ android {
   }
 
   buildTypes {
+    // A local `keystore.properties` signs release builds (including preview)
+    // directly. Without it the APKs stay unsigned for CI to sign.
+    signingConfigs {
+      if (releaseSigningConfigured) {
+        create("release") {
+          storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+          storePassword = keystoreProperties.getProperty("storePassword")
+          keyAlias = keystoreProperties.getProperty("keyAlias")
+          keyPassword = keystoreProperties.getProperty("keyPassword")
+        }
+      }
+    }
+
     named("release") {
       isMinifyEnabled = true
       isShrinkResources = true
@@ -83,11 +110,13 @@ android {
       ndk {
         debugSymbolLevel = "none"
       }
+      if (releaseSigningConfigured) {
+        signingConfig = signingConfigs.getByName("release")
+      }
     }
 
     create("preview") {
       initWith(getByName("release"))
-      signingConfig = null
       applicationIdSuffix = ".preview"
       versionNameSuffix = "-${getCommitCount()}"
     }

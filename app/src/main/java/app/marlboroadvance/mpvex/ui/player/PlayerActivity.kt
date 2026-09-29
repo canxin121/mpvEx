@@ -39,19 +39,15 @@ import app.marlboroadvance.mpvex.database.entities.PlaybackStateEntity
 import app.marlboroadvance.mpvex.databinding.PlayerLayoutBinding
 import app.marlboroadvance.mpvex.domain.playbackstate.repository.PlaybackStateRepository
 import app.marlboroadvance.mpvex.environment.MpvExEnvironment
+import app.marlboroadvance.mpvex.environment.UserEnvironmentVariables
 import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
 import app.marlboroadvance.mpvex.preferences.AudioPreferences
 import app.marlboroadvance.mpvex.preferences.BrowserPreferences
 import app.marlboroadvance.mpvex.preferences.PlayerPreferences
 import app.marlboroadvance.mpvex.preferences.SubtitlesPreferences
-import app.marlboroadvance.mpvex.plugins.CPluginCatalogScanner
-import app.marlboroadvance.mpvex.plugins.CPluginConfigurationCodec
-import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentApplicator
-import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentPlan
-import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentPlanBuilder
 import app.marlboroadvance.mpvex.plugins.EnvironmentVariablesCodec
-import app.marlboroadvance.mpvex.plugins.isSafeCPluginFileName
 import app.marlboroadvance.mpvex.plugins.hasScriptFileExtension
+import app.marlboroadvance.mpvex.plugins.isSafeCPluginFileName
 import app.marlboroadvance.mpvex.plugins.isSafeScriptFileName
 import app.marlboroadvance.mpvex.ui.player.controls.PlayerControls
 import app.marlboroadvance.mpvex.ui.theme.MpvexTheme
@@ -916,62 +912,13 @@ class PlayerActivity :
       }.getOrNull()?.takeIf { it.exists() && it.canRead() }
     } else null
 
-    // Prepare the process-wide environment before MPV loads any C plugin. Always
-    // run this path so disabling plugins also clears variables from an existing
-    // Android process.
-    val selectedPlugins =
-      if (advancedPreferences.enableCPlugins.get()) {
-        advancedPreferences.selectedCPlugins.get()
-      } else {
-        emptySet()
-      }
-    val catalogResult = tree?.let { runCatching { CPluginCatalogScanner.scan(this, it) } }
-    val environmentPlan =
-      if (catalogResult?.isFailure == true) {
-        CPluginEnvironmentPlan(
-          assignments = emptyList(),
-          excludedPluginFileNames = selectedPlugins,
-          warnings = listOf("Could not read C plugin manifests: ${catalogResult.exceptionOrNull()?.message}"),
-        )
-      } else {
-        CPluginEnvironmentPlanBuilder.build(
-          selectedPluginFileNames = selectedPlugins,
-          descriptors = catalogResult?.getOrNull().orEmpty(),
-          configuredValues =
-            CPluginConfigurationCodec.decode(advancedPreferences.cPluginConfiguration.get()),
-        )
-      }
-    environmentPlan.warnings.forEach { warning ->
-      Log.w(TAG, warning)
-    }
-
-    // Copy only plugins whose manifests and configured values are valid. The
-    // returned set prevents environment values from being exposed for a plugin
-    // that could not actually be copied.
-    val syncedPluginFileNames =
-      syncCPlugins(
-        tree = tree,
-        excludedPluginFileNames = environmentPlan.excludedPluginFileNames,
-      )
-    val effectiveEnvironmentPlan =
-      environmentPlan.copy(
-        assignments =
-          environmentPlan.assignments.filter { assignment ->
-            assignment.pluginFileName in syncedPluginFileNames
-          },
-      )
-    val environmentResult =
-      CPluginEnvironmentApplicator.apply(
-        plan = effectiveEnvironmentPlan,
-        previouslyManagedEnvironmentNames =
-          advancedPreferences.managedCPluginEnvironmentNames.get(),
-        userDefinedVariables =
-          EnvironmentVariablesCodec.decode(advancedPreferences.environmentVariables.get()),
-        previouslyManagedUserEnvironmentNames =
-          advancedPreferences.managedUserEnvironmentNames.get(),
-      )
-    advancedPreferences.managedCPluginEnvironmentNames.set(
-      environmentResult.managedEnvironmentNames,
+    // Prepare the process-wide environment before MPV loads any C plugin.
+    val environmentResult = UserEnvironmentVariables.apply(
+      userDefinedVariables =
+        EnvironmentVariablesCodec.decode(advancedPreferences.environmentVariables.get()),
+      previouslyManagedUserEnvironmentNames =
+        advancedPreferences.managedUserEnvironmentNames.get(),
+      builtInVariables = MpvExEnvironment.builtInValues(mpvConfStorageUri),
     )
     advancedPreferences.managedUserEnvironmentNames.set(
       environmentResult.managedUserEnvironmentNames,
@@ -979,7 +926,13 @@ class PlayerActivity :
     environmentResult.warnings.forEach { warning ->
       Log.w(TAG, warning)
     }
-    removeInternalCPlugins(environmentResult.failedPluginFileNames)
+    environmentResult.userVariableErrors.forEach { error ->
+      Log.w(TAG, error.description)
+    }
+
+    // Plugins have no settings of their own; they read the variables exported
+    // above. Always run this so disabling the preference removes copied plugins.
+    syncCPlugins(tree)
 
     // Lua and C plugins share mpv's scripts directory. The Lua sync only touches
     // .lua/.js files, leaving selected .so plugins in place.
@@ -1139,10 +1092,7 @@ class PlayerActivity :
    * the MPV core starts. Plugins may be stored either in scripts/ or in the root
    * of the configured MPV directory for compatibility with older configurations.
    */
-  private fun syncCPlugins(
-    tree: DocumentFile?,
-    excludedPluginFileNames: Set<String>,
-  ): Set<String> {
+  private fun syncCPlugins(tree: DocumentFile?) {
     val internalScriptsDir = File(filesDir, "scripts").apply { mkdirs() }
 
     // Remove only C plugins, leaving any scripts bundled by MPV untouched.
@@ -1154,24 +1104,18 @@ class PlayerActivity :
 
     if (!advancedPreferences.enableCPlugins.get()) {
       Log.d(TAG, "C plugins disabled, skipping sync")
-      return emptySet()
+      return
     }
 
-    val configuredSelection = advancedPreferences.selectedCPlugins.get()
-    excludedPluginFileNames.forEach { pluginName ->
-      if (pluginName in configuredSelection) {
-        Log.w(TAG, "C plugin excluded because its configuration is invalid: $pluginName")
-      }
-    }
-    val selectedPlugins = configuredSelection - excludedPluginFileNames
+    val selectedPlugins = advancedPreferences.selectedCPlugins.get()
     if (selectedPlugins.isEmpty()) {
-      Log.d(TAG, "No valid C plugins selected, skipping sync")
-      return emptySet()
+      Log.d(TAG, "No C plugins selected, skipping sync")
+      return
     }
 
     if (tree == null) {
       Log.w(TAG, "MPV directory is unavailable, cannot sync C plugins")
-      return emptySet()
+      return
     }
 
     val sourceDirectories = buildList {
@@ -1189,7 +1133,7 @@ class PlayerActivity :
       }
     }
 
-    val syncedPluginFileNames = mutableSetOf<String>()
+    var successCount = 0
     selectedPlugins.forEach { pluginName ->
       val pluginFile = availablePlugins[pluginName]
       if (pluginFile == null || !pluginFile.canRead()) {
@@ -1207,25 +1151,14 @@ class PlayerActivity :
           }
         }
       }.onSuccess {
-        syncedPluginFileNames += pluginName
+        successCount++
         Log.d(TAG, "Synced C plugin: $pluginName")
       }.onFailure { error ->
         Log.e(TAG, "Error syncing C plugin: $pluginName", error)
       }
     }
 
-    Log.d(TAG, "C plugins sync: ${syncedPluginFileNames.size}/${selectedPlugins.size} file(s)")
-    return syncedPluginFileNames
-  }
-
-  private fun removeInternalCPlugins(pluginFileNames: Set<String>) {
-    val internalScriptsDir = File(filesDir, "scripts")
-    pluginFileNames.filter(::isSafeCPluginFileName).forEach { pluginFileName ->
-      val pluginFile = File(internalScriptsDir, pluginFileName)
-      if (pluginFile.isFile && !pluginFile.delete()) {
-        Log.e(TAG, "Could not remove C plugin after environment setup failed: $pluginFileName")
-      }
-    }
+    Log.d(TAG, "C plugins sync: $successCount/${selectedPlugins.size} file(s)")
   }
 
   // ==================== Fonts Sync ====================

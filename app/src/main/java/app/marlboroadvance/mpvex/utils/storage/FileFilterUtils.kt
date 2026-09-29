@@ -1,7 +1,7 @@
 package app.marlboroadvance.mpvex.utils.storage
 
-import android.util.Log
 import java.io.File
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 
 /**
  * File Filter Utilities
@@ -39,7 +39,7 @@ object FileFilterUtils {
       val noMediaFile = File(folder, ".nomedia")
       noMediaFile.exists()
     } catch (e: Exception) {
-      Log.w(TAG, "Error checking for .nomedia file in: ${folder.absolutePath}", e)
+      MpvExLog.w(TAG, e, "Error checking for .nomedia file in: ${folder.absolutePath}")
       false
     }
   }

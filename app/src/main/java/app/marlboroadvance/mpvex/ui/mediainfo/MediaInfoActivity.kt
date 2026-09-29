@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.OpenableColumns
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -69,6 +68,7 @@ import app.marlboroadvance.mpvex.ui.theme.DarkMode
 import app.marlboroadvance.mpvex.ui.theme.MpvexTheme
 import app.marlboroadvance.mpvex.utils.media.HttpUtils
 import app.marlboroadvance.mpvex.utils.media.MediaInfoOps
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -620,7 +620,7 @@ class MediaInfoActivity : ComponentActivity() {
           }
         }
       } catch (e: Exception) {
-        Log.e(TAG, "Error querying content resolver for file name", e)
+        MpvExLog.e(TAG, e, "Error querying content resolver for file name")
       }
       val segment = uri.lastPathSegment
       if (!segment.isNullOrBlank()) return segment

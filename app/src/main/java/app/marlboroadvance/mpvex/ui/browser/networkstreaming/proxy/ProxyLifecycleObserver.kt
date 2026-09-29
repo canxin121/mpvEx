@@ -1,6 +1,5 @@
 package app.marlboroadvance.mpvex.ui.browser.networkstreaming.proxy
 
-import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 

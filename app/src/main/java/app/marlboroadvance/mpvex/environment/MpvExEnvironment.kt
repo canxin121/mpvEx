@@ -2,10 +2,10 @@ package app.marlboroadvance.mpvex.environment
 
 import android.os.Environment
 import android.system.Os
-import android.util.Log
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 
 internal interface MpvExEnvironmentAccess {
   fun set(name: String, value: String)
@@ -67,6 +67,6 @@ object MpvExEnvironment {
   internal fun applyValue(value: String?, environment: MpvExEnvironmentAccess) {
     runCatching {
       if (value == null) environment.unset(CONFIG_DIR) else environment.set(CONFIG_DIR, value)
-    }.onFailure { Log.w("MpvExEnvironment", "Could not update $CONFIG_DIR", it) }
+    }.onFailure { MpvExLog.w("MpvExEnvironment", it, "Could not update $CONFIG_DIR") }
   }
 }

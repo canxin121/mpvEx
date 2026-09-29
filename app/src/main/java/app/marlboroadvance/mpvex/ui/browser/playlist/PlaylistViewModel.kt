@@ -1,13 +1,13 @@
 package app.marlboroadvance.mpvex.ui.browser.playlist
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import app.marlboroadvance.mpvex.database.entities.PlaylistEntity
 import app.marlboroadvance.mpvex.database.repository.PlaylistRepository
 import app.marlboroadvance.mpvex.repository.MediaFileRepository
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -65,7 +65,7 @@ class PlaylistViewModel(
           _hasCompletedInitialLoad.value = true
         }
       } catch (e: Exception) {
-        Log.e(TAG, "Error loading cached playlists", e)
+        MpvExLog.e(TAG, e, "Error loading cached playlists")
       }
     }
 
@@ -124,7 +124,7 @@ class PlaylistViewModel(
 
         _playlistsWithCount.value = playlistsWithCounts
       } catch (e: Exception) {
-        Log.e(TAG, "Error refreshing playlists", e)
+        MpvExLog.e(TAG, e, "Error refreshing playlists")
       } finally {
         _isLoading.value = false
       }

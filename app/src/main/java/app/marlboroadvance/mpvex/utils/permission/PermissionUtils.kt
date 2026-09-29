@@ -7,7 +7,6 @@ import android.content.ContentValues
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -26,6 +25,7 @@ import androidx.lifecycle.LifecycleOwner
 import app.marlboroadvance.mpvex.BuildConfig
 import app.marlboroadvance.mpvex.domain.media.model.Video
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.MediaLibraryEvents
 import app.marlboroadvance.mpvex.utils.media.PlaybackStateOps
 import app.marlboroadvance.mpvex.utils.media.VideoDeletionReconciler
@@ -271,14 +271,14 @@ object PermissionUtils {
             val file = File(video.path)
             if (file.exists() && file.delete()) {
               deletedVideos += video
-              Log.d(TAG, "✓ Deleted: ${video.displayName}")
+              MpvExLog.d(TAG, "✓ Deleted: ${video.displayName}")
             } else {
               failed++
-              Log.w(TAG, "✗ Failed to delete: ${video.displayName}")
+              MpvExLog.w(TAG, "✗ Failed to delete: ${video.displayName}")
             }
           } catch (e: Exception) {
             failed++
-            Log.e(TAG, "✗ Error deleting ${video.displayName}", e)
+            MpvExLog.e(TAG, e, "✗ Error deleting ${video.displayName}")
           }
         }
 
@@ -297,7 +297,7 @@ object PermissionUtils {
 
       // Clean up all references to the deleted files.
       runCatching { VideoDeletionReconciler.onVideosDeleted(deletedVideos) }
-        .onFailure { Log.w(TAG, "Post-delete reconciliation failed", it) }
+        .onFailure { MpvExLog.w(TAG, it, "Post-delete reconciliation failed") }
 
       // Ask MediaStore to re-index the deleted paths so they don't linger in
       // scan results until Android notices on its own.
@@ -310,7 +310,7 @@ object PermissionUtils {
             null,
             null,
           )
-        }.onFailure { Log.w(TAG, "Media scan after delete failed: ${it.message}") }
+        }.onFailure { MpvExLog.w(TAG, "Media scan after delete failed: ${it.message}") }
       }
 
       MediaLibraryEvents.notifyChanged()
@@ -335,11 +335,11 @@ object PermissionUtils {
           if (granted) {
             contentVideos.forEach { video ->
               deletedVideos += video
-              Log.d(TAG, "✓ Deleted (scoped request): ${video.displayName}")
+              MpvExLog.d(TAG, "✓ Deleted (scoped request): ${video.displayName}")
             }
           } else {
             failed += contentVideos.size
-            Log.w(TAG, "✗ Delete request denied/cancelled for ${contentVideos.size} item(s)")
+            MpvExLog.w(TAG, "✗ Delete request denied/cancelled for ${contentVideos.size} item(s)")
           }
         } else {
           for (video in contentVideos) {
@@ -347,14 +347,14 @@ object PermissionUtils {
               val rows = context.contentResolver.delete(video.uri, null, null)
               if (rows > 0) {
                 deletedVideos += video
-                Log.d(TAG, "✓ Deleted (scoped): ${video.displayName}")
+                MpvExLog.d(TAG, "✓ Deleted (scoped): ${video.displayName}")
               } else {
                 failed++
-                Log.w(TAG, "✗ Failed to delete (scoped): ${video.displayName}")
+                MpvExLog.w(TAG, "✗ Failed to delete (scoped): ${video.displayName}")
               }
             } catch (e: Exception) {
               failed++
-              Log.e(TAG, "✗ Error deleting (scoped) ${video.displayName}", e)
+              MpvExLog.e(TAG, e, "✗ Error deleting (scoped) ${video.displayName}")
             }
           }
         }
@@ -364,14 +364,14 @@ object PermissionUtils {
             val file = File(video.path)
             if (!file.exists() || file.delete()) {
               deletedVideos += video
-              Log.d(TAG, "✓ Deleted (file fallback): ${video.displayName}")
+              MpvExLog.d(TAG, "✓ Deleted (file fallback): ${video.displayName}")
             } else {
               failed++
-              Log.w(TAG, "✗ Failed to delete (file fallback): ${video.displayName}")
+              MpvExLog.w(TAG, "✗ Failed to delete (file fallback): ${video.displayName}")
             }
           } catch (e: Exception) {
             failed++
-            Log.e(TAG, "✗ Error deleting (file fallback) ${video.displayName}", e)
+            MpvExLog.e(TAG, e, "✗ Error deleting (file fallback) ${video.displayName}")
           }
         }
 
@@ -417,7 +417,7 @@ object PermissionUtils {
             // Notify that media library has changed
             MediaLibraryEvents.notifyChanged()
 
-            Log.d(TAG, "✓ Renamed: ${video.displayName} -> $newDisplayName")
+            MpvExLog.d(TAG, "✓ Renamed: ${video.displayName} -> $newDisplayName")
             try {
               android.media.MediaScannerConnection.scanFile(
                 context,
@@ -426,15 +426,15 @@ object PermissionUtils {
                 null,
               )
             } catch (e: Exception) {
-              Log.w(TAG, "Media scan failed after rename: ${e.message}")
+              MpvExLog.w(TAG, "Media scan failed after rename: ${e.message}")
             }
             Result.success(Unit)
           } else {
-            Log.w(TAG, "✗ Rename failed: ${video.displayName}")
+            MpvExLog.w(TAG, "✗ Rename failed: ${video.displayName}")
             Result.failure(IllegalStateException(context.getString(R.string.ui_rename_operation_failed)))
           }
         } catch (e: Exception) {
-          Log.e(TAG, "✗ Error renaming ${video.displayName}", e)
+          MpvExLog.e(TAG, e, "✗ Error renaming ${video.displayName}")
           Result.failure(e)
         }
       }
@@ -456,7 +456,7 @@ object PermissionUtils {
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val granted = requestWriteAccess(context, listOf(video.uri))
             if (!granted) {
-              Log.w(TAG, "✗ Rename request denied/cancelled: ${video.displayName}")
+              MpvExLog.w(TAG, "✗ Rename request denied/cancelled: ${video.displayName}")
               return@withContext Result.failure(SecurityException(context.getString(R.string.ui_rename_permission_denied)))
             }
           }
@@ -476,14 +476,14 @@ object PermissionUtils {
             PlaybackStateOps.onVideoRenamed(oldPath, newPath)
             MediaLibraryEvents.notifyChanged()
 
-            Log.d(TAG, "✓ Renamed (scoped): ${video.displayName} -> $newDisplayName")
+            MpvExLog.d(TAG, "✓ Renamed (scoped): ${video.displayName} -> $newDisplayName")
             Result.success(Unit)
           } else {
-            Log.w(TAG, "✗ Rename failed (scoped): ${video.displayName}")
+            MpvExLog.w(TAG, "✗ Rename failed (scoped): ${video.displayName}")
             Result.failure(IllegalStateException(context.getString(R.string.ui_rename_operation_failed)))
           }
         } catch (e: Exception) {
-          Log.e(TAG, "✗ Error renaming (scoped) ${video.displayName}", e)
+          MpvExLog.e(TAG, e, "✗ Error renaming (scoped) ${video.displayName}")
           Result.failure(e)
         }
       }

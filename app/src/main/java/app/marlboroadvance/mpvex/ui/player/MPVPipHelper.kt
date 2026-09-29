@@ -10,12 +10,12 @@ import android.content.IntentFilter
 import android.graphics.Rect
 import android.graphics.drawable.Icon
 import android.os.Build
-import android.util.Log
 import android.util.Rational
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.preferences.PlayerPreferences
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import `is`.xyz.mpv.MPVLib
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -175,7 +175,7 @@ class MPVPipHelper(
     runCatching {
       activity.enterPictureInPictureMode(buildPipParams())
     }.onFailure {
-      Log.e("MPVPipHelper", "Failed to enter PiP mode", it)
+      MpvExLog.e("MPVPipHelper", it, "Failed to enter PiP mode")
     }
   }
 

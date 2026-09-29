@@ -1,7 +1,6 @@
 package app.marlboroadvance.mpvex.ui.browser.videolist
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -10,6 +9,7 @@ import app.marlboroadvance.mpvex.domain.playbackstate.repository.PlaybackStateRe
 import app.marlboroadvance.mpvex.repository.MediaFileRepository
 import app.marlboroadvance.mpvex.ui.browser.base.BaseBrowserViewModel
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.MediaIdentifier
 import app.marlboroadvance.mpvex.utils.media.MediaLibraryEvents
 import app.marlboroadvance.mpvex.utils.media.MetadataRetrieval
@@ -135,7 +135,7 @@ class VideoListViewModel(
   }
 
   override fun refresh() {
-    Log.d(tag, "Refreshing video list for bucket: $bucketId")
+    MpvExLog.d(tag, "Refreshing video list for bucket: $bucketId")
     cachedFolderLastModified = 0L // Force full stat refresh
     VideoStatCache.invalidate(bucketId)
     _isLoading.value = true
@@ -177,7 +177,7 @@ class VideoListViewModel(
         // Fast stat check: if folder's filesystem lastModified hasn't changed AND metadata is already present,
         // no files were added, deleted, or renamed. Skip heavy rescan completely!
         if (isBackgroundRefresh && currentFolderMod > 0L && (currentFolderMod == cachedFolderLastModified || VideoStatCache.isFolderStatUnchanged(bucketId, currentFolderMod)) && _videos.value.isNotEmpty() && !isMissingMetadata) {
-          Log.d(tag, "Folder stat unchanged and metadata complete ($currentFolderMod), skipping rescan")
+          MpvExLog.d(tag, "Folder stat unchanged and metadata complete ($currentFolderMod), skipping rescan")
           return@launch
         }
 
@@ -189,7 +189,7 @@ class VideoListViewModel(
         // Check if folder became empty after having videos
         if (previousVideoCount > 0 && videoList.isEmpty()) {
           _videosWereDeletedOrMoved.value = true
-          Log.d(tag, "Folder became empty (had $previousVideoCount videos before)")
+          MpvExLog.d(tag, "Folder became empty (had $previousVideoCount videos before)")
         } else if (videoList.isNotEmpty()) {
           // Reset flag if folder now has videos
           _videosWereDeletedOrMoved.value = false
@@ -201,7 +201,7 @@ class VideoListViewModel(
         if (videoList.isEmpty()) {
           // Only trigger rescan if we have no videos at all (not even cached)
           if (_videos.value.isEmpty()) {
-            Log.d(tag, "No videos found for bucket $bucketId - attempting media rescan")
+            MpvExLog.d(tag, "No videos found for bucket $bucketId - attempting media rescan")
             triggerMediaScan()
             delay(1000)
             if (!isActive) return@launch
@@ -279,7 +279,7 @@ class VideoListViewModel(
         }
       } catch (e: Exception) {
         if (e is kotlinx.coroutines.CancellationException) throw e
-        Log.e(tag, "Error loading videos for bucket $bucketId", e)
+        MpvExLog.e(tag, e, "Error loading videos for bucket $bucketId")
         if (_videos.value.isEmpty()) {
           _videos.value = emptyList()
           _videosWithPlaybackInfo.value = emptyList()
@@ -382,12 +382,12 @@ class VideoListViewModel(
             filePaths,
             null, // Let MediaScanner detect MIME types
           ) { path, uri ->
-            Log.d(tag, "Media scan completed for: $path -> $uri")
+            MpvExLog.d(tag, "Media scan completed for: $path -> $uri")
           }
           
-          Log.d(tag, "Triggered media scan for ${filePaths.size} files in: $bucketId")
+          MpvExLog.d(tag, "Triggered media scan for ${filePaths.size} files in: $bucketId")
         } else {
-          Log.d(tag, "No video files found in folder: $bucketId")
+          MpvExLog.d(tag, "No video files found in folder: $bucketId")
         }
       } else {
         // Fallback to scanning external storage root
@@ -397,12 +397,12 @@ class VideoListViewModel(
           arrayOf(externalStorage.absolutePath),
           arrayOf("video/*"),
         ) { path, uri ->
-          Log.d(tag, "Media scan completed for: $path -> $uri")
+          MpvExLog.d(tag, "Media scan completed for: $path -> $uri")
         }
-        Log.d(tag, "Triggered media scan for: ${externalStorage.absolutePath}")
+        MpvExLog.d(tag, "Triggered media scan for: ${externalStorage.absolutePath}")
       }
     } catch (e: Exception) {
-      Log.e(tag, "Failed to trigger media scan", e)
+      MpvExLog.e(tag, e, "Failed to trigger media scan")
     }
   }
 

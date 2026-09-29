@@ -2,9 +2,9 @@ package app.marlboroadvance.mpvex.database.repository
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import app.marlboroadvance.mpvex.database.dao.VideoMetadataDao
 import app.marlboroadvance.mpvex.database.entities.VideoMetadataEntity
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.MediaInfoOps
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -47,7 +47,7 @@ class VideoMetadataCacheRepository(
       // Try cache first
       val cached = dao.getMetadata(path, dateModified, size)
       if (cached != null) {
-        Log.d(TAG, "Cache hit for $displayName")
+        MpvExLog.d(TAG, "Cache hit for $displayName")
         return@withContext MediaInfoOps.VideoMetadata(
           sizeBytes = cached.size,
           durationMs = cached.duration,
@@ -60,7 +60,7 @@ class VideoMetadataCacheRepository(
       }
 
       // Cache miss - extract metadata
-      Log.d(TAG, "Cache miss for $displayName, extracting metadata")
+      MpvExLog.d(TAG, "Cache miss for $displayName, extracting metadata")
       val result = MediaInfoOps.extractBasicMetadata(context, uri, displayName)
 
       result.onSuccess { metadata ->
@@ -80,7 +80,7 @@ class VideoMetadataCacheRepository(
           ),
         )
       }.onFailure { error ->
-        Log.w(TAG, "Failed to extract metadata for $displayName: ${error.message}")
+        MpvExLog.w(TAG, "Failed to extract metadata for $displayName: ${error.message}")
       }
 
       result.getOrNull()
@@ -123,7 +123,7 @@ class VideoMetadataCacheRepository(
         }
       }
 
-      Log.d(TAG, "Batch lookup: ${cachedFiles.size} cached, ${uncachedFiles.size} need extraction")
+      MpvExLog.d(TAG, "Batch lookup: ${cachedFiles.size} cached, ${uncachedFiles.size} need extraction")
 
       // Add cached results
       for ((path, _, cached) in cachedFiles) {
@@ -171,7 +171,7 @@ class VideoMetadataCacheRepository(
                     }
                     path to metadata
                   }.onFailure { error ->
-                    Log.w(TAG, "Failed to extract metadata for $displayName: ${error.message}")
+                    MpvExLog.w(TAG, "Failed to extract metadata for $displayName: ${error.message}")
                   }
                   result.getOrNull()?.let { path to it }
                 }
@@ -184,7 +184,7 @@ class VideoMetadataCacheRepository(
         // Batch insert all extracted metadata into cache
         if (extractedMetadata.isNotEmpty()) {
           dao.insertMetadataBatch(extractedMetadata)
-          Log.d(TAG, "Batch inserted ${extractedMetadata.size} metadata entries to cache")
+          MpvExLog.d(TAG, "Batch inserted ${extractedMetadata.size} metadata entries to cache")
         }
       }
 
@@ -258,7 +258,7 @@ class VideoMetadataCacheRepository(
   suspend fun clearOldCache() {
     val cutoffTimestamp = System.currentTimeMillis() - (CACHE_VALIDITY_DAYS * 24 * 60 * 60 * 1000)
     dao.clearOldCache(cutoffTimestamp)
-    Log.d(TAG, "Cleared cache entries older than $CACHE_VALIDITY_DAYS days")
+    MpvExLog.d(TAG, "Cleared cache entries older than $CACHE_VALIDITY_DAYS days")
   }
 
   /**
@@ -270,7 +270,7 @@ class VideoMetadataCacheRepository(
       val cachedPaths = dao.getAllCachedPaths()
       if (cachedPaths.isEmpty()) return@withContext
 
-      Log.d(TAG, "Validating ${cachedPaths.size} cached entries...")
+      MpvExLog.d(TAG, "Validating ${cachedPaths.size} cached entries...")
 
       val existingPaths = cachedPaths.filter { path ->
         File(path).exists()
@@ -288,9 +288,9 @@ class VideoMetadataCacheRepository(
           // All cached files are gone, clear everything
           dao.clearAll()
         }
-        Log.d(TAG, "Removed $staleCount stale cache entries (deleted/moved/renamed videos)")
+        MpvExLog.d(TAG, "Removed $staleCount stale cache entries (deleted/moved/renamed videos)")
       } else {
-        Log.d(TAG, "No stale entries found")
+        MpvExLog.d(TAG, "No stale entries found")
       }
     }
   }
@@ -301,7 +301,7 @@ class VideoMetadataCacheRepository(
   suspend fun invalidateVideo(path: String) {
     withContext(Dispatchers.IO) {
       dao.deleteByPath(path)
-      Log.d(TAG, "Invalidated cache for: $path")
+      MpvExLog.d(TAG, "Invalidated cache for: $path")
     }
   }
 
@@ -312,7 +312,7 @@ class VideoMetadataCacheRepository(
     withContext(Dispatchers.IO) {
       if (paths.isEmpty()) return@withContext
       dao.deleteByPaths(paths)
-      Log.d(TAG, "Invalidated cache for ${paths.size} videos")
+      MpvExLog.d(TAG, "Invalidated cache for ${paths.size} videos")
     }
   }
 
@@ -332,7 +332,7 @@ class VideoMetadataCacheRepository(
    */
   suspend fun clearAll() {
     dao.clearAll()
-    Log.d(TAG, "Cleared all cached metadata")
+    MpvExLog.d(TAG, "Cleared all cached metadata")
   }
 
   /**
@@ -343,7 +343,7 @@ class VideoMetadataCacheRepository(
    */
   suspend fun performMaintenance() {
     withContext(Dispatchers.IO) {
-      Log.d(TAG, "Starting cache maintenance...")
+      MpvExLog.d(TAG, "Starting cache maintenance...")
       val startTime = System.currentTimeMillis()
 
       // Step 1: Remove stale entries
@@ -354,7 +354,7 @@ class VideoMetadataCacheRepository(
 
       val duration = System.currentTimeMillis() - startTime
       val stats = getCacheStats()
-      Log.d(
+      MpvExLog.d(
         TAG,
         "Cache maintenance completed in ${duration}ms. " +
           "Entries: ${stats.totalEntries}, Size: ${formatSize(stats.totalSizeBytes)}",

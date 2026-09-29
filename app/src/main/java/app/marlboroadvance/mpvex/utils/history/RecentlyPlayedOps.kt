@@ -5,6 +5,7 @@ import android.net.Uri
 import app.marlboroadvance.mpvex.database.entities.RecentlyPlayedEntity
 import app.marlboroadvance.mpvex.domain.recentlyplayed.repository.RecentlyPlayedRepository
 import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -149,9 +150,9 @@ object RecentlyPlayedOps {
     kotlin
       .runCatching {
         repository.updateFilePath(oldPath, newPath, newFileName)
-        android.util.Log.d("RecentlyPlayedOps", "Updated history: $oldPath -> $newPath")
+        MpvExLog.d("RecentlyPlayedOps", "Updated history: $oldPath -> $newPath")
       }.onFailure { e ->
-        android.util.Log.w("RecentlyPlayedOps", "Failed to update history path: ${e.message}")
+        MpvExLog.w("RecentlyPlayedOps", "Failed to update history path: ${e.message}")
       }
   }
 

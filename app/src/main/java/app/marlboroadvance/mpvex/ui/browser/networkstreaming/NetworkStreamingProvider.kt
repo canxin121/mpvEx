@@ -7,9 +7,9 @@ import android.database.MatrixCursor
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
-import android.util.Log
 import app.marlboroadvance.mpvex.domain.network.NetworkConnection
 import app.marlboroadvance.mpvex.ui.browser.networkstreaming.clients.NetworkClientFactory
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -39,7 +39,7 @@ class NetworkStreamingProvider : ContentProvider() {
           try {
             client.disconnect()
           } catch (e: Exception) {
-            Log.e(TAG, "Error disconnecting client", e)
+            MpvExLog.e(TAG, e, "Error disconnecting client")
           }
         }
       }
@@ -147,7 +147,7 @@ class NetworkStreamingProvider : ContentProvider() {
 
       return readFd
     } catch (e: Exception) {
-      Log.e(TAG, "Error opening file", e)
+      MpvExLog.e(TAG, e, "Error opening file")
       return null
     }
   }

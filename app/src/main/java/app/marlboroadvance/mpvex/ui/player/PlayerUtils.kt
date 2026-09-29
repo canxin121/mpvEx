@@ -5,8 +5,8 @@ import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.MediaStore
-import android.util.Log
 import app.marlboroadvance.mpvex.ui.player.PlayerActivity.Companion.TAG
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import `is`.xyz.mpv.MPVNode
 import `is`.xyz.mpv.Utils
 import kotlinx.serialization.json.Json
@@ -47,7 +47,7 @@ private fun Uri.tryFileDescriptorPath(context: Context): String? =
   runCatching {
     context.contentResolver.openFileDescriptor(this, "r")?.use { pfd ->
       Utils.findRealPath(pfd.fd)?.also {
-        Log.d(TAG, "Resolved via file descriptor: $it")
+        MpvExLog.d(TAG, "Resolved via file descriptor: $it")
       }
     }
   }.getOrNull()
@@ -69,7 +69,7 @@ private fun Uri.tryMediaStoreQuery(context: Context): String? =
               ?.takeIf { path ->
                 path.isNotBlank() && File(path).exists()
               }?.also {
-                Log.d(TAG, "Resolved via MediaStore: $it")
+                MpvExLog.d(TAG, "Resolved via MediaStore: $it")
               }
           } else {
             null
@@ -79,7 +79,7 @@ private fun Uri.tryMediaStoreQuery(context: Context): String? =
         }
       }
   }.onFailure { e ->
-    Log.d(TAG, "MediaStore query failed: ${e.message}")
+    MpvExLog.d(TAG, "MediaStore query failed: ${e.message}")
   }.getOrNull()
 
 /**
@@ -96,7 +96,7 @@ private fun Uri.tryDocumentUriParsing(context: Context): String? {
 
   return runCatching {
     val docId = DocumentsContract.getDocumentId(this)
-    Log.d(TAG, "Parsing document ID: $docId")
+    MpvExLog.d(TAG, "Parsing document ID: $docId")
 
     when {
       docId.startsWith(StoragePaths.PRIMARY_PREFIX) -> {
@@ -113,7 +113,7 @@ private fun Uri.tryDocumentUriParsing(context: Context): String? {
       else -> null
     }
   }.onFailure { e ->
-    Log.d(TAG, "Document URI parsing failed: ${e.message}")
+    MpvExLog.d(TAG, "Document URI parsing failed: ${e.message}")
   }.getOrNull()
 }
 
@@ -121,14 +121,14 @@ private fun tryPrimaryStoragePath(docId: String): String? {
   val path = docId.substringAfter(StoragePaths.PRIMARY_PREFIX)
   val fullPath = "${StoragePaths.PRIMARY_STORAGE}/$path"
   return fullPath.takeIf { File(it).exists() }?.also {
-    Log.d(TAG, "Resolved document URI to primary storage: $it")
+    MpvExLog.d(TAG, "Resolved document URI to primary storage: $it")
   }
 }
 
 private fun tryRawPath(docId: String): String? {
   val rawPath = docId.substringAfter(StoragePaths.RAW_PREFIX)
   return rawPath.takeIf { File(it).exists() }?.also {
-    Log.d(TAG, "Resolved document URI from raw path: $it")
+    MpvExLog.d(TAG, "Resolved document URI from raw path: $it")
   }
 }
 
@@ -146,7 +146,7 @@ private fun tryExternalStoragePaths(docId: String): String? {
     )
 
   return possiblePaths.firstOrNull { File(it).exists() }?.also {
-    Log.d(TAG, "Resolved document URI to: $it")
+    MpvExLog.d(TAG, "Resolved document URI to: $it")
   }
 }
 
@@ -160,7 +160,7 @@ private fun Uri.tryFileDescriptorFallback(context: Context): String? =
   runCatching {
     context.contentResolver.openFileDescriptor(this, "r")?.detachFd()?.let { fd ->
       "fd://$fd".also {
-        Log.d(TAG, "Using file descriptor fallback: $it")
+        MpvExLog.d(TAG, "Using file descriptor fallback: $it")
       }
     }
   }.getOrNull()
@@ -172,7 +172,7 @@ private fun Uri.tryFileDescriptorFallback(context: Context): String? =
  */
 internal fun Uri.resolveUri(context: Context): String? {
   if (scheme == null) {
-    Log.e(TAG, "URI has null scheme: $this")
+    MpvExLog.e(TAG, "URI has null scheme: $this")
     return null
   }
 
@@ -182,7 +182,7 @@ internal fun Uri.resolveUri(context: Context): String? {
     "data" -> "data://$schemeSpecificPart"
     in Utils.PROTOCOLS -> toString()
     else -> {
-      Log.e(TAG, "Unsupported URI scheme: $scheme")
+      MpvExLog.e(TAG, "Unsupported URI scheme: $scheme")
       null
     }
   }

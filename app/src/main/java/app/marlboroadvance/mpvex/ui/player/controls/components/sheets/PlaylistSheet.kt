@@ -67,6 +67,7 @@ import androidx.compose.ui.geometry.Offset
 import app.marlboroadvance.mpvex.presentation.components.PlayerSheet
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.ui.theme.spacing
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -189,7 +190,7 @@ private suspend fun loadMediaStoreThumbnail(context: Context, uri: Uri): Bitmap?
       }
     } catch (e: Exception) {
       // Fallback with placeholder if thumbnail loading fails
-      android.util.Log.w("PlaylistSheet", "Failed to load MediaStore thumbnail for $uri", e)
+      MpvExLog.w("PlaylistSheet", e, "Failed to load MediaStore thumbnail for $uri")
       null
     }
   }

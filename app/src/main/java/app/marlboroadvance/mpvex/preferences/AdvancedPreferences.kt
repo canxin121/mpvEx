@@ -17,6 +17,19 @@ class AdvancedPreferences(
 
   val verboseLogging = preferenceStore.getBoolean("verbose_logging", BuildConfig.BUILD_TYPE != "release")
 
+  /**
+   * Keeps a rolling log file under `filesDir/logs`, on by default in every build
+   * type so a problem reported by a release user still comes with a log.
+   */
+  val enableFileLogging = preferenceStore.getBoolean("enable_file_logging", true)
+
+  /** Also capture what native code and the MPV C plugins write to stdout/stderr. */
+  val captureNativeOutput = preferenceStore.getBoolean("capture_native_output", true)
+
+  val logFileMaxSizeKb = preferenceStore.getInt("log_file_max_size_kb", 2048)
+  val logFileMaxCount = preferenceStore.getInt("log_file_max_count", 5)
+  val logRetentionDays = preferenceStore.getInt("log_retention_days", 7)
+
   val enabledStatisticsPage = preferenceStore.getInt("enabled_stats_page", 0)
 
   val enableRecentlyPlayed = preferenceStore.getBoolean("enable_recently_played", true)

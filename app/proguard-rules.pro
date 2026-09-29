@@ -29,6 +29,14 @@
 -dontnote org.xmlpull.v1.**
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 
+# ---------------- Logging ---------------- #
+# Log lines carry the class name and line number that produced them; keep them
+# so a shared log file points at the exact call site.
+-keepattributes SourceFile,LineNumberTable
+# The logging package is reached from native callback threads and from the
+# Logs screen, so keep it whole.
+-keep class app.marlboroadvance.mpvex.utils.logging.** { *; }
+
 # SMBJ ProGuard Rules
 # Keep SMBJ classes
 -keep class com.hierynomus.smbj.** { *; }

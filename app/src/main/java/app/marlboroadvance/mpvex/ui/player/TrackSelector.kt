@@ -1,8 +1,8 @@
 package app.marlboroadvance.mpvex.ui.player
 
-import android.util.Log
 import app.marlboroadvance.mpvex.preferences.AudioPreferences
 import app.marlboroadvance.mpvex.preferences.SubtitlesPreferences
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import `is`.xyz.mpv.MPVLib
 import kotlinx.coroutines.delay
 
@@ -78,7 +78,7 @@ class TrackSelector(
     val tracks = readTracks(trackCount)
 
     if (!isVideoFile(tracks)) {
-      Log.d(TAG, "Smart Tracks: Audio/Image file detected. Script disabled.")
+      MpvExLog.d(TAG, "Smart Tracks: Audio/Image file detected. Script disabled.")
       return
     }
   
@@ -179,9 +179,9 @@ class TrackSelector(
             if (track.lang == prefLang || track.lang.startsWith(prefLang)) {
               if (ignoreKeywords.none { track.title.contains(it) }) {
                 if (currentAid == track.id) {
-                  Log.d(TAG, "Smart Audio: Selected ${track.lang} (id=${track.id}) [Already Active. Skipping Change.]")
+                  MpvExLog.d(TAG, "Smart Audio: Selected ${track.lang} (id=${track.id}) [Already Active. Skipping Change.]")
                 } else {
-                  Log.d(TAG, "Smart Audio: Selected ${track.lang} (id=${track.id}) [Applied]")
+                  MpvExLog.d(TAG, "Smart Audio: Selected ${track.lang} (id=${track.id}) [Applied]")
                   MPVLib.setPropertyInt("aid", track.id)
                 }
                 return
@@ -198,16 +198,16 @@ class TrackSelector(
       for (track in audioTracks) {
         if (ignoreKeywords.none { track.title.contains(it) }) {
           if (currentAid == track.id) {
-            Log.d(TAG, "Smart Audio: Fallback (id=${track.id}) [Already Active. Skipping Change.]")
+            MpvExLog.d(TAG, "Smart Audio: Fallback (id=${track.id}) [Already Active. Skipping Change.]")
           } else {
-            Log.d(TAG, "Smart Audio: Fallback (id=${track.id}) [Applied]")
+            MpvExLog.d(TAG, "Smart Audio: Fallback (id=${track.id}) [Applied]")
             MPVLib.setPropertyInt("aid", track.id)
           }
           return
         }
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Audio selection failed", e)
+      MpvExLog.e(TAG, e, "Audio selection failed")
     }
   }
 
@@ -221,14 +221,14 @@ class TrackSelector(
 
       // Respect manual "Subtitles Off" state
       if (hasState && currentSid == 0) {
-        Log.d(TAG, "Smart Sub: User disabled subtitles manually. Respecting choice.")
+        MpvExLog.d(TAG, "Smart Sub: User disabled subtitles manually. Respecting choice.")
         return
       }
 
       if (hasState && currentSid > 0) return
 
       val isAnimeContext = detectAnimeContext(tracks)
-      Log.d(TAG, "Smart Tracks: Context defined by Internal Auto-Detection -> $isAnimeContext")
+      MpvExLog.d(TAG, "Smart Tracks: Context defined by Internal Auto-Detection -> $isAnimeContext")
 
       var preferredLangs = subtitlesPreferences.preferredLanguages.get()
         .split(",")
@@ -250,9 +250,9 @@ class TrackSelector(
       for (track in subTracks) {
         if (track.external) {
           if (currentSid == track.id) {
-            Log.d(TAG, "Smart Sub: External Subtitle Detected (id=${track.id}) [Already Active. Skipping Change.]")
+            MpvExLog.d(TAG, "Smart Sub: External Subtitle Detected (id=${track.id}) [Already Active. Skipping Change.]")
           } else {
-            Log.d(TAG, "Smart Sub: External Subtitle Detected (id=${track.id}) [Applied]")
+            MpvExLog.d(TAG, "Smart Sub: External Subtitle Detected (id=${track.id}) [Applied]")
             MPVLib.setPropertyInt("sid", track.id)
           }
           return
@@ -268,9 +268,9 @@ class TrackSelector(
             if (track.isDefault) {
               if (track.lang == "jpn" || track.lang == "ja" || track.lang == "jp") {
                 if (currentSid == track.id) {
-                  Log.d(TAG, "Smart Sub: Native File Default Japanese Sub (id=${track.id}) [Already Active. Skipping Change.]")
+                  MpvExLog.d(TAG, "Smart Sub: Native File Default Japanese Sub (id=${track.id}) [Already Active. Skipping Change.]")
                 } else {
-                  Log.d(TAG, "Smart Sub: Native File Default Japanese Sub (id=${track.id}) [Applied]")
+                  MpvExLog.d(TAG, "Smart Sub: Native File Default Japanese Sub (id=${track.id}) [Applied]")
                   MPVLib.setPropertyInt("sid", track.id)
                 }
                 return
@@ -278,7 +278,7 @@ class TrackSelector(
             }
           }
         } else if (defaultCount > 1) {
-          Log.d(TAG, "Smart Sub: Multiple default tracks detected (Muxing error). Ignoring.")
+          MpvExLog.d(TAG, "Smart Sub: Multiple default tracks detected (Muxing error). Ignoring.")
         }
       }
 
@@ -289,9 +289,9 @@ class TrackSelector(
             if (track.lang == prefLang || track.lang.startsWith(prefLang)) {
               if (track.title.contains("dialogue") || track.title.contains("full") || track.title.contains("script")) {
                 if (currentSid == track.id) {
-                  Log.d(TAG, "Smart Sub: Anime Dialogue matched (id=${track.id}) [Already Active. Skipping Change.]")
+                  MpvExLog.d(TAG, "Smart Sub: Anime Dialogue matched (id=${track.id}) [Already Active. Skipping Change.]")
                 } else {
-                  Log.d(TAG, "Smart Sub: Anime Dialogue matched (id=${track.id}) [Applied]")
+                  MpvExLog.d(TAG, "Smart Sub: Anime Dialogue matched (id=${track.id}) [Applied]")
                   MPVLib.setPropertyInt("sid", track.id)
                 }
                 return
@@ -307,9 +307,9 @@ class TrackSelector(
           if (track.lang == prefLang || track.lang.startsWith(prefLang)) {
             if (ignoreSubs.none { track.title.contains(it) } && !track.forced && !track.hearing) {
               if (currentSid == track.id) {
-                Log.d(TAG, "Smart Sub: Clean Match (id=${track.id}) [Already Active. Skipping Change.]")
+                MpvExLog.d(TAG, "Smart Sub: Clean Match (id=${track.id}) [Already Active. Skipping Change.]")
               } else {
-                Log.d(TAG, "Smart Sub: Clean Match (id=${track.id}) [Applied]")
+                MpvExLog.d(TAG, "Smart Sub: Clean Match (id=${track.id}) [Applied]")
                 MPVLib.setPropertyInt("sid", track.id)
               }
               return
@@ -323,9 +323,9 @@ class TrackSelector(
         for (track in subTracks) {
           if (track.lang == prefLang || track.lang.startsWith(prefLang)) {
             if (currentSid == track.id) {
-              Log.d(TAG, "Smart Sub: Fallback Match (id=${track.id}) [Already Active. Skipping Change.]")
+              MpvExLog.d(TAG, "Smart Sub: Fallback Match (id=${track.id}) [Already Active. Skipping Change.]")
             } else {
-              Log.d(TAG, "Smart Sub: Fallback Match (id=${track.id}) [Applied]")
+              MpvExLog.d(TAG, "Smart Sub: Fallback Match (id=${track.id}) [Applied]")
               MPVLib.setPropertyInt("sid", track.id)
             }
             return
@@ -334,7 +334,7 @@ class TrackSelector(
       }
 
     } catch (e: Exception) {
-      Log.e(TAG, "Subtitle selection failed", e)
+      MpvExLog.e(TAG, e, "Subtitle selection failed")
     }
   }
 }

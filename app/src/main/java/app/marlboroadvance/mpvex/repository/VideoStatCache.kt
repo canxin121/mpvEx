@@ -4,8 +4,8 @@ import android.content.Context
 import android.net.Uri
 import android.util.JsonReader
 import android.util.JsonWriter
-import android.util.Log
 import app.marlboroadvance.mpvex.domain.media.model.Video
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
@@ -128,7 +128,7 @@ object VideoStatCache {
         }
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Failed to stream video stat cache for $bucketId", e)
+      MpvExLog.e(TAG, e, "Failed to stream video stat cache for $bucketId")
       null
     }
   }
@@ -166,7 +166,7 @@ object VideoStatCache {
         tempFile.renameTo(cacheFile)
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Failed to stream-save video stat cache for $bucketId", e)
+      MpvExLog.e(TAG, e, "Failed to stream-save video stat cache for $bucketId")
     }
   }
 

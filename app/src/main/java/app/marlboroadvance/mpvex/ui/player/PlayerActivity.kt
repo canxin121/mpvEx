@@ -19,7 +19,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.MediaStore
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
@@ -52,6 +51,8 @@ import app.marlboroadvance.mpvex.plugins.isSafeScriptFileName
 import app.marlboroadvance.mpvex.ui.player.controls.PlayerControls
 import app.marlboroadvance.mpvex.ui.theme.MpvexTheme
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
+import app.marlboroadvance.mpvex.utils.logging.LoggingSetup
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.HttpUtils
 import app.marlboroadvance.mpvex.utils.media.SubtitleOps
 import app.marlboroadvance.mpvex.utils.storage.FileTypeUtils
@@ -326,7 +327,7 @@ class PlayerActivity :
         }
 
         AudioManager.AUDIOFOCUS_REQUEST_FAILED -> {
-          Log.d(TAG, "Audio focus request failed")
+          MpvExLog.d(TAG, "Audio focus request failed")
         }
       }
     }
@@ -387,14 +388,14 @@ class PlayerActivity :
             playlist = items
             playlistWindowOffset = 0
             playlistTotalCount = totalCount
-            Log.d(TAG, "Loaded all $totalCount items from playlist $pid (isM3U: $isM3uPlaylist)")
+            MpvExLog.d(TAG, "Loaded all $totalCount items from playlist $pid (isM3U: $isM3uPlaylist)")
             // Re-initialize shuffle now that playlist is available
             if (viewModel.shuffleEnabled.value) {
               onShuffleToggled(true)
             }
           }
         } catch (e: Exception) {
-          Log.e(TAG, "Failed to load playlist from database", e)
+          MpvExLog.e(TAG, e, "Failed to load playlist from database")
         }
       }
     }
@@ -516,7 +517,7 @@ class PlayerActivity :
       runCatching {
         MPVLib.setPropertyString(it.property, it.value)
       }.onFailure { e ->
-        Log.e(TAG, "Error setting audio channels: ${it.property}=${it.value}", e)
+        MpvExLog.e(TAG, e, "Error setting audio channels: ${it.property}=${it.value}")
       }
     }
 
@@ -572,7 +573,7 @@ class PlayerActivity :
 
   @RequiresApi(Build.VERSION_CODES.P)
   override fun onDestroy() {
-    Log.d(TAG, "PlayerActivity onDestroy")
+    MpvExLog.d(TAG, "PlayerActivity onDestroy")
 
     runCatching {
       // OPTIMIZATION: Prevent any further UI updates or callbacks
@@ -592,7 +593,7 @@ class PlayerActivity :
       // This prevents the race condition where the save coroutine tries to access
       // MPV properties after MPVLib.destroy() has been called
       savePlaybackStateJob?.let { job ->
-        Log.d(TAG, "Waiting for save playback state job to complete...")
+        MpvExLog.d(TAG, "Waiting for save playback state job to complete...")
         runCatching {
           // Use runBlocking to ensure we wait for the job to finish
           // This is safe here as onDestroy is already on the main thread
@@ -600,7 +601,7 @@ class PlayerActivity :
             job.join()
           }
         }
-        Log.d(TAG, "Save playback state job completed")
+        MpvExLog.d(TAG, "Save playback state job completed")
       }
 
       cleanupMPV()
@@ -608,7 +609,7 @@ class PlayerActivity :
       cleanupReceivers()
       releaseMediaSession()
     }.onFailure { e ->
-      Log.e(TAG, "Error during onDestroy", e)
+      MpvExLog.e(TAG, e, "Error during onDestroy")
     }
 
     super.onDestroy()
@@ -627,6 +628,7 @@ class PlayerActivity :
 
     runCatching {
       MPVLib.removeObserver(playerObserver)
+      LoggingSetup.mpvBridge.stop()
 
       if (isReady) {
         // Pause playback first to reduce thread activity
@@ -646,8 +648,9 @@ class PlayerActivity :
       // Now safe to destroy MPV as internal threads have had time to shut down
       MPVLib.destroy()
       mpvInitialized = false
+      MpvExLog.i(TAG, "libmpv destroyed")
     }.onFailure { e ->
-      Log.e(TAG, "Error cleaning up MPV", e)
+      MpvExLog.e(TAG, e, "Error cleaning up MPV")
     }
   }
 
@@ -699,7 +702,7 @@ class PlayerActivity :
         restoreSystemUI()
       }
     }.onFailure { e ->
-      Log.e(TAG, "Error during onPause", e)
+      MpvExLog.e(TAG, e, "Error during onPause")
     }
 
     super.onPause()
@@ -719,7 +722,7 @@ class PlayerActivity :
       
       setReturnIntent()
     }.onFailure { e ->
-      Log.e(TAG, "Error during finish", e)
+      MpvExLog.e(TAG, e, "Error during finish")
     }
 
     super.finish()
@@ -740,7 +743,7 @@ class PlayerActivity :
       
       setReturnIntent()
     }.onFailure { e ->
-      Log.e(TAG, "Error during finishAndRemoveTask", e)
+      MpvExLog.e(TAG, e, "Error during finishAndRemoveTask")
     }
 
     super.finishAndRemoveTask()
@@ -767,7 +770,7 @@ class PlayerActivity :
         viewModel.pause()
       }
     }.onFailure { e ->
-      Log.e(TAG, "Error during onStop", e)
+      MpvExLog.e(TAG, e, "Error during onStop")
     }
 
     super.onStop()
@@ -797,7 +800,7 @@ class PlayerActivity :
       // Reset manual background playback flag when returning to foreground
       isManualBackgroundPlayback = false
     }.onFailure { e ->
-      Log.e(TAG, "Error during onStart", e)
+      MpvExLog.e(TAG, e, "Error during onStart")
     }
   }
 
@@ -831,7 +834,7 @@ class PlayerActivity :
         systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Failed to setup system UI insets", e)
+      MpvExLog.e(TAG, e, "Failed to setup system UI insets")
     }
 
     // Don't use LOW_PROFILE if we plan to show status bar with controls
@@ -866,7 +869,7 @@ class PlayerActivity :
         show(WindowInsetsCompat.Type.navigationBars())
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Failed to restore system UI insets", e)
+      MpvExLog.e(TAG, e, "Failed to restore system UI insets")
     }
   }
 
@@ -878,9 +881,9 @@ class PlayerActivity :
     runCatching {
       Utils.copyAssets(this@PlayerActivity)
       syncFromUserMpvDirectory()
-      Log.d(TAG, "MPV config and scripts prepared successfully")
+      MpvExLog.d(TAG, "MPV config and scripts prepared successfully")
     }.onFailure { e ->
-      Log.e(TAG, "Error copying MPV config and scripts", e)
+      MpvExLog.e(TAG, e, "Error copying MPV config and scripts")
     }
 
     MpvExEnvironment.apply(advancedPreferences.mpvConfStorageUri.get())
@@ -888,7 +891,7 @@ class PlayerActivity :
     // NOW initialize MPV - it will find and load the scripts we just copied
     player.initialize(filesDir.path, cacheDir.path)
     mpvInitialized = true
-    Log.d(TAG, "MPV initialized")
+    MpvExLog.d(TAG, "MPV initialized")
 
     // Add observer after initialization
     MPVLib.addObserver(playerObserver)
@@ -924,10 +927,10 @@ class PlayerActivity :
       environmentResult.managedUserEnvironmentNames,
     )
     environmentResult.warnings.forEach { warning ->
-      Log.w(TAG, warning)
+      MpvExLog.w(TAG, warning)
     }
     environmentResult.userVariableErrors.forEach { error ->
-      Log.w(TAG, error.description)
+      MpvExLog.w(TAG, error.description)
     }
 
     // Plugins have no settings of their own; they read the variables exported
@@ -937,20 +940,20 @@ class PlayerActivity :
     // Lua and C plugins share mpv's scripts directory. The Lua sync only touches
     // .lua/.js files, leaving selected .so plugins in place.
     runCatching { syncLuaScripts(tree) }
-      .onFailure { error -> Log.e(TAG, "Could not sync Lua scripts", error) }
+      .onFailure { error -> MpvExLog.e(TAG, error, "Could not sync Lua scripts") }
     runCatching { syncScriptOptions(tree) }
-      .onFailure { error -> Log.e(TAG, "Could not sync script options", error) }
+      .onFailure { error -> MpvExLog.e(TAG, error, "Could not sync script options") }
 
     if (tree != null) {
-      Log.d(TAG, "Syncing from user MPV directory: ${tree.uri}")
+      MpvExLog.d(TAG, "Syncing from user MPV directory: ${tree.uri}")
       syncConfigFiles(tree)
       runCatching { syncUserShaders(tree) }
-        .onFailure { error -> Log.e(TAG, "Could not sync user shaders", error) }
+        .onFailure { error -> MpvExLog.e(TAG, error, "Could not sync user shaders") }
       syncFonts(tree)
-      Log.d(TAG, "Full MPV directory sync completed")
+      MpvExLog.d(TAG, "Full MPV directory sync completed")
     } else {
       // Fallback: use preferences-based config (no user directory set)
-      Log.d(TAG, "No MPV directory configured, using preferences fallback")
+      MpvExLog.d(TAG, "No MPV directory configured, using preferences fallback")
       copyMPVConfigFromPreferences()
     }
   }
@@ -962,7 +965,7 @@ class PlayerActivity :
     val targetDir = File(filesDir, "scripts").apply { mkdirs() }
     targetDir.listFiles()?.forEach { file ->
       if (file.isFile && hasScriptFileExtension(file.name) && !file.delete()) {
-        Log.w(TAG, "Could not remove stale script: ${file.name}")
+        MpvExLog.w(TAG, "Could not remove stale script: ${file.name}")
       }
     }
 
@@ -987,17 +990,17 @@ class PlayerActivity :
         copied++
       }.onFailure { error ->
         File(targetDir, name).delete()
-        Log.e(TAG, "Could not sync Lua script: $name", error)
+        MpvExLog.e(TAG, error, "Could not sync Lua script: $name")
       }
     }
-    Log.d(TAG, "Lua scripts sync: $copied/${selected.size} selected file(s)")
+    MpvExLog.d(TAG, "Lua scripts sync: $copied/${selected.size} selected file(s)")
   }
 
   private fun syncScriptOptions(tree: DocumentFile?) {
     val targetDir = File(filesDir, "script-opts").apply { mkdirs() }
     targetDir.listFiles()?.forEach { file ->
       if (file.isFile && !file.delete()) {
-        Log.w(TAG, "Could not remove stale script option: ${file.name}")
+        MpvExLog.w(TAG, "Could not remove stale script option: ${file.name}")
       }
     }
     if (tree == null) return
@@ -1014,7 +1017,7 @@ class PlayerActivity :
         }
       }.onFailure { error ->
         File(targetDir, name).delete()
-        Log.e(TAG, "Could not sync script option: $name", error)
+        MpvExLog.e(TAG, error, "Could not sync script option: $name")
       }
     }
   }
@@ -1035,7 +1038,7 @@ class PlayerActivity :
         }
       }.onFailure { error ->
         File(targetDir, name).delete()
-        Log.e(TAG, "Could not sync shader: $name", error)
+        MpvExLog.e(TAG, error, "Could not sync shader: $name")
       }
     }
   }
@@ -1064,7 +1067,7 @@ class PlayerActivity :
               "mpv.conf" -> advancedPreferences.mpvConf.set(content)
               "input.conf" -> advancedPreferences.inputConf.set(content)
             }
-            Log.d(TAG, "Synced config: $configName (${content.length} chars)")
+            MpvExLog.d(TAG, "Synced config: $configName (${content.length} chars)")
           }
         } else {
           // Config not in directory, fall back to preferences
@@ -1077,10 +1080,10 @@ class PlayerActivity :
             if (!exists()) createNewFile()
             if (prefContent.isNotBlank()) writeText(prefContent)
           }
-          Log.d(TAG, "Config not found in directory, used preferences: $configName")
+          MpvExLog.d(TAG, "Config not found in directory, used preferences: $configName")
         }
       }.onFailure { e ->
-        Log.e(TAG, "Error syncing config: $configName", e)
+        MpvExLog.e(TAG, e, "Error syncing config: $configName")
       }
     }
   }
@@ -1098,23 +1101,23 @@ class PlayerActivity :
     // Remove only C plugins, leaving any scripts bundled by MPV untouched.
     internalScriptsDir.listFiles()?.forEach { file ->
       if (file.isFile && file.extension.equals("so", ignoreCase = true) && !file.delete()) {
-        Log.w(TAG, "Could not remove stale C plugin: ${file.name}")
+        MpvExLog.w(TAG, "Could not remove stale C plugin: ${file.name}")
       }
     }
 
     if (!advancedPreferences.enableCPlugins.get()) {
-      Log.d(TAG, "C plugins disabled, skipping sync")
+      MpvExLog.d(TAG, "C plugins disabled, skipping sync")
       return
     }
 
     val selectedPlugins = advancedPreferences.selectedCPlugins.get()
     if (selectedPlugins.isEmpty()) {
-      Log.d(TAG, "No C plugins selected, skipping sync")
+      MpvExLog.d(TAG, "No C plugins selected, skipping sync")
       return
     }
 
     if (tree == null) {
-      Log.w(TAG, "MPV directory is unavailable, cannot sync C plugins")
+      MpvExLog.w(TAG, "MPV directory is unavailable, cannot sync C plugins")
       return
     }
 
@@ -1134,10 +1137,15 @@ class PlayerActivity :
     }
 
     var successCount = 0
+    MpvExLog.d(
+      TAG,
+      "C plugins found: ${availablePlugins.size} (${availablePlugins.keys.joinToString()}), " +
+        "${selectedPlugins.size} selected",
+    )
     selectedPlugins.forEach { pluginName ->
       val pluginFile = availablePlugins[pluginName]
       if (pluginFile == null || !pluginFile.canRead()) {
-        Log.w(TAG, "Selected C plugin not found or unreadable: $pluginName")
+        MpvExLog.w(TAG, "Selected C plugin not found or unreadable: $pluginName")
         return@forEach
       }
 
@@ -1152,13 +1160,13 @@ class PlayerActivity :
         }
       }.onSuccess {
         successCount++
-        Log.d(TAG, "Synced C plugin: $pluginName")
+        MpvExLog.d(TAG, "Synced C plugin: $pluginName")
       }.onFailure { error ->
-        Log.e(TAG, "Error syncing C plugin: $pluginName", error)
+        MpvExLog.e(TAG, error, "Error syncing C plugin: $pluginName")
       }
     }
 
-    Log.d(TAG, "C plugins sync: $successCount/${selectedPlugins.size} file(s)")
+    MpvExLog.d(TAG, "C plugins sync: $successCount/${selectedPlugins.size} file(s)")
   }
 
   // ==================== Fonts Sync ====================
@@ -1193,10 +1201,10 @@ class PlayerActivity :
             input.copyTo(output)
           }
           count++
-          Log.d(TAG, "Synced font: $name")
+          MpvExLog.d(TAG, "Synced font: $name")
         }
       }.onFailure { e ->
-        Log.e(TAG, "Error syncing font: $name", e)
+        MpvExLog.e(TAG, e, "Error syncing font: $name")
       }
     }
 
@@ -1214,10 +1222,10 @@ class PlayerActivity :
         }
       }
     }.onFailure { e ->
-      Log.e(TAG, "Error syncing subtitle fonts: ${e.message}")
+      MpvExLog.e(TAG, "Error syncing subtitle fonts: ${e.message}")
     }
 
-    Log.d(TAG, "Fonts sync: $count file(s) from MPV directory")
+    MpvExLog.d(TAG, "Fonts sync: $count file(s) from MPV directory")
   }
 
   // ==================== Helpers ====================
@@ -1240,7 +1248,7 @@ class PlayerActivity :
       // Ensure fonts directory exists even without user dir
       File(filesDir, "fonts").mkdirs()
     }.onFailure { e ->
-      Log.e(TAG, "Error creating fallback config files", e)
+      MpvExLog.e(TAG, e, "Error creating fallback config files")
     }
   }
 
@@ -1324,7 +1332,7 @@ class PlayerActivity :
         val subfile = suburi.resolveUri(this@PlayerActivity) ?: continue
         val flag = if (subsToEnable.any { it == suburi }) "select" else "auto"
 
-        Log.v(TAG, "Adding subtitles from intent extras: $subfile")
+        MpvExLog.v(TAG, "Adding subtitles from intent extras: $subfile")
         MPVLib.command("sub-add", subfile, flag)
       }
     }
@@ -1350,7 +1358,7 @@ class PlayerActivity :
     if (uri != null && HttpUtils.isNetworkStream(uri)) {
       HttpUtils.extractRefererDomain(uri)?.let { referer ->
         headerMap["Referer"] = referer
-        Log.d(TAG, "Auto-detected Referer: $referer")
+        MpvExLog.d(TAG, "Auto-detected Referer: $referer")
       }
     }
 
@@ -1381,7 +1389,7 @@ class PlayerActivity :
         .joinToString(",")
 
       MPVLib.setPropertyString("http-header-fields", headersString)
-      Log.d(TAG, "Set HTTP headers: $headersString")
+      MpvExLog.d(TAG, "Set HTTP headers: $headersString")
     }
   }
 
@@ -1399,7 +1407,7 @@ class PlayerActivity :
     // Automatically extract and set referer domain from the URI
     HttpUtils.extractRefererDomain(uri)?.let { referer ->
       headerMap["Referer"] = referer
-      Log.d(TAG, "Auto-detected Referer for playlist item: $referer")
+      MpvExLog.d(TAG, "Auto-detected Referer for playlist item: $referer")
     }
 
     // Set all headers in MPV
@@ -1409,7 +1417,7 @@ class PlayerActivity :
         .joinToString(",")
 
       MPVLib.setPropertyString("http-header-fields", headersString)
-      Log.d(TAG, "Set HTTP headers for playlist item: $headersString")
+      MpvExLog.d(TAG, "Set HTTP headers for playlist item: $headersString")
     }
   }
 
@@ -1589,7 +1597,7 @@ class PlayerActivity :
           if (cursor.moveToFirst()) cursor.getString(0) else null
         }
     }.onFailure { e ->
-      Log.e(TAG, "Error getting display name from URI", e)
+      MpvExLog.e(TAG, e, "Error getting display name from URI")
     }.getOrNull()
 
   /**
@@ -1651,7 +1659,7 @@ class PlayerActivity :
         if (!mpvInitialized || player.isExiting || isFinishing) return
 
         val aspect = player.getVideoOutAspect()
-        Log.d(TAG, "Video dimension changed: $property, aspect: $aspect")
+        MpvExLog.d(TAG, "Video dimension changed: $property, aspect: $aspect")
         pipHelper.updatePictureInPictureParams()
         // Update orientation when video dimensions change (fixes Video orientation mode)
         if (playerPreferences.orientation.get() == PlayerOrientation.Video && aspect != null) {
@@ -1800,7 +1808,7 @@ class PlayerActivity :
         if (!mpvInitialized || player.isExiting || isFinishing) return
 
         val aspect = player.getVideoOutAspect()
-        Log.d(TAG, "video-params/aspect changed: $aspect")
+        MpvExLog.d(TAG, "video-params/aspect changed: $aspect")
         pipHelper.updatePictureInPictureParams()
         // Update orientation when video aspect ratio changes (fixes Video orientation mode)
         // BUT: Don't update if aspect is being overridden (stretch/custom aspect mode)
@@ -1906,7 +1914,7 @@ class PlayerActivity :
         if (playlistIndex >= 0 && playlistIndex < playlist.size) {
           saveRecentlyPlayedForUri(playlist[playlistIndex], fileName)
         } else {
-          Log.w(TAG, "Cannot save recently played: invalid playlist index $playlistIndex (playlist size: ${playlist.size})")
+          MpvExLog.w(TAG, "Cannot save recently played: invalid playlist index $playlistIndex (playlist size: ${playlist.size})")
         }
       } else {
         // For non-playlist videos, use the original saveRecentlyPlayed
@@ -1925,7 +1933,7 @@ class PlayerActivity :
         kotlinx.coroutines.delay(100)
         if (mpvInitialized && !player.isExiting && !isFinishing) {
           val aspect = player.getVideoOutAspect()
-          Log.d(TAG, "handleFileLoaded - Video mode, aspect after delay: $aspect")
+          MpvExLog.d(TAG, "handleFileLoaded - Video mode, aspect after delay: $aspect")
           if (aspect != null && aspect > 0) {
             setOrientation()
           }
@@ -1993,14 +2001,14 @@ class PlayerActivity :
 
         // Skip fetching for m3u/m3u8 streams - let MPV provide the title
         if (isCurrentStreamM3U()) {
-          Log.d(TAG, "Skipping title fetch for m3u/m3u8 stream: $uri")
+          MpvExLog.d(TAG, "Skipping title fetch for m3u/m3u8 stream: $uri")
           return@launch
         }
 
         // Skip fetching if title was provided in intent extras (e.g. from Jellyfin or other external launchers)
         // This prevents overwriting the correct title with a generic filename from the URL (like "stream")
         if (intent.hasExtra("title") || intent.hasExtra("filename")) {
-          Log.d(TAG, "Skipping title fetch because title was explicitly provided in intent: $fileName")
+          MpvExLog.d(TAG, "Skipping title fetch because title was explicitly provided in intent: $fileName")
           return@launch
         }
 
@@ -2008,12 +2016,12 @@ class PlayerActivity :
         // These already have correct filename from intent extras
         val host = uri.host?.lowercase()
         if (host == "127.0.0.1" || host == "localhost" || host == "0.0.0.0") {
-          Log.d(TAG, "Skipping title fetch for local proxy URL: $uri")
+          MpvExLog.d(TAG, "Skipping title fetch for local proxy URL: $uri")
           return@launch
         }
 
         val url = uri.toString()
-        Log.d(TAG, "Fetching title from network stream: $url")
+        MpvExLog.d(TAG, "Fetching title from network stream: $url")
 
         val betterFilename = HttpUtils.extractFilenameFromUrl(url)
         if (betterFilename != null && betterFilename.isNotBlank() &&
@@ -2021,7 +2029,7 @@ class PlayerActivity :
           betterFilename != uri.host
         ) {
 
-          Log.d(TAG, "Found better filename from HTTP headers: $betterFilename")
+          MpvExLog.d(TAG, "Found better filename from HTTP headers: $betterFilename")
 
           // Update fileName
           fileName = betterFilename
@@ -2101,16 +2109,16 @@ class PlayerActivity :
               updatedWidth,
               updatedHeight,
             )
-            Log.d(
+            MpvExLog.d(
               TAG,
               "Updated recently played metadata: $fileName (duration: ${updatedDuration}ms, size: ${updatedFileSize}B, resolution: ${updatedWidth}x${updatedHeight}) for $filePath",
             )
           }.onFailure { e ->
-            Log.e(TAG, "Error updating video metadata in recently played", e)
+            MpvExLog.e(TAG, e, "Error updating video metadata in recently played")
           }
         }
       } catch (e: Exception) {
-        Log.e(TAG, "Error fetching network stream title", e)
+        MpvExLog.e(TAG, e, "Error fetching network stream title")
       }
     }
   }
@@ -2149,7 +2157,7 @@ class PlayerActivity :
     MPVLib.setPropertyFloat("sub-scale", subtitlesPreferences.subScale.get())
     MPVLib.setPropertyInt("sub-pos", subtitlesPreferences.subPos.get())
 
-    Log.d(TAG, "Applied subtitle preferences")
+    MpvExLog.d(TAG, "Applied subtitle preferences")
   }
 
   /**
@@ -2194,7 +2202,7 @@ class PlayerActivity :
     val saveBlock: suspend () -> Unit = {
       runCatching {
         val oldState = playbackStateRepository.getVideoDataByTitle(mediaIdentifier)
-        Log.d(TAG, "Saving playback state for: $mediaTitle (identifier: $mediaIdentifier)")
+        MpvExLog.d(TAG, "Saving playback state for: $mediaTitle (identifier: $mediaIdentifier)")
 
         val duration = if (currentDuration > 0) {
           currentDuration
@@ -2240,9 +2248,9 @@ class PlayerActivity :
             hasBeenWatched = hasBeenWatched,
           ),
         )
-        Log.d(TAG, "Playback state saved successfully: pos=$lastPosition, duration=$duration, remaining=$timeRemaining, watched=$hasBeenWatched")
+        MpvExLog.d(TAG, "Playback state saved successfully: pos=$lastPosition, duration=$duration, remaining=$timeRemaining, watched=$hasBeenWatched")
       }.onFailure { e ->
-        Log.e(TAG, "Error saving playback state", e)
+        MpvExLog.e(TAG, e, "Error saving playback state")
       }
     }
 
@@ -2274,7 +2282,7 @@ class PlayerActivity :
 
       state != null
     }.onFailure { e ->
-      Log.e(TAG, "Error loading playback state", e)
+      MpvExLog.e(TAG, e, "Error loading playback state")
     }.getOrDefault(false)
   }
 
@@ -2295,7 +2303,7 @@ class PlayerActivity :
     // Restore external subtitles first
     if (state.externalSubtitles.isNotBlank()) {
       val externalSubUris = state.externalSubtitles.split("|").filter { it.isNotBlank() }
-      Log.d(TAG, "Restoring ${externalSubUris.size} external subtitle(s)")
+      MpvExLog.d(TAG, "Restoring ${externalSubUris.size} external subtitle(s)")
 
       for (subUri in externalSubUris) {
         viewModel.addSubtitle(Uri.parse(subUri), select = false, silent = true)
@@ -2306,22 +2314,22 @@ class PlayerActivity :
     // User's manual selection has highest priority
     if (state.sid > 0) {
       player.sid = state.sid
-      Log.d(TAG, "Restored primary subtitle track: ${state.sid} (user selection)")
+      MpvExLog.d(TAG, "Restored primary subtitle track: ${state.sid} (user selection)")
       if (state.secondarySid > 0 && state.secondarySid != state.sid) {
         player.secondarySid = state.secondarySid
-        Log.d(TAG, "Restored secondary subtitle track: ${state.secondarySid} (user selection)")
+        MpvExLog.d(TAG, "Restored secondary subtitle track: ${state.secondarySid} (user selection)")
       } else {
         player.secondarySid = -1
       }
     } else if (state.secondarySid > 0) {
       player.sid = state.secondarySid
       player.secondarySid = -1
-      Log.d(TAG, "Promoted saved secondary subtitle track ${state.secondarySid} to primary: single subtitle must stay at bottom")
+      MpvExLog.d(TAG, "Promoted saved secondary subtitle track ${state.secondarySid} to primary: single subtitle must stay at bottom")
     }
 
     if (state.aid > 0) {
       player.aid = state.aid
-      Log.d(TAG, "Restored audio track: ${state.aid} (user selection)")
+      MpvExLog.d(TAG, "Restored audio track: ${state.aid} (user selection)")
     }
 
     MPVLib.setPropertyDouble("sub-delay", subDelay)
@@ -2362,12 +2370,12 @@ class PlayerActivity :
       val uri = extractUriFromIntent(intent)
 
       if (uri == null) {
-        Log.w(TAG, "Cannot save recently played: URI is null")
+        MpvExLog.w(TAG, "Cannot save recently played: URI is null")
         return@runCatching
       }
 
       if (uri.scheme == null) {
-        Log.w(TAG, "Cannot save recently played: URI has null scheme: $uri")
+        MpvExLog.w(TAG, "Cannot save recently played: URI has null scheme: $uri")
         return@runCatching
       }
 
@@ -2448,15 +2456,15 @@ class PlayerActivity :
         launchSource = launchSource,
       )
 
-      Log.d(TAG, "Saved recently played: $filePath")
-      Log.d(TAG, "  - fileName: $fileName")
-      Log.d(TAG, "  - videoTitle: $videoTitle")
-      Log.d(TAG, "  - duration: ${duration}ms")
-      Log.d(TAG, "  - size: ${fileSize}B")
-      Log.d(TAG, "  - resolution: ${width}x${height}")
-      Log.d(TAG, "  - source: $launchSource")
+      MpvExLog.d(TAG, "Saved recently played: $filePath")
+      MpvExLog.d(TAG, "  - fileName: $fileName")
+      MpvExLog.d(TAG, "  - videoTitle: $videoTitle")
+      MpvExLog.d(TAG, "  - duration: ${duration}ms")
+      MpvExLog.d(TAG, "  - size: ${fileSize}B")
+      MpvExLog.d(TAG, "  - resolution: ${width}x${height}")
+      MpvExLog.d(TAG, "  - source: $launchSource")
     }.onFailure { e ->
-      Log.e(TAG, "Error saving recently played", e)
+      MpvExLog.e(TAG, e, "Error saving recently played")
     }
   }
 
@@ -2467,7 +2475,7 @@ class PlayerActivity :
    * Called when activity is finishing to return data to caller.
    */
   private fun setReturnIntent() {
-    Log.d(TAG, "Setting return intent")
+    MpvExLog.d(TAG, "Setting return intent")
 
     val resultIntent =
       Intent(RESULT_INTENT).apply {
@@ -2523,10 +2531,10 @@ class PlayerActivity :
           withContext(Dispatchers.Main) {
             playlist = items
             playlistTotalCount = totalCount
-            Log.d(TAG, "onNewIntent: Loaded ${items.size} items from playlist $pid")
+            MpvExLog.d(TAG, "onNewIntent: Loaded ${items.size} items from playlist $pid")
           }
         } catch (e: Exception) {
-          Log.e(TAG, "onNewIntent: Failed to load playlist from database", e)
+          MpvExLog.e(TAG, e, "onNewIntent: Failed to load playlist from database")
         }
       }
     }
@@ -2548,12 +2556,29 @@ class PlayerActivity :
 
     // Load the new file
     playableUri?.let { uri ->
+      MpvExLog.i(TAG, "Loading ${describeUriForLog(uri)}")
       // Avoid blocking UI thread while mpv opens network streams (e.g., HLS).
       lifecycleScope.launch(Dispatchers.Default) {
         MPVLib.command("loadfile", uri)
       }
     }
   }
+
+  /**
+   * A file path or URI as it is safe to log.
+   *
+   * A network URL can carry a user name and password in its userinfo, so only
+   * the scheme and host survive; everything else is described by shape.
+   */
+  private fun describeUriForLog(uri: String): String =
+    runCatching { Uri.parse(uri) }.getOrNull()?.let { parsed ->
+      when {
+        parsed.scheme == null -> uri
+        parsed.userInfo != null -> "${parsed.scheme}://${parsed.host}/… (credentials omitted)"
+        parsed.scheme == "file" -> parsed.path ?: uri
+        else -> uri
+      }
+    } ?: uri
 
   // ==================== Picture-in-Picture Management ====================
 
@@ -2582,7 +2607,7 @@ class PlayerActivity :
         exitPipUIMode()
       }
     }.onFailure { e ->
-      Log.e(TAG, "Error handling PiP mode change", e)
+      MpvExLog.e(TAG, e, "Error handling PiP mode change")
     }
   }
 
@@ -2599,7 +2624,7 @@ class PlayerActivity :
         show(WindowInsetsCompat.Type.navigationBars())
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Failed to show system bars for PiP mode", e)
+      MpvExLog.e(TAG, e, "Failed to show system bars for PiP mode")
     }
   }
 
@@ -2620,7 +2645,7 @@ class PlayerActivity :
     runCatching {
       enterPipUIMode()
     }.onFailure { e ->
-      Log.e(TAG, "Error entering PiP mode with hidden overlay", e)
+      MpvExLog.e(TAG, e, "Error entering PiP mode with hidden overlay")
     }
 
     binding.controls.alpha = 0f
@@ -2649,18 +2674,18 @@ class PlayerActivity :
         PlayerOrientation.Video -> {
           // For video orientation, check if aspect is available
           val aspect = runCatching { player.getVideoOutAspect() }.getOrNull()
-          Log.d(TAG, "setOrientation - Video mode: aspect=$aspect")
+          MpvExLog.d(TAG, "setOrientation - Video mode: aspect=$aspect")
           if (aspect == null || aspect <= 0.0) {
             // Aspect not available yet - wait for video-params/aspect update
-            Log.d(TAG, "setOrientation - Aspect not available, defaulting to landscape")
+            MpvExLog.d(TAG, "setOrientation - Aspect not available, defaulting to landscape")
             ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
           } else {
             // Aspect available - set correct orientation now
             val orientation = if (aspect > 1.0) {
-              Log.d(TAG, "setOrientation - Aspect $aspect > 1.0, setting landscape")
+              MpvExLog.d(TAG, "setOrientation - Aspect $aspect > 1.0, setting landscape")
               ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             } else {
-              Log.d(TAG, "setOrientation - Aspect $aspect <= 1.0, setting portrait")
+              MpvExLog.d(TAG, "setOrientation - Aspect $aspect <= 1.0, setting portrait")
               ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
             }
             orientation
@@ -2835,7 +2860,7 @@ class PlayerActivity :
           )
       mediaSessionInitialized = true
     }.onFailure { e ->
-      Log.e(TAG, "Failed to initialize MediaSession", e)
+      MpvExLog.e(TAG, e, "Failed to initialize MediaSession")
       mediaSessionInitialized = false
     }
   }
@@ -2855,7 +2880,7 @@ class PlayerActivity :
           .setState(state, positionMs, if (isPlaying) 1.0f else 0f)
           .build(),
       )
-    }.onFailure { e -> Log.e(TAG, "Error updating playback state", e) }
+    }.onFailure { e -> MpvExLog.e(TAG, e, "Error updating playback state") }
   }
 
   /**
@@ -2877,7 +2902,7 @@ class PlayerActivity :
           .putLong(MediaMetadata.METADATA_KEY_DURATION, durationMs)
           .build()
       mediaSession.setMetadata(metadata)
-    }.onFailure { e -> Log.e(TAG, "Error updating metadata", e) }
+    }.onFailure { e -> MpvExLog.e(TAG, e, "Error updating metadata") }
   }
 
   /**
@@ -2889,7 +2914,7 @@ class PlayerActivity :
     runCatching {
       mediaSession.isActive = false
       mediaSession.release()
-    }.onFailure { e -> Log.e(TAG, "Error releasing MediaSession", e) }
+    }.onFailure { e -> MpvExLog.e(TAG, e, "Error releasing MediaSession") }
     mediaSessionInitialized = false
   }
 
@@ -2907,11 +2932,11 @@ class PlayerActivity :
         val binder = service as? MediaPlaybackService.MediaPlaybackBinder ?: return
         mediaPlaybackService = binder.getService()
         serviceBound = true
-        Log.d(TAG, "Service connected")
+        MpvExLog.d(TAG, "Service connected")
       }
 
       override fun onServiceDisconnected(name: ComponentName?) {
-        Log.d(TAG, "Service disconnected")
+        MpvExLog.d(TAG, "Service disconnected")
         mediaPlaybackService = null
         serviceBound = false
       }
@@ -2926,17 +2951,17 @@ class PlayerActivity :
    */
   private fun startBackgroundPlayback() {
     if (fileName.isBlank() || !isReady) {
-      Log.w(TAG, "Cannot start background playback: video not ready")
+      MpvExLog.w(TAG, "Cannot start background playback: video not ready")
       return
     }
 
     // Prevent starting service multiple times
     if (serviceBound) {
-      Log.d(TAG, "Service already bound, skipping start")
+      MpvExLog.d(TAG, "Service already bound, skipping start")
       return
     }
 
-    Log.d(TAG, "Starting background playback for: $fileName")
+    MpvExLog.d(TAG, "Starting background playback for: $fileName")
     
     // Ensure notification channel exists
     MediaPlaybackService.createNotificationChannel(this)
@@ -2957,9 +2982,9 @@ class PlayerActivity :
     try {
       startForegroundService(intent)
       bindService(intent, serviceConnection, BIND_AUTO_CREATE)
-      Log.d(TAG, "Service start and bind initiated")
+      MpvExLog.d(TAG, "Service start and bind initiated")
     } catch (e: Exception) {
-      Log.e(TAG, "Error starting/binding service", e)
+      MpvExLog.e(TAG, e, "Error starting/binding service")
     }
   }
 
@@ -2969,14 +2994,14 @@ class PlayerActivity :
    * Called when the activity is destroyed to remove the notification.
    */
   private fun endBackgroundPlayback() {
-    Log.d(TAG, "Ending background playback service")
+    MpvExLog.d(TAG, "Ending background playback service")
     
     if (serviceBound) {
       try {
         unbindService(serviceConnection)
-        Log.d(TAG, "Service unbound successfully")
+        MpvExLog.d(TAG, "Service unbound successfully")
       } catch (e: Exception) {
-        Log.e(TAG, "Error unbinding service", e)
+        MpvExLog.e(TAG, e, "Error unbinding service")
       }
       serviceBound = false
     }
@@ -2984,9 +3009,9 @@ class PlayerActivity :
     // Stop the service which will trigger its onDestroy and cleanup
     try {
       stopService(Intent(this, MediaPlaybackService::class.java))
-      Log.d(TAG, "Stop service command sent")
+      MpvExLog.d(TAG, "Stop service command sent")
     } catch (e: Exception) {
-      Log.e(TAG, "Error stopping service", e)
+      MpvExLog.e(TAG, e, "Error stopping service")
     }
     
     mediaPlaybackService = null
@@ -2998,11 +3023,11 @@ class PlayerActivity :
    */
   fun triggerBackgroundPlayback() {
     if (fileName.isBlank() || !isReady) {
-      Log.w(TAG, "Cannot trigger background playback: video not ready")
+      MpvExLog.w(TAG, "Cannot trigger background playback: video not ready")
       return
     }
 
-    Log.d(TAG, "User triggered background playback")
+    MpvExLog.d(TAG, "User triggered background playback")
     
     // Set flag to enable background playback (same logic as automatic)
     isManualBackgroundPlayback = true
@@ -3186,7 +3211,7 @@ class PlayerActivity :
   private fun loadPlaylistItem(index: Int) {
     // All items are loaded - just validate index and load directly
     if (index < 0 || index >= playlist.size) {
-      Log.e(TAG, "Invalid playlist index: $index (playlist size: ${playlist.size})")
+      MpvExLog.e(TAG, "Invalid playlist index: $index (playlist size: ${playlist.size})")
       return
     }
     loadPlaylistItemInternal(index)
@@ -3197,7 +3222,7 @@ class PlayerActivity :
    */
   private fun loadPlaylistItemInternal(index: Int) {
     if (index < 0 || index >= playlist.size) {
-      Log.e(TAG, "Invalid playlist index: $index (playlist size: ${playlist.size})")
+      MpvExLog.e(TAG, "Invalid playlist index: $index (playlist size: ${playlist.size})")
       return
     }
 
@@ -3212,7 +3237,7 @@ class PlayerActivity :
     // don't get stuck on a missing file. Advance to the next playable item,
     // or finish if there's nothing left.
     if (isLocalFileMissing(uri)) {
-      Log.w(TAG, "Skipping missing playlist item at index $index: $uri")
+      MpvExLog.w(TAG, "Skipping missing playlist item at index $index: $uri")
       viewModel.showToast(getString(app.marlboroadvance.mpvex.R.string.toast_file_no_longer_exists))
       val nextIndex = index + 1
       if (nextIndex < playlist.size) {
@@ -3261,14 +3286,15 @@ class PlayerActivity :
 
         runCatching {
           playlistRepository.updatePlayHistory(id, filePath)
-          Log.d(TAG, "Updated playlist history for: $filePath in playlist $id")
+          MpvExLog.d(TAG, "Updated playlist history for: $filePath in playlist $id")
         }.onFailure { e ->
-          Log.e(TAG, "Error updating playlist history", e)
+          MpvExLog.e(TAG, e, "Error updating playlist history")
         }
       }
     }
 
     // Load the new video
+    MpvExLog.i(TAG, "Playing next item: $fileName")
     // Avoid blocking UI thread while mpv opens network streams (e.g., HLS).
     lifecycleScope.launch(Dispatchers.Default) {
       MPVLib.command("loadfile", playableUri)
@@ -3426,15 +3452,15 @@ class PlayerActivity :
         playlistId = playlistId,
       )
 
-      Log.d(TAG, "Saved recently played (playlist): $filePath")
-      Log.d(TAG, "  - fileName: $name")
-      Log.d(TAG, "  - videoTitle: $videoTitle")
-      Log.d(TAG, "  - duration: ${duration}ms")
-      Log.d(TAG, "  - size: ${fileSize}B")
-      Log.d(TAG, "  - resolution: ${width}x${height}")
-      Log.d(TAG, "  - playlistId: $playlistId")
+      MpvExLog.d(TAG, "Saved recently played (playlist): $filePath")
+      MpvExLog.d(TAG, "  - fileName: $name")
+      MpvExLog.d(TAG, "  - videoTitle: $videoTitle")
+      MpvExLog.d(TAG, "  - duration: ${duration}ms")
+      MpvExLog.d(TAG, "  - size: ${fileSize}B")
+      MpvExLog.d(TAG, "  - resolution: ${width}x${height}")
+      MpvExLog.d(TAG, "  - playlistId: $playlistId")
     }.onFailure { e ->
-      Log.e(TAG, "Error saving recently played for playlist item", e)
+      MpvExLog.e(TAG, e, "Error saving recently played for playlist item")
     }
   }
 
@@ -3559,7 +3585,7 @@ class PlayerActivity :
     if (networkFilePath != null && networkConnectionId != -1L) {
       // For network files via proxy: use connection ID + file path for stable identifier
       val identifier = "network_${networkConnectionId}_${networkFilePath.hashCode()}"
-      Log.d(
+      MpvExLog.d(
         TAG,
         "Using network file identifier: $identifier (connection: $networkConnectionId, path: $networkFilePath)",
       )
@@ -3569,7 +3595,7 @@ class PlayerActivity :
     val explicitFilePath = intent.getStringExtra("file_path")
     if (!explicitFilePath.isNullOrBlank()) {
       val identifier = app.marlboroadvance.mpvex.utils.media.MediaIdentifier.forLocalPath(explicitFilePath)
-      Log.d(TAG, "Using explicit file path identifier: $identifier (path: $explicitFilePath)")
+      MpvExLog.d(TAG, "Using explicit file path identifier: $identifier (path: $explicitFilePath)")
       return identifier
     }
 
@@ -3659,7 +3685,7 @@ class PlayerActivity :
       else -> uri.toString()
     }
   }.onFailure { e ->
-    Log.e(TAG, "Error resolving stable local path for $uri", e)
+    MpvExLog.e(TAG, e, "Error resolving stable local path for $uri")
   }.getOrNull()
 
   /**
@@ -3758,7 +3784,7 @@ class PlayerActivity :
           withContext(Dispatchers.Main) {
             playlist = newPlaylist
             playlistIndex = newIndex
-            Log.d(TAG, "Auto-playlist generated: ${playlist.size} videos")
+            MpvExLog.d(TAG, "Auto-playlist generated: ${playlist.size} videos")
             // Re-initialize shuffle now that playlist is available
             if (viewModel.shuffleEnabled.value) {
               onShuffleToggled(true)
@@ -3766,7 +3792,7 @@ class PlayerActivity :
           }
         }
       }.onFailure { e ->
-        Log.e(TAG, "Failed to auto-generate playlist", e)
+        MpvExLog.e(TAG, e, "Failed to auto-generate playlist")
       }
     }
   }

@@ -5,6 +5,7 @@ import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.i18n.localizedString
 import app.marlboroadvance.mpvex.domain.network.NetworkConnection
 import app.marlboroadvance.mpvex.domain.network.NetworkFile
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.net.ftp.FTP
@@ -12,6 +13,8 @@ import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPReply
 import java.io.InputStream
 import java.time.Duration
+
+private const val TAG = "FtpClient"
 
 class FtpClient(private val connection: NetworkConnection) : NetworkClient {
   private var ftpClient: FTPClient? = null
@@ -74,16 +77,18 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
         if (connection.path != "/" && connection.path.isNotEmpty()) {
           val changed = client.changeWorkingDirectory(connection.path)
           if (!changed) {
-            android.util.Log.w(
-              "FtpClient",
+            MpvExLog.w(
+              TAG,
               "Failed to change directory: ${client.replyCode}",
             )
           }
         }
 
         ftpClient = client
+        MpvExLog.i(TAG, "Connected to ftp://${connection.host}:${connection.port}")
         Result.success(Unit)
       } catch (e: Exception) {
+        MpvExLog.w(TAG, e, "Could not connect to ftp://${connection.host}:${connection.port}")
         Result.failure(e)
       }
     }
@@ -232,8 +237,8 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
         if (connection.path != "/" && connection.path.isNotEmpty()) {
           val changed = streamClient.changeWorkingDirectory(connection.path)
           if (!changed) {
-            android.util.Log.w(
-              "FtpClient",
+            MpvExLog.w(
+              TAG,
               "Failed to change to base directory: ${streamClient.replyCode}",
             )
           }
@@ -277,7 +282,7 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
                   try {
                     rawStream.close()
                   } catch (e: Exception) {
-                    android.util.Log.e("FtpClient", "Error closing stream", e)
+                    MpvExLog.e(TAG, e, "Error closing stream")
                   }
                   try {
                     if (streamClient.isConnected) {
@@ -286,7 +291,7 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
                       streamClient.disconnect()
                     }
                   } catch (e: Exception) {
-                    android.util.Log.e("FtpClient", "Error disconnecting", e)
+                    MpvExLog.e(TAG, e, "Error disconnecting")
                   }
                 }
               }
@@ -308,7 +313,7 @@ class FtpClient(private val connection: NetworkConnection) : NetworkClient {
 
         return@withContext Result.failure(Exception(localizedString(R.string.error_ftp_open_stream, lastError)))
       } catch (e: Exception) {
-        android.util.Log.e("FtpClient", "Exception getting file stream", e)
+        MpvExLog.e(TAG, e, "Exception getting file stream")
         return@withContext Result.failure(e)
       }
     }

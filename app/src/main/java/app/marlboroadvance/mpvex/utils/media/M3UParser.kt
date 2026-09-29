@@ -2,9 +2,9 @@ package app.marlboroadvance.mpvex.utils.media
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.i18n.localizedString
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
@@ -44,7 +44,7 @@ object M3UParser {
    */
   suspend fun parseFromUrl(url: String): M3UParseResult = withContext(Dispatchers.IO) {
     try {
-      Log.d(TAG, "Parsing M3U playlist from URL: $url")
+      MpvExLog.d(TAG, "Parsing M3U playlist from URL: $url")
       
       val urlObj = URL(url)
       val connection = urlObj.openConnection() as HttpURLConnection
@@ -66,7 +66,7 @@ object M3UParser {
       
       parseContent(content, url)
     } catch (e: Exception) {
-      Log.e(TAG, "Error parsing M3U playlist", e)
+      MpvExLog.e(TAG, e, "Error parsing M3U playlist")
       M3UParseResult.Error(localizedString(R.string.error_parse_playlist_reason, e.message ?: localizedString(R.string.ui_unknown_error)), e)
     }
   }
@@ -76,7 +76,7 @@ object M3UParser {
    */
   suspend fun parseFromUri(context: Context, uri: Uri): M3UParseResult = withContext(Dispatchers.IO) {
     try {
-      Log.d(TAG, "Parsing M3U playlist from URI: $uri")
+      MpvExLog.d(TAG, "Parsing M3U playlist from URI: $uri")
       
       val content = context.contentResolver.openInputStream(uri)?.use { inputStream ->
         BufferedReader(InputStreamReader(inputStream, "UTF-8")).use { reader ->
@@ -94,7 +94,7 @@ object M3UParser {
       
       parseContent(content, filename)
     } catch (e: Exception) {
-      Log.e(TAG, "Error parsing M3U playlist from URI", e)
+      MpvExLog.e(TAG, e, "Error parsing M3U playlist from URI")
       M3UParseResult.Error(localizedString(R.string.error_parse_playlist_reason, e.message ?: localizedString(R.string.ui_unknown_error)), e)
     }
   }
@@ -207,11 +207,11 @@ object M3UParser {
         }
       } ?: "M3U Playlist"
       
-      Log.d(TAG, "Successfully parsed M3U playlist with ${items.size} items")
+      MpvExLog.d(TAG, "Successfully parsed M3U playlist with ${items.size} items")
       return M3UParseResult.Success(playlistName, items)
       
     } catch (e: Exception) {
-      Log.e(TAG, "Error parsing M3U content", e)
+      MpvExLog.e(TAG, e, "Error parsing M3U content")
       return M3UParseResult.Error(localizedString(R.string.error_parse_playlist_content_reason, e.message ?: localizedString(R.string.ui_unknown_error)), e)
     }
   }

@@ -1,7 +1,6 @@
 package app.marlboroadvance.mpvex.ui.browser.playlist
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -12,6 +11,7 @@ import app.marlboroadvance.mpvex.database.repository.PlaylistRepository
 import app.marlboroadvance.mpvex.domain.media.model.Video
 import app.marlboroadvance.mpvex.repository.MediaFileRepository
 import app.marlboroadvance.mpvex.ui.browser.base.BaseBrowserViewModel
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -106,12 +106,12 @@ class PlaylistDetailViewModel(
                   )
                   PlaylistVideoItem(item, video)
                 } catch (e: Exception) {
-                  Log.w(TAG, "Failed to create video item for URL: ${item.filePath}", e)
+                  MpvExLog.w(TAG, e, "Failed to create video item for URL: ${item.filePath}")
                   null
                 }
               }
 
-              Log.d(TAG, "Loaded ${videoItems.size} M3U playlist items")
+              MpvExLog.d(TAG, "Loaded ${videoItems.size} M3U playlist items")
               _videoItems.value = videoItems
             } else {
               // For regular playlists, use the existing logic with MediaFileRepository
@@ -129,12 +129,12 @@ class PlaylistDetailViewModel(
                 if (matchedVideo != null) {
                   PlaylistVideoItem(item, matchedVideo)
                 } else {
-                  Log.w(TAG, "Video not found for path: ${item.filePath}")
+                  MpvExLog.w(TAG, "Video not found for path: ${item.filePath}")
                   null
                 }
               }
 
-              Log.d(TAG, "Loaded ${videoItems.size} videos out of ${items.size} playlist items")
+              MpvExLog.d(TAG, "Loaded ${videoItems.size} videos out of ${items.size} playlist items")
               _videoItems.value = videoItems
             }
           }
@@ -190,7 +190,7 @@ class PlaylistDetailViewModel(
               )
               PlaylistVideoItem(item, video)
             } catch (e: Exception) {
-              Log.w(TAG, "Failed to create video item for URL: ${item.filePath}", e)
+              MpvExLog.w(TAG, e, "Failed to create video item for URL: ${item.filePath}")
               null
             }
           }
@@ -210,7 +210,7 @@ class PlaylistDetailViewModel(
         }
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Error refreshing playlist videos", e)
+      MpvExLog.e(TAG, e, "Error refreshing playlist videos")
     } finally {
       _isLoading.value = false
     }

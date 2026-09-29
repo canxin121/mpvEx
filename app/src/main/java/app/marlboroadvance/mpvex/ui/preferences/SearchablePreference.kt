@@ -592,6 +592,20 @@ object SearchablePreferences {
                 categoryRes = R.string.pref_advanced,
                 screen = AdvancedPreferencesScreen,
             ))
+            add(SearchablePreference(
+                titleRes = R.string.pref_advanced_view_logs_title,
+                summaryRes = R.string.pref_advanced_view_logs_summary,
+                keywords = listOf("logs", "log", "debug", "console", "mpv", "native", "view", "browse", "filter"),
+                categoryRes = R.string.pref_advanced,
+                screen = LogsScreen,
+            ))
+            add(SearchablePreference(
+                titleRes = R.string.pref_advanced_save_logs_title,
+                summaryRes = R.string.pref_advanced_save_logs_summary,
+                keywords = listOf("logs", "log", "file", "save", "rolling", "capture", "stdout", "plugin", "crash"),
+                categoryRes = R.string.pref_advanced,
+                screen = AdvancedPreferencesScreen,
+            ))
 
             // About
             add(SearchablePreference(

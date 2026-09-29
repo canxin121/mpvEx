@@ -2,11 +2,11 @@ package app.marlboroadvance.mpvex.utils.media
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import app.marlboroadvance.mpvex.database.repository.VideoMetadataCacheRepository
 import app.marlboroadvance.mpvex.domain.media.model.Video
 import app.marlboroadvance.mpvex.domain.media.model.VideoFolder
 import app.marlboroadvance.mpvex.preferences.BrowserPreferences
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.storage.FileTypeUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -99,7 +99,7 @@ object MetadataRetrieval {
                 video
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error enriching video metadata: ${video.displayName}", e)
+            MpvExLog.e(TAG, e, "Error enriching video metadata: ${video.displayName}")
             video
         }
     }
@@ -131,7 +131,7 @@ object MetadataRetrieval {
             return@withContext videos
         }
 
-        Log.d(TAG, "Enriching ${videosNeedingMetadata.size} videos with metadata")
+        MpvExLog.d(TAG, "Enriching ${videosNeedingMetadata.size} videos with metadata")
 
         // Prepare batch extraction
         val fileTriples = videosNeedingMetadata.mapNotNull { video ->
@@ -217,7 +217,7 @@ object MetadataRetrieval {
                     emit(video)
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error enriching video metadata: ${video.displayName}", e)
+                MpvExLog.e(TAG, e, "Error enriching video metadata: ${video.displayName}")
                 emit(video)
             }
         }
@@ -270,7 +270,7 @@ object MetadataRetrieval {
 
             folder.copy(totalDuration = totalDuration)
         } catch (e: Exception) {
-            Log.e(TAG, "Error enriching folder metadata: ${folder.name}", e)
+            MpvExLog.e(TAG, e, "Error enriching folder metadata: ${folder.name}")
             folder
         }
     }
@@ -298,7 +298,7 @@ object MetadataRetrieval {
             return@withContext folders
         }
 
-        Log.d(TAG, "Enriching ${foldersNeedingMetadata.size} folders with metadata")
+        MpvExLog.d(TAG, "Enriching ${foldersNeedingMetadata.size} folders with metadata")
 
         var processed = 0
         val total = foldersNeedingMetadata.size

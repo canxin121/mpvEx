@@ -3,8 +3,8 @@ package app.marlboroadvance.mpvex.utils.storage
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
-import android.util.Log
 import app.marlboroadvance.mpvex.domain.media.model.Video
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.MediaFormatUtils
 import app.marlboroadvance.mpvex.utils.media.MediaInfoOps
 import kotlinx.coroutines.Dispatchers
@@ -146,7 +146,7 @@ object VideoScanUtils {
             }
             
         } catch (e: Exception) {
-            Log.e(TAG, "MediaStore video scan error", e)
+            MpvExLog.e(TAG, e, "MediaStore video scan error")
         }
     }
     
@@ -203,13 +203,13 @@ object VideoScanUtils {
                         subtitleCodec = ""
                     )
                 } catch (e: Exception) {
-                    Log.w(TAG, "Error processing file: ${file.absolutePath}", e)
+                    MpvExLog.w(TAG, e, "Error processing file: ${file.absolutePath}")
                     continue
                 }
             }
             
         } catch (e: Exception) {
-            Log.e(TAG, "Filesystem video scan error", e)
+            MpvExLog.e(TAG, e, "Filesystem video scan error")
         }
     }
     
@@ -235,11 +235,11 @@ object VideoScanUtils {
                 height = metadata.height
                 mimeType = FileTypeUtils.getMimeTypeFromExtension(file.extension.lowercase())
             }.onFailure { e ->
-                Log.w(TAG, "Could not extract metadata for ${file.absolutePath}, using fallback", e)
+                MpvExLog.w(TAG, e, "Could not extract metadata for ${file.absolutePath}, using fallback")
                 mimeType = FileTypeUtils.getMimeTypeFromExtension(file.extension.lowercase())
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Could not extract metadata for ${file.absolutePath}, using fallback", e)
+            MpvExLog.w(TAG, e, "Could not extract metadata for ${file.absolutePath}, using fallback")
             mimeType = FileTypeUtils.getMimeTypeFromExtension(file.extension.lowercase())
         }
         

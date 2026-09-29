@@ -1,9 +1,9 @@
 package app.marlboroadvance.mpvex.ui.browser.networkstreaming.proxy
 
-import android.util.Log
 import app.marlboroadvance.mpvex.domain.network.NetworkConnection
 import app.marlboroadvance.mpvex.ui.browser.networkstreaming.clients.NetworkClient
 import app.marlboroadvance.mpvex.ui.browser.networkstreaming.clients.NetworkClientFactory
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import com.hierynomus.msdtyp.AccessMask
 import com.hierynomus.mssmb2.SMB2CreateDisposition
 import com.hierynomus.mssmb2.SMB2ShareAccess
@@ -136,8 +136,8 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
         handleFullRequest(session, streamInfo)
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Error serving request for stream $streamId: ${streamInfo.filePath}", e)
-      Log.e(
+      MpvExLog.e(TAG, e, "Error serving request for stream $streamId: ${streamInfo.filePath}")
+      MpvExLog.e(
         TAG,
         "Connection: ${streamInfo.connection.protocol} ${streamInfo.connection.host}:${streamInfo.connection.port}${streamInfo.connection.path}",
       )
@@ -275,15 +275,15 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
    */
   private suspend fun getFileSizeSMB(streamInfo: StreamInfo): Long {
     try {
-      Log.d(TAG, "SMB getFileSize called")
-      Log.d(TAG, "  Connection path: ${streamInfo.connection.path}")
-      Log.d(TAG, "  File path: ${streamInfo.filePath}")
+      MpvExLog.d(TAG, "SMB getFileSize called")
+      MpvExLog.d(TAG, "  Connection path: ${streamInfo.connection.path}")
+      MpvExLog.d(TAG, "  File path: ${streamInfo.filePath}")
 
       // Extract share name from connection path (just the share name, no subfolders)
       val shareName = streamInfo.connection.path.trim('/')
 
       if (shareName.isEmpty() || shareName.contains('/')) {
-        Log.e(TAG, "SMB: Invalid share name: $shareName")
+        MpvExLog.e(TAG, "SMB: Invalid share name: $shareName")
         return -1L
       }
 
@@ -296,7 +296,7 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
           val pathAfterProtocol = streamInfo.filePath.substring(6) // Remove "smb://"
           val firstSlash = pathAfterProtocol.indexOf('/')
           if (firstSlash == -1) {
-            Log.e(TAG, "Invalid SMB path format")
+            MpvExLog.e(TAG, "Invalid SMB path format")
             return -1L
           }
 
@@ -309,19 +309,19 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
           } else {
             // Get everything after "shareName/"
             val extracted = pathAfterHost.substring(secondSlash + 1)
-            Log.d(TAG, "  Extracted from SMB URL: $extracted")
+            MpvExLog.d(TAG, "  Extracted from SMB URL: $extracted")
             extracted
           }
         }
         else -> {
           // Fallback: assume it's already a relative path
           val extracted = streamInfo.filePath.trim('/')
-          Log.d(TAG, "  Using as relative path: $extracted")
+          MpvExLog.d(TAG, "  Using as relative path: $extracted")
           extracted
         }
       }
 
-      Log.d(TAG, "  Final: share=$shareName, relativePath=$relativePath")
+      MpvExLog.d(TAG, "  Final: share=$shareName, relativePath=$relativePath")
 
       val smbConfig = SmbConfig.builder()
         .withTimeout(30000, TimeUnit.MILLISECONDS)
@@ -353,7 +353,7 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
       )
 
       val fileSize = file.fileInformation.standardInformation.endOfFile
-      Log.d(TAG, "  File size: $fileSize")
+      MpvExLog.d(TAG, "  File size: $fileSize")
 
       file.close()
       diskShare.close()
@@ -362,7 +362,7 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
       smbClient.close()
       return fileSize
     } catch (e: Exception) {
-      Log.e(TAG, "SMB getFileSize error: ${e.message}", e)
+      MpvExLog.e(TAG, e, "SMB getFileSize error: ${e.message}")
       return -1L
     }
   }
@@ -466,7 +466,7 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
         val result = streamInfo.client.getFileStream(streamInfo.filePath)
         result.getOrNull()
       } catch (e: Exception) {
-        Log.e(TAG, "Error getting stream", e)
+        MpvExLog.e(TAG, e, "Error getting stream")
         null
       }
     }
@@ -630,7 +630,7 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
       val cleanFilePath = if (streamInfo.filePath.startsWith("/")) streamInfo.filePath else "/${streamInfo.filePath}"
       val url = "$protocol://${streamInfo.connection.host}:${streamInfo.connection.port}$cleanBasePath$cleanFilePath"
 
-      Log.d(TAG, "WebDAV stream request - Protocol: $protocol, URL: $url")
+      MpvExLog.d(TAG, "WebDAV stream request - Protocol: $protocol, URL: $url")
 
       // Use OkHttp directly to add Range header support
       val okHttpClient = okhttp3.OkHttpClient.Builder()
@@ -696,15 +696,15 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
    */
   private suspend fun getStreamWithOffsetSMB(streamInfo: StreamInfo, offset: Long): InputStream? {
     try {
-      Log.d(TAG, "SMB getStreamWithOffset called, offset=$offset")
-      Log.d(TAG, "  Connection path: ${streamInfo.connection.path}")
-      Log.d(TAG, "  File path: ${streamInfo.filePath}")
+      MpvExLog.d(TAG, "SMB getStreamWithOffset called, offset=$offset")
+      MpvExLog.d(TAG, "  Connection path: ${streamInfo.connection.path}")
+      MpvExLog.d(TAG, "  File path: ${streamInfo.filePath}")
 
       // Extract share name from connection path (just the share name, no subfolders)
       val shareName = streamInfo.connection.path.trim('/')
 
       if (shareName.isEmpty() || shareName.contains('/')) {
-        Log.e(TAG, "SMB: Invalid share name: $shareName")
+        MpvExLog.e(TAG, "SMB: Invalid share name: $shareName")
         return null
       }
 
@@ -717,7 +717,7 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
           val pathAfterProtocol = streamInfo.filePath.substring(6) // Remove "smb://"
           val firstSlash = pathAfterProtocol.indexOf('/')
           if (firstSlash == -1) {
-            Log.e(TAG, "Invalid SMB path format")
+            MpvExLog.e(TAG, "Invalid SMB path format")
             return null
           }
 
@@ -730,19 +730,19 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
           } else {
             // Get everything after "shareName/"
             val extracted = pathAfterHost.substring(secondSlash + 1)
-            Log.d(TAG, "  Extracted from SMB URL: '$extracted'")
+            MpvExLog.d(TAG, "  Extracted from SMB URL: '$extracted'")
             extracted
           }
         }
         else -> {
           // Fallback: assume it's already a relative path
           val extracted = streamInfo.filePath.trim('/')
-          Log.d(TAG, "  Using as relative path: '$extracted'")
+          MpvExLog.d(TAG, "  Using as relative path: '$extracted'")
           extracted
         }
       }
 
-      Log.d(TAG, "  Final: share=$shareName, relativePath=$relativePath")
+      MpvExLog.d(TAG, "  Final: share=$shareName, relativePath=$relativePath")
 
       val smbConfig = SmbConfig.builder()
         .withTimeout(120000, TimeUnit.MILLISECONDS) // Increase timeout for large seeks
@@ -809,7 +809,7 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
             currentPosition += bytesRead
             return bytesRead
           } catch (e: Exception) {
-            Log.e(TAG, "Error reading from SMB file: ${e.message}")
+            MpvExLog.e(TAG, "Error reading from SMB file: ${e.message}")
             return -1
           }
         }
@@ -851,10 +851,10 @@ class NetworkStreamingProxy private constructor() : NanoHTTPD("127.0.0.1", 0) {
         }
       }
 
-      Log.d(TAG, "  Stream created successfully starting at offset $offset")
+      MpvExLog.d(TAG, "  Stream created successfully starting at offset $offset")
       return seekableStream
     } catch (e: Exception) {
-      Log.e(TAG, "SMB getStreamWithOffset error: ${e.message}", e)
+      MpvExLog.e(TAG, e, "SMB getStreamWithOffset error: ${e.message}")
       return null
     }
   }

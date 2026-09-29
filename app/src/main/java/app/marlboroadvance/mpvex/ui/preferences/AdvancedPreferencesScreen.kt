@@ -58,6 +58,7 @@ import app.marlboroadvance.mpvex.presentation.components.ConfirmDialog
 import app.marlboroadvance.mpvex.presentation.crash.CrashActivity
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.OpenDocumentTreeContract
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -243,7 +244,7 @@ object AdvancedPreferencesScreen : Screen {
                   }
                 }
               }.onFailure { e ->
-                android.util.Log.e("AdvancedPrefs", "Error creating MPV directory structure", e)
+                MpvExLog.e("AdvancedPrefs", e, "Error creating MPV directory structure")
               }
             }
           }
@@ -810,21 +811,64 @@ object AdvancedPreferencesScreen : Screen {
               @Suppress("DEPRECATION")
               val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
               val verboseLogging by preferences.verboseLogging.collectAsState()
-              
+              val fileLogging by preferences.enableFileLogging.collectAsState()
+              val nativeLogging by preferences.captureNativeOutput.collectAsState()
+
               SwitchPreference(
                 value = verboseLogging,
                 onValueChange = preferences.verboseLogging::set,
                 title = { Text(stringResource(R.string.pref_advanced_verbose_logging_title)) },
-                summary = { 
+                summary = {
                   Text(
                     stringResource(R.string.pref_advanced_verbose_logging_summary),
                     color = MaterialTheme.colorScheme.outline,
-                  ) 
+                  )
                 },
               )
-              
+
               PreferenceDivider()
-              
+
+              SwitchPreference(
+                value = fileLogging,
+                onValueChange = preferences.enableFileLogging::set,
+                title = { Text(stringResource(R.string.pref_advanced_save_logs_title)) },
+                summary = {
+                  Text(
+                    stringResource(R.string.pref_advanced_save_logs_summary),
+                    color = MaterialTheme.colorScheme.outline,
+                  )
+                },
+              )
+
+              PreferenceDivider()
+
+              SwitchPreference(
+                value = nativeLogging,
+                enabled = fileLogging,
+                onValueChange = preferences.captureNativeOutput::set,
+                title = { Text(stringResource(R.string.pref_advanced_native_logs_title)) },
+                summary = {
+                  Text(
+                    stringResource(R.string.pref_advanced_native_logs_summary),
+                    color = MaterialTheme.colorScheme.outline,
+                  )
+                },
+              )
+
+              PreferenceDivider()
+
+              Preference(
+                title = { Text(stringResource(R.string.pref_advanced_view_logs_title)) },                summary = {
+                  Text(
+                    stringResource(R.string.pref_advanced_view_logs_summary),
+                    color = MaterialTheme.colorScheme.outline,
+                  )
+                },
+                onClick = { backStack.add(LogsScreen) },
+              )
+
+              PreferenceDivider()
+
               Preference(
                 title = { Text(stringResource(R.string.pref_advanced_dump_logs_title)) },
                 summary = { 

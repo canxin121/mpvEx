@@ -5,6 +5,7 @@ import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.i18n.localizedString
 import app.marlboroadvance.mpvex.domain.network.NetworkConnection
 import app.marlboroadvance.mpvex.domain.network.NetworkFile
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import com.hierynomus.msdtyp.AccessMask
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation
 import com.hierynomus.mssmb2.SMB2CreateDisposition
@@ -22,6 +23,8 @@ import kotlinx.coroutines.withTimeout
 import java.io.InputStream
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
+
+private const val TAG = "SmbClient"
 
 class SmbClient(private val connection: NetworkConnection) : NetworkClient {
   private var smbClient: SMBClient? = null
@@ -156,7 +159,14 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
         }
 
         connectionResult
+          .onSuccess {
+            MpvExLog.i(TAG, "Connected to smb://${connection.host}:${connection.port}/$shareName")
+          }
+          .onFailure { error ->
+            MpvExLog.w(TAG, error, "Could not connect to smb://${connection.host}:${connection.port}/$shareName")
+          }
       } catch (e: Exception) {
+        MpvExLog.e(TAG, e, "SMB connect threw")
         Result.failure(e)
       }
     }
@@ -191,7 +201,7 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
       try {
         // Check if we're still connected, if not reconnect
         if (!isConnected() || smbConnection?.isConnected != true) {
-          android.util.Log.w("SmbClient", "Connection is stale, reconnecting...")
+          MpvExLog.w("SmbClient", "Connection is stale, reconnecting...")
           disconnect()
           val reconnectResult = connect()
           if (reconnectResult.isFailure) {
@@ -201,9 +211,9 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
 
         val sess = session ?: return@withContext Result.failure(Exception(localizedString(R.string.error_not_connected)))
 
-        android.util.Log.d("SmbClient", "=== listFiles called ===")
-        android.util.Log.d("SmbClient", "  Input path: '$path'")
-        android.util.Log.d("SmbClient", "  Share name: '$shareName'")
+        MpvExLog.d("SmbClient", "=== listFiles called ===")
+        MpvExLog.d("SmbClient", "  Input path: '$path'")
+        MpvExLog.d("SmbClient", "  Share name: '$shareName'")
 
         // Build the relative path within the share
         // The 'path' parameter is the navigation path from the share root
@@ -224,13 +234,13 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
               val pathParts = pathPart.trim('/').split('/', limit = 2)
               pathParts.getOrNull(1) ?: ""
             }
-            android.util.Log.d("SmbClient", "  Extracted from SMB URL: '$extracted'")
+            MpvExLog.d("SmbClient", "  Extracted from SMB URL: '$extracted'")
             extracted
           }
 
           path == "/" || path.isEmpty() -> {
             // Root of the share
-            android.util.Log.d("SmbClient", "  Using share root (empty path)")
+            MpvExLog.d("SmbClient", "  Using share root (empty path)")
             ""
           }
 
@@ -238,29 +248,29 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
             // Check if path is just the share name (means root)
             val cleaned = path.trim('/')
             if (cleaned.equals(shareName, ignoreCase = true)) {
-              android.util.Log.d("SmbClient", "  Path equals share name - using root")
+              MpvExLog.d("SmbClient", "  Path equals share name - using root")
               ""
             } else if (cleaned.startsWith("$shareName/", ignoreCase = true)) {
               // Path includes share name prefix - remove it
               val withoutShare = cleaned.substring(shareName.length + 1)
-              android.util.Log.d("SmbClient", "  Removed share prefix: '$withoutShare'")
+              MpvExLog.d("SmbClient", "  Removed share prefix: '$withoutShare'")
               withoutShare
             } else {
               // Normal subfolder navigation
-              android.util.Log.d("SmbClient", "  Using cleaned path: '$cleaned'")
+              MpvExLog.d("SmbClient", "  Using cleaned path: '$cleaned'")
               cleaned
             }
           }
         }
 
-        android.util.Log.d("SmbClient", "  Final relativePath: '$relativePath'")
-        android.util.Log.d("SmbClient", "  Will call: diskShare.list('$relativePath')")
+        MpvExLog.d("SmbClient", "  Final relativePath: '$relativePath'")
+        MpvExLog.d("SmbClient", "  Will call: diskShare.list('$relativePath')")
 
         val diskShare = try {
           sess.connectShare(shareName) as? DiskShare
             ?: return@withContext Result.failure(Exception(localizedString(R.string.error_smb_not_disk_share, shareName)))
         } catch (e: Exception) {
-          android.util.Log.e("SmbClient", "Failed to connect to share: ${e.message}", e)
+          MpvExLog.e("SmbClient", e, "Failed to connect to share: ${e.message}")
           return@withContext Result.failure(Exception(localizedString(R.string.error_smb_connect_reason, e.message ?: localizedString(R.string.ui_unknown_error))))
         }
 
@@ -275,7 +285,7 @@ class SmbClient(private val connection: NetworkConnection) : NetworkClient {
             return@withContext Result.failure(Exception(localizedString(R.string.error_operation_timeout)))
           }
 
-          android.util.Log.d("SmbClient", "  Listed ${rawFiles.size} items")
+          MpvExLog.d("SmbClient", "  Listed ${rawFiles.size} items")
 
           val files = rawFiles.mapNotNull { fileInfo ->
             try {

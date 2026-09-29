@@ -1,13 +1,13 @@
 package app.marlboroadvance.mpvex.utils.media
 
 import android.net.Uri
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLDecoder
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 
 object HttpUtils {
   private const val TAG = "HttpUtils"
@@ -19,14 +19,14 @@ object HttpUtils {
       val uri = Uri.parse(url)
       val filenameFromHeaders = getFilenameFromHttpHeaders(url)
       if (filenameFromHeaders != null) {
-        Log.d(TAG, "Extracted filename from headers: $filenameFromHeaders")
+        MpvExLog.d(TAG, "Extracted filename from headers: $filenameFromHeaders")
         return@withContext filenameFromHeaders
       }
       val filenameFromUrl = extractFilenameFromUrlPath(uri)
-      Log.d(TAG, "Extracted filename from URL: $filenameFromUrl")
+      MpvExLog.d(TAG, "Extracted filename from URL: $filenameFromUrl")
       return@withContext filenameFromUrl
     } catch (e: Exception) {
-      Log.e(TAG, "Error extracting filename: ${e.message}")
+      MpvExLog.e(TAG, "Error extracting filename: ${e.message}")
       null
     }
   }
@@ -44,7 +44,7 @@ object HttpUtils {
 
       val responseCode = connection.responseCode
       if (responseCode != HttpURLConnection.HTTP_OK && responseCode != HttpURLConnection.HTTP_PARTIAL) {
-        Log.w(TAG, "HTTP response: $responseCode")
+        MpvExLog.w(TAG, "HTTP response: $responseCode")
       }
 
       connection.getHeaderField("Content-Disposition")?.let {
@@ -57,10 +57,10 @@ object HttpUtils {
 
       return null
     } catch (e: IOException) {
-      Log.e(TAG, "IO error: ${e.message}")
+      MpvExLog.e(TAG, "IO error: ${e.message}")
       return null
     } catch (e: Exception) {
-      Log.e(TAG, "Error: ${e.message}")
+      MpvExLog.e(TAG, "Error: ${e.message}")
       return null
     } finally {
       connection?.disconnect()
@@ -86,7 +86,7 @@ object HttpUtils {
 
       return null
     } catch (e: Exception) {
-      Log.e(TAG, "Error parsing Content-Disposition: ${e.message}")
+      MpvExLog.e(TAG, "Error parsing Content-Disposition: ${e.message}")
       return null
     }
   }
@@ -139,7 +139,7 @@ object HttpUtils {
         "$scheme://$host"
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Error extracting referer domain: ${e.message}")
+      MpvExLog.e(TAG, "Error extracting referer domain: ${e.message}")
       null
     }
   }

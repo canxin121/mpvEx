@@ -5,8 +5,8 @@ import android.os.Build
 import android.os.Environment
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
-import android.util.Log
 import java.io.File
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 
 /**
  * Storage Volume Utilities
@@ -26,7 +26,7 @@ object StorageVolumeUtils {
           (getVolumePath(volume)?.let { path -> File(path).exists() } == true)
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Error getting storage volumes", e)
+      MpvExLog.e(TAG, e, "Error getting storage volumes")
       emptyList()
     }
 
@@ -68,7 +68,7 @@ object StorageVolumeUtils {
 
       return null
     } catch (e: Exception) {
-      Log.w(TAG, "Could not get volume path", e)
+      MpvExLog.w(TAG, e, "Could not get volume path")
       return null
     }
   }

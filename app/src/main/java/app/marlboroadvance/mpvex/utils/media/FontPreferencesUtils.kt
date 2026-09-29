@@ -3,13 +3,13 @@ package app.marlboroadvance.mpvex.utils.media
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.github.k1rakishou.fsaf.FileManager
 import com.yubyf.truetypeparser.TTFFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Locale
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 
 /** Copies font files from the selected directory to the app's internal storage. */
 @SuppressLint("UseKtx")
@@ -42,7 +42,7 @@ fun copyFontsFromDirectory(
       }
     }
   }.onFailure { e ->
-    Log.e("SubtitlesPreferences", "Error copying fonts", e)
+    MpvExLog.e("SubtitlesPreferences", e, "Error copying fonts")
   }
 }
 

@@ -9,7 +9,6 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.view.WindowInsetsCompat
@@ -24,6 +23,7 @@ import app.marlboroadvance.mpvex.preferences.PlayerPreferences
 import app.marlboroadvance.mpvex.preferences.SubtitlesPreferences
 import app.marlboroadvance.mpvex.utils.media.ChecksumUtils
 import app.marlboroadvance.mpvex.utils.media.MediaInfoParser
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import `is`.xyz.mpv.MPVLib
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -286,7 +286,7 @@ class PlayerViewModel(
             MPVLib.setPropertyInt("volume", maxVol)
           }
         }.onFailure { e ->
-          Log.e(TAG, "Error setting volume-max: $maxVol", e)
+          MpvExLog.e(TAG, e, "Error setting volume-max: $maxVol")
         }
       }
     }
@@ -389,7 +389,7 @@ class PlayerViewModel(
         withContext(Dispatchers.Main) {
           showToast(host.context.getString(R.string.failed_load_audio, e.message))
         }
-        android.util.Log.e("PlayerViewModel", "Error adding audio", e)
+        MpvExLog.e("PlayerViewModel", e, "Error adding audio")
       }
     }
   }
@@ -398,7 +398,7 @@ class PlayerViewModel(
     viewModelScope.launch(Dispatchers.IO) {
       val uriString = uri.toString()
       if (_externalSubtitles.contains(uriString)) {
-        android.util.Log.d("PlayerViewModel", "Subtitle already tracked, skipping: $uriString")
+        MpvExLog.d("PlayerViewModel", "Subtitle already tracked, skipping: $uriString")
         return@launch
       }
 
@@ -420,7 +420,7 @@ class PlayerViewModel(
             )
           } catch (e: SecurityException) {
             // Permission already granted, not available, or not needed (e.g. from tree).
-            android.util.Log.i("PlayerViewModel", "Persistent permission not taken for $uri (may already have it via tree)")
+            MpvExLog.i("PlayerViewModel", "Persistent permission not taken for $uri (may already have it via tree)")
           }
         }
 
@@ -480,7 +480,7 @@ class PlayerViewModel(
           }
         }
       } catch (e: Exception) {
-        android.util.Log.e("PlayerViewModel", "Error scanning local subtitles: ${e.message}", e)
+        MpvExLog.e("PlayerViewModel", e, "Error scanning local subtitles: ${e.message}")
       }
     }
   }
@@ -729,7 +729,7 @@ class PlayerViewModel(
     } catch (e: Exception) {
       // Defensive: InsetsController animation can crash under FD pressure
       // (e.g. during high-res HEVC playback on certain devices)
-      Log.e(TAG, "Failed to show system bars", e)
+      MpvExLog.e(TAG, e, "Failed to show system bars")
     }
     _controlsShown.value = true
   }
@@ -743,7 +743,7 @@ class PlayerViewModel(
         host.windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Failed to hide system bars", e)
+      MpvExLog.e(TAG, e, "Failed to hide system bars")
     }
     _controlsShown.value = false
     _seekBarShown.value = false
@@ -758,7 +758,7 @@ class PlayerViewModel(
         host.windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Failed to hide system bars", e)
+      MpvExLog.e(TAG, e, "Failed to hide system bars")
     }
     _controlsShown.value = false
     _seekBarShown.value = true
@@ -1423,7 +1423,7 @@ class PlayerViewModel(
 
       durationStr to resolutionStr
     } catch (e: Exception) {
-      android.util.Log.e("PlayerViewModel", "Failed to get video metadata for $uri", e)
+      MpvExLog.e("PlayerViewModel", e, "Failed to get video metadata for $uri")
       "" to ""
     } finally {
       try {
@@ -1548,7 +1548,7 @@ class PlayerViewModel(
 
       null
     } catch (e: Exception) {
-      android.util.Log.w("PlayerViewModel", "Failed to get metadata from MediaStore for $uri, will try MediaMetadataRetriever", e)
+      MpvExLog.w("PlayerViewModel", e, "Failed to get metadata from MediaStore for $uri, will try MediaMetadataRetriever")
       null
     }
   }
@@ -1610,7 +1610,7 @@ class PlayerViewModel(
       // Skip metadata extraction for M3U playlists
       val activity = host as? PlayerActivity
       if (activity?.isCurrentPlaylistM3U() == true) {
-        Log.d(TAG, "Skipping metadata extraction for M3U playlist")
+        MpvExLog.d(TAG, "Skipping metadata extraction for M3U playlist")
         return@launch
       }
 

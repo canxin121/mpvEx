@@ -2,7 +2,6 @@ package app.marlboroadvance.mpvex.ui.browser.recentlyplayed
 
 import android.app.Application
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -15,6 +14,7 @@ import app.marlboroadvance.mpvex.database.repository.PlaylistRepository
 import app.marlboroadvance.mpvex.database.repository.VideoMetadataCacheRepository
 import app.marlboroadvance.mpvex.domain.media.model.Video
 import app.marlboroadvance.mpvex.domain.recentlyplayed.repository.RecentlyPlayedRepository
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.permission.PermissionUtils
 import app.marlboroadvance.mpvex.utils.media.MediaFormatUtils
 
@@ -163,7 +163,7 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
       val videos = sortedItems.filterIsInstance<RecentlyPlayedItem.VideoItem>().map { it.video }
       _recentVideos.value = videos
     } catch (e: Exception) {
-      Log.e("RecentlyPlayedViewModel", "Error loading recent videos", e)
+      MpvExLog.e("RecentlyPlayedViewModel", e, "Error loading recent videos")
       _recentItems.value = emptyList()
       _recentVideos.value = emptyList()
     } finally {
@@ -281,7 +281,7 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
         resolution = formatResolution(width, height),
       )
     } catch (e: Exception) {
-      Log.e("RecentlyPlayedViewModel", "Error creating video from path: $filePath", e)
+      MpvExLog.e("RecentlyPlayedViewModel", e, "Error creating video from path: $filePath")
       null
     }
   }
@@ -513,7 +513,7 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
       recentlyPlayedRepository.clearAll()
       // The observe flow will automatically update the UI
     } catch (e: Exception) {
-      Log.e("RecentlyPlayedViewModel", "Error clearing recent videos", e)
+      MpvExLog.e("RecentlyPlayedViewModel", e, "Error clearing recent videos")
     }
   }
 
@@ -542,24 +542,24 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
                   listOf(video),
                 )
               if (deleted <= 0 || failed > 0) {
-                Log.w("RecentlyPlayedViewModel", "Failed to delete file: ${video.path}")
+                MpvExLog.w("RecentlyPlayedViewModel", "Failed to delete file: ${video.path}")
                 failCount++
               } else {
-                Log.d("RecentlyPlayedViewModel", "Deleted file: ${video.path}")
+                MpvExLog.d("RecentlyPlayedViewModel", "Deleted file: ${video.path}")
               }
             }
           }
 
           successCount++
         } catch (e: Exception) {
-          Log.e("RecentlyPlayedViewModel", "Error deleting video from history: ${video.path}", e)
+          MpvExLog.e("RecentlyPlayedViewModel", e, "Error deleting video from history: ${video.path}")
           failCount++
         }
       }
 
       Pair(successCount, failCount)
     } catch (e: Exception) {
-      Log.e("RecentlyPlayedViewModel", "Error deleting videos from history", e)
+      MpvExLog.e("RecentlyPlayedViewModel", e, "Error deleting videos from history")
       Pair(0, videos.size)
     }
   }
@@ -574,14 +574,14 @@ class RecentlyPlayedViewModel(application: Application) : AndroidViewModel(appli
           recentlyPlayedRepository.deleteByPlaylistId(playlistId)
           successCount++
         } catch (e: Exception) {
-          Log.e("RecentlyPlayedViewModel", "Error deleting playlist from history: $playlistId", e)
+          MpvExLog.e("RecentlyPlayedViewModel", e, "Error deleting playlist from history: $playlistId")
           failCount++
         }
       }
       
       Pair(successCount, failCount)
     } catch (e: Exception) {
-      Log.e("RecentlyPlayedViewModel", "Error deleting playlists from history", e)
+      MpvExLog.e("RecentlyPlayedViewModel", e, "Error deleting playlists from history")
       Pair(0, playlistIds.size)
     }
   }

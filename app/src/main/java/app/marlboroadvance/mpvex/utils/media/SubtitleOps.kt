@@ -1,8 +1,8 @@
 package app.marlboroadvance.mpvex.utils.media
 
-import android.util.Log
 import app.marlboroadvance.mpvex.repository.NetworkRepository
 import app.marlboroadvance.mpvex.ui.browser.networkstreaming.proxy.NetworkStreamingProxy
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import `is`.xyz.mpv.MPVLib
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -57,7 +57,7 @@ object SubtitleOps : KoinComponent {
 
       if (isNetworkStream) {
         if (shouldSkipNetworkSubtitleAutoload(videoFilePath, videoFileName)) {
-          Log.d(TAG, "Skipping network subtitle autoload for: $videoFilePath")
+          MpvExLog.d(TAG, "Skipping network subtitle autoload for: $videoFilePath")
           return@withContext
         }
         // For network streams, try to load subtitles with common extensions
@@ -67,7 +67,7 @@ object SubtitleOps : KoinComponent {
         autoloadLocalSubtitles(videoFilePath, videoFileName)
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Error loading subtitles", e)
+      MpvExLog.e(TAG, e, "Error loading subtitles")
     }
   }
 
@@ -81,23 +81,23 @@ object SubtitleOps : KoinComponent {
     networkConnectionId: Long,
   ) {
     try {
-      Log.d(TAG, "Autoloading subtitles for network file: $videoFilePath")
+      MpvExLog.d(TAG, "Autoloading subtitles for network file: $videoFilePath")
       
       // Get the network connection
       val connection = networkRepository.getConnectionById(networkConnectionId)
       if (connection == null) {
-        Log.w(TAG, "Network connection not found: $networkConnectionId")
+        MpvExLog.w(TAG, "Network connection not found: $networkConnectionId")
         return
       }
 
       // Get the directory path (parent of the video file)
       val directoryPath = videoFilePath.substringBeforeLast('/', "")
       if (directoryPath.isEmpty()) {
-        Log.w(TAG, "Could not determine directory path from: $videoFilePath")
+        MpvExLog.w(TAG, "Could not determine directory path from: $videoFilePath")
         return
       }
 
-      Log.d(TAG, "Scanning directory: $directoryPath")
+      MpvExLog.d(TAG, "Scanning directory: $directoryPath")
 
       // Get base name without extension
       val baseName = videoFileName.substringBeforeLast('.')
@@ -105,7 +105,7 @@ object SubtitleOps : KoinComponent {
       // List files in the directory
       val filesResult = networkRepository.listFiles(connection, directoryPath)
       if (filesResult.isFailure) {
-        Log.w(TAG, "Failed to list network directory: ${filesResult.exceptionOrNull()?.message}")
+        MpvExLog.w(TAG, "Failed to list network directory: ${filesResult.exceptionOrNull()?.message}")
         return
       }
 
@@ -119,11 +119,11 @@ object SubtitleOps : KoinComponent {
       }
 
       if (subtitles.isEmpty()) {
-        Log.d(TAG, "No matching subtitle files found for: $baseName")
+        MpvExLog.d(TAG, "No matching subtitle files found for: $baseName")
         return
       }
 
-      Log.d(TAG, "Found ${subtitles.size} subtitle file(s)")
+      MpvExLog.d(TAG, "Found ${subtitles.size} subtitle file(s)")
 
       // Load subtitles via proxy
       val proxy = NetworkStreamingProxy.getInstance()
@@ -138,7 +138,7 @@ object SubtitleOps : KoinComponent {
             .substringAfterLast('\\')
             .takeIf { it.isNotBlank() } ?: subtitle.name
 
-          Log.d(TAG, "Processing subtitle - name: '${subtitle.name}', displayName: '$displayName', path: '${subtitle.path}'")
+          MpvExLog.d(TAG, "Processing subtitle - name: '${subtitle.name}', displayName: '$displayName', path: '${subtitle.path}'")
 
           // Create a URL-safe filename for the streamId
           val urlSafeFilename = displayName
@@ -167,16 +167,16 @@ object SubtitleOps : KoinComponent {
           if (trackCountAfter > trackCountBefore) {
             val newTrackIndex = trackCountAfter - 1
             MPVLib.setPropertyString("track-list/$newTrackIndex/title", displayName)
-            Log.d(TAG, "Loaded network subtitle: '$displayName' (track $newTrackIndex) via proxy (flag=$flag)")
+            MpvExLog.d(TAG, "Loaded network subtitle: '$displayName' (track $newTrackIndex) via proxy (flag=$flag)")
           } else {
-            Log.d(TAG, "Loaded network subtitle: '$displayName' via proxy (flag=$flag)")
+            MpvExLog.d(TAG, "Loaded network subtitle: '$displayName' via proxy (flag=$flag)")
           }
         } catch (e: Exception) {
-          Log.e(TAG, "Failed to load subtitle ${subtitle.name}: ${e.message}", e)
+          MpvExLog.e(TAG, e, "Failed to load subtitle ${subtitle.name}: ${e.message}")
         }
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Error autoloading network subtitles", e)
+      MpvExLog.e(TAG, e, "Error autoloading network subtitles")
     }
   }
 
@@ -202,7 +202,7 @@ object SubtitleOps : KoinComponent {
           // Use "select" for the first autoloaded subtitle so it is enabled by default
           val flag = if (index == 0) "select" else "auto"
           MPVLib.command("sub-add", subtitle.absolutePath, flag, subtitle.name)
-          Log.d(TAG, "Loaded local subtitle: ${subtitle.name} (flag=$flag)")
+          MpvExLog.d(TAG, "Loaded local subtitle: ${subtitle.name} (flag=$flag)")
         }
       }
     }
@@ -234,9 +234,9 @@ object SubtitleOps : KoinComponent {
         // Only use "select" for the first one (.srt)
         val flag = if (index == 0) "select" else "auto"
         MPVLib.command("sub-add", subtitleUrl, flag, "$baseName.$ext")
-        Log.d(TAG, "Attempting to load network subtitle: $subtitleUrl (flag=$flag)")
+        MpvExLog.d(TAG, "Attempting to load network subtitle: $subtitleUrl (flag=$flag)")
       } catch (e: Exception) {
-        Log.d(TAG, "Could not load network subtitle $subtitleUrl: ${e.message}")
+        MpvExLog.d(TAG, "Could not load network subtitle $subtitleUrl: ${e.message}")
       }
     }
   }

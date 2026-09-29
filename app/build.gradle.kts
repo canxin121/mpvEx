@@ -77,6 +77,13 @@ android {
     includeInBundle = false
   }
 
+  testOptions {
+    // The logging facade writes to android.util.Log, which the JVM unit tests
+    // would otherwise stub out by throwing. Returning defaults keeps every
+    // class that logs testable without a device.
+    unitTests.isReturnDefaultValues = true
+  }
+
   splits {
     abi {
       isEnable = true
@@ -241,6 +248,7 @@ dependencies {
   implementation(libs.fsaf)
   implementation(libs.mediainfo.lib)
   implementation(libs.mpv.android)
+  implementation(libs.timber)
 
   testImplementation("junit:junit:4.13.2")
 

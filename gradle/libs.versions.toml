@@ -18,6 +18,7 @@ reorderable = "3.0.0"
 aboutLibraries = "15.1.1"
 mpv-android = "1.0.0"
 mediainfo-android = "1.0.2"
+timber = "5.0.1"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -69,6 +70,7 @@ accompanist-permissions = { module = "com.google.accompanist:accompanist-permiss
 
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 [bundles]
 koin = ["koin-core", "koin-android", "koin-compose", "koin-viewmodel"]

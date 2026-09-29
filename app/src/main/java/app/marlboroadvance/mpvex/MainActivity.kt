@@ -1,7 +1,6 @@
 package app.marlboroadvance.mpvex
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -36,9 +35,11 @@ import app.marlboroadvance.mpvex.preferences.AppearancePreferences
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.presentation.Screen
 import app.marlboroadvance.mpvex.repository.NetworkRepository
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.update.UpdateDialog
 import app.marlboroadvance.mpvex.utils.update.UpdateViewModel
 import app.marlboroadvance.mpvex.ui.browser.MainScreen
+import app.marlboroadvance.mpvex.ui.preferences.LogsScreen
 import app.marlboroadvance.mpvex.ui.theme.DarkMode
 import app.marlboroadvance.mpvex.ui.theme.MpvexTheme
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
@@ -104,7 +105,7 @@ class MainActivity : ComponentActivity() {
     try {
       super.onDestroy()
     } catch (e: Exception) {
-      Log.e("MainActivity", "Error during onDestroy", e)
+      MpvExLog.e("MainActivity", e, "Error during onDestroy")
     }
   }
 
@@ -121,23 +122,23 @@ class MainActivity : ComponentActivity() {
         val autoConnectConnections = networkRepository.getAutoConnectConnections()
         autoConnectConnections.forEach { connection ->
           withContext(Dispatchers.Main) {
-            Log.d("MainActivity", "Auto-connecting to: ${connection.name}")
+            MpvExLog.d("MainActivity", "Auto-connecting to: ${connection.name}")
           }
           networkRepository.connect(connection)
             .onSuccess {
               withContext(Dispatchers.Main) {
-                Log.d("MainActivity", "Auto-connected successfully: ${connection.name}")
+                MpvExLog.d("MainActivity", "Auto-connected successfully: ${connection.name}")
               }
             }
             .onFailure { e ->
               withContext(Dispatchers.Main) {
-                Log.e("MainActivity", "Auto-connect failed for ${connection.name}: ${e.message}")
+                MpvExLog.e("MainActivity", "Auto-connect failed for ${connection.name}: ${e.message}")
               }
             }
         }
       } catch (e: Exception) {
         withContext(Dispatchers.Main) {
-          Log.e("MainActivity", "Error during auto-connect", e)
+          MpvExLog.e("MainActivity", e, "Error during auto-connect")
         }
       }
     }
@@ -152,6 +153,12 @@ class MainActivity : ComponentActivity() {
 
     @Suppress("UNCHECKED_CAST")
     val typedBackstack = backstack as NavBackStack<Screen>
+
+    // The crash screen offers a shortcut straight into the log viewer.
+    val openLogs = intent?.getBooleanExtra("open_logs", false) == true
+    LaunchedEffect(openLogs) {
+      if (openLogs) typedBackstack.add(LogsScreen)
+    }
 
     val context = LocalContext.current
     val currentVersion = BuildConfig.VERSION_NAME.replace("-dev", "")

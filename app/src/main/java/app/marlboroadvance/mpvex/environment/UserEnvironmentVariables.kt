@@ -4,6 +4,9 @@ import android.system.Os
 import app.marlboroadvance.mpvex.plugins.EnvironmentVariableExpander
 import app.marlboroadvance.mpvex.plugins.EnvironmentVariableExpansionError
 import app.marlboroadvance.mpvex.plugins.EnvironmentVariablesCodec
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
+
+private const val TAG = "Environment"
 
 data class UserEnvironmentApplyResult(
   val managedUserEnvironmentNames: Set<String>,
@@ -118,6 +121,27 @@ object UserEnvironmentVariables {
         },
       warnings = warnings,
       userVariableErrors = expansion.errors,
+    ).also { logOutcome(it, userDefinedVariables, builtInVariables) }
+  }
+
+  /**
+   * Records what was injected and what went wrong. Only variable *names* are
+   * logged — a value may be a credential, and an unresolved `${...}` reference
+   * is reported by name for the same reason.
+   */
+  private fun logOutcome(
+    result: UserEnvironmentApplyResult,
+    userDefinedVariables: Map<String, String>,
+    builtInVariables: Map<String, String>,
+  ) {
+    val names = result.managedUserEnvironmentNames.sorted()
+    MpvExLog.d(
+      TAG,
+      "Applied ${names.size} environment variable(s) from " +
+        "${userDefinedVariables.size} user-defined value(s) and ${builtInVariables.size} built-in value(s)",
     )
+    if (names.isNotEmpty()) MpvExLog.v(TAG, "Environment variables: ${names.joinToString()}")
+    result.warnings.forEach { MpvExLog.w(TAG, it) }
+    result.userVariableErrors.forEach { error -> MpvExLog.w(TAG, error.description) }
   }
 }

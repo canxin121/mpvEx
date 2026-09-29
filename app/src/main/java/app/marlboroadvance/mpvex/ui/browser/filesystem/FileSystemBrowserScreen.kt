@@ -4,7 +4,6 @@ import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,6 +11,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.OpenDocumentTreeContract
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -299,7 +299,7 @@ fun FileSystemBrowserScreen(path: String? = null) {
           isDenied = permissionState.status is PermissionStatus.Denied
         )
       } catch (e: Exception) {
-        Log.e("FileSystemBrowserScreen", "Failed to update MainScreen state", e)
+        MpvExLog.e("FileSystemBrowserScreen", e, "Failed to update MainScreen state")
       }
     }
   }
@@ -313,7 +313,7 @@ fun FileSystemBrowserScreen(path: String? = null) {
           // Restore bottom navigation when leaving the screen
           mainScreenObj.updateBottomBarVisibility(true)
         } catch (e: Exception) {
-          Log.e("FileSystemBrowserScreen", "Failed to restore MainScreen bottom bar visibility", e)
+          MpvExLog.e("FileSystemBrowserScreen", e, "Failed to restore MainScreen bottom bar visibility")
         }
       }
     }
@@ -394,7 +394,7 @@ fun FileSystemBrowserScreen(path: String? = null) {
       } catch (e: kotlinx.coroutines.CancellationException) {
         throw e
       } catch (e: Exception) {
-        Log.e("FileSystemBrowserScreen", "Error during search", e)
+        MpvExLog.e("FileSystemBrowserScreen", e, "Error during search")
         searchResults = emptyList()
       } finally {
         isSearchLoading = false

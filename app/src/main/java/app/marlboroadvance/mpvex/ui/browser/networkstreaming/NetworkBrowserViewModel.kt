@@ -2,7 +2,6 @@ package app.marlboroadvance.mpvex.ui.browser.networkstreaming
 
 import android.app.Application
 import android.content.Intent
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -13,6 +12,7 @@ import app.marlboroadvance.mpvex.domain.network.NetworkConnection
 import app.marlboroadvance.mpvex.domain.network.NetworkFile
 import app.marlboroadvance.mpvex.domain.network.NetworkProtocol
 import app.marlboroadvance.mpvex.repository.NetworkRepository
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -120,7 +120,7 @@ class NetworkBrowserViewModel(
 
         application.startActivity(intent)
       } catch (e: Exception) {
-        Log.e(TAG, "Error playing video", e)
+        MpvExLog.e(TAG, e, "Error playing video")
         _error.value = e.message ?: application.getString(R.string.ui_unknown_error)
       }
     }

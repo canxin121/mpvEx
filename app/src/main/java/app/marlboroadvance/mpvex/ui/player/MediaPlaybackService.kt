@@ -16,7 +16,6 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.media.MediaBrowserServiceCompat
@@ -25,6 +24,7 @@ import app.marlboroadvance.mpvex.R
 import `is`.xyz.mpv.MPVLib
 import `is`.xyz.mpv.MPVNode
 import app.marlboroadvance.mpvex.preferences.PlayerPreferences
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -80,7 +80,7 @@ class MediaPlaybackService :
 
   override fun onCreate() {
     super.onCreate()
-    Log.d(TAG, "Service created")
+    MpvExLog.d(TAG, "Service created")
     
     isServiceRunning = true
 
@@ -98,9 +98,9 @@ class MediaPlaybackService :
       MPVLib.observeProperty("metadata/artist", MPVLib.MpvFormat.MPV_FORMAT_STRING)
       MPVLib.observeProperty("time-pos", MPVLib.MpvFormat.MPV_FORMAT_DOUBLE)
       MPVLib.observeProperty("path", MPVLib.MpvFormat.MPV_FORMAT_STRING)
-      Log.d(TAG, "MPV observer registered")
+      MpvExLog.d(TAG, "MPV observer registered")
     } catch (e: Exception) {
-      Log.e(TAG, "Error registering MPV observer", e)
+      MpvExLog.e(TAG, e, "Error registering MPV observer")
     }
   }
 
@@ -112,7 +112,7 @@ class MediaPlaybackService :
     flags: Int,
     startId: Int,
   ): Int {
-    Log.d(TAG, "Service starting with startId: $startId")
+    MpvExLog.d(TAG, "Service starting with startId: $startId")
 
     // Handle media button events
     intent?.let {
@@ -125,7 +125,7 @@ class MediaPlaybackService :
       if (!title.isNullOrBlank()) {
         mediaTitle = title
         mediaArtist = artist ?: ""
-        Log.d(TAG, "Media info from intent: $mediaTitle")
+        MpvExLog.d(TAG, "Media info from intent: $mediaTitle")
       }
     }
 
@@ -148,9 +148,9 @@ class MediaPlaybackService :
           0
         }
       ServiceCompat.startForeground(this, NOTIFICATION_ID, buildNotification(), type)
-      Log.d(TAG, "Foreground service started successfully")
+      MpvExLog.d(TAG, "Foreground service started successfully")
     } catch (e: Exception) {
-      Log.e(TAG, "Error starting foreground service", e)
+      MpvExLog.e(TAG, e, "Error starting foreground service")
     }
 
     // Return START_NOT_STICKY so service doesn't restart if killed
@@ -187,22 +187,22 @@ class MediaPlaybackService :
         setCallback(
           object : MediaSessionCompat.Callback() {
             override fun onPlay() {
-              Log.d(TAG, "onPlay called")
+              MpvExLog.d(TAG, "onPlay called")
               MPVLib.setPropertyBoolean("pause", false)
             }
 
             override fun onPause() {
-              Log.d(TAG, "onPause called")
+              MpvExLog.d(TAG, "onPause called")
               MPVLib.setPropertyBoolean("pause", true)
             }
 
             override fun onStop() {
-              Log.d(TAG, "onStop called")
+              MpvExLog.d(TAG, "onStop called")
               stopSelf()
             }
 
             override fun onSkipToNext() {
-              Log.d(TAG, "onSkipToNext called")
+              MpvExLog.d(TAG, "onSkipToNext called")
               // Use precise seeking for videos shorter than 2 minutes (120 seconds) or if preference is enabled
               val duration = MPVLib.getPropertyInt("duration") ?: 0
               val shouldUsePreciseSeeking = playerPreferences.usePreciseSeeking.get() || duration < 120
@@ -211,7 +211,7 @@ class MediaPlaybackService :
             }
 
             override fun onSkipToPrevious() {
-              Log.d(TAG, "onSkipToPrevious called")
+              MpvExLog.d(TAG, "onSkipToPrevious called")
               // Use precise seeking for videos shorter than 2 minutes (120 seconds) or if preference is enabled
               val duration = MPVLib.getPropertyInt("duration") ?: 0
               val shouldUsePreciseSeeking = playerPreferences.usePreciseSeeking.get() || duration < 120
@@ -220,7 +220,7 @@ class MediaPlaybackService :
             }
 
             override fun onSeekTo(pos: Long) {
-              Log.d(TAG, "onSeekTo called: $pos")
+              MpvExLog.d(TAG, "onSeekTo called: $pos")
               MPVLib.setPropertyDouble("time-pos", pos / 1000.0)
             }
           },
@@ -287,7 +287,7 @@ class MediaPlaybackService :
       // Update notification
       updateNotification()
     } catch (e: Exception) {
-      Log.e(TAG, "Error updating MediaSession", e)
+      MpvExLog.e(TAG, e, "Error updating MediaSession")
     }
   }
 
@@ -296,7 +296,7 @@ class MediaPlaybackService :
       val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
       notificationManager.notify(NOTIFICATION_ID, buildNotification())
     } catch (e: Exception) {
-      Log.e(TAG, "Error updating notification", e)
+      MpvExLog.e(TAG, e, "Error updating notification")
     }
   }
 
@@ -424,14 +424,14 @@ class MediaPlaybackService :
 
   override fun event(eventId: Int, data: MPVNode) {
     if (eventId == MPVLib.MpvEvent.MPV_EVENT_SHUTDOWN) {
-      Log.d(TAG, "MPV shutdown event received, stopping service")
+      MpvExLog.d(TAG, "MPV shutdown event received, stopping service")
       stopSelf()
     }
   }
 
   override fun onDestroy() {
     try {
-      Log.d(TAG, "Service destroyed")
+      MpvExLog.d(TAG, "Service destroyed")
 
       isServiceRunning = false
       
@@ -439,7 +439,7 @@ class MediaPlaybackService :
       try {
         MPVLib.removeObserver(this)
       } catch (e: Exception) {
-        Log.e(TAG, "Error removing MPV observer", e)
+        MpvExLog.e(TAG, e, "Error removing MPV observer")
       }
       
       // Stop foreground and remove notification explicitly
@@ -451,7 +451,7 @@ class MediaPlaybackService :
           stopForeground(true)
         }
       } catch (e: Exception) {
-        Log.e(TAG, "Error stopping foreground", e)
+        MpvExLog.e(TAG, e, "Error stopping foreground")
       }
       
       // Cancel notification explicitly to ensure cleanup
@@ -459,7 +459,7 @@ class MediaPlaybackService :
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(NOTIFICATION_ID)
       } catch (e: Exception) {
-        Log.e(TAG, "Error canceling notification", e)
+        MpvExLog.e(TAG, e, "Error canceling notification")
       }
       
       // Release media session
@@ -467,29 +467,29 @@ class MediaPlaybackService :
         mediaSession.isActive = false
         mediaSession.release()
       } catch (e: Exception) {
-        Log.e(TAG, "Error releasing media session", e)
+        MpvExLog.e(TAG, e, "Error releasing media session")
       }
       
       // Clear thumbnail to prevent memory leak
       thumbnail = null
       
-      Log.d(TAG, "Service cleanup completed")
+      MpvExLog.d(TAG, "Service cleanup completed")
       super.onDestroy()
     } catch (e: Exception) {
-      Log.e(TAG, "Error in onDestroy", e)
+      MpvExLog.e(TAG, e, "Error in onDestroy")
       super.onDestroy()
     }
   }
 
   override fun onTaskRemoved(rootIntent: Intent?) {
-    Log.d(TAG, "Task removed - killing playback and cleaning up service")
+    MpvExLog.d(TAG, "Task removed - killing playback and cleaning up service")
     try {
       // Kill MPV playback immediately when task is removed
       try {
         MPVLib.command("quit")
-        Log.d(TAG, "MPV quit command sent")
+        MpvExLog.d(TAG, "MPV quit command sent")
       } catch (e: Exception) {
-        Log.e(TAG, "Error sending quit command to MPV", e)
+        MpvExLog.e(TAG, e, "Error sending quit command to MPV")
       }
       
       // Stop foreground and remove notification when task is removed
@@ -501,7 +501,7 @@ class MediaPlaybackService :
           stopForeground(true)
         }
       } catch (e: Exception) {
-        Log.e(TAG, "Error stopping foreground in onTaskRemoved", e)
+        MpvExLog.e(TAG, e, "Error stopping foreground in onTaskRemoved")
       }
       
       // Cancel notification explicitly
@@ -509,7 +509,7 @@ class MediaPlaybackService :
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(NOTIFICATION_ID)
       } catch (e: Exception) {
-        Log.e(TAG, "Error canceling notification in onTaskRemoved", e)
+        MpvExLog.e(TAG, e, "Error canceling notification in onTaskRemoved")
       }
       
       // Clear thumbnail
@@ -521,7 +521,7 @@ class MediaPlaybackService :
       // Force kill the process to ensure everything stops
       android.os.Process.killProcess(android.os.Process.myPid())
     } catch (e: Exception) {
-      Log.e(TAG, "Error in onTaskRemoved", e)
+      MpvExLog.e(TAG, e, "Error in onTaskRemoved")
       // Force kill even if there's an error
       android.os.Process.killProcess(android.os.Process.myPid())
     }

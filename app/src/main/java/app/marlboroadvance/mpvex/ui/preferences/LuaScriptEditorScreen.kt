@@ -3,7 +3,6 @@ package app.marlboroadvance.mpvex.ui.preferences
 import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Intent
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,6 +53,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -179,7 +179,7 @@ data class LuaScriptEditorScreen(
           if (isRenaming) {
             val oldFile = scriptsDir.findFile(scriptName)
             if (oldFile != null && !oldFile.delete()) {
-              Log.w("LuaScriptEditor", "Could not remove renamed script: $scriptName")
+              MpvExLog.w("LuaScriptEditor", "Could not remove renamed script: $scriptName")
             }
             val selected = preferences.selectedLuaScripts.get()
             if (scriptName in selected) {

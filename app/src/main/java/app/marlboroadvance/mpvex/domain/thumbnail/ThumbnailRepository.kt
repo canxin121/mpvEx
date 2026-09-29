@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.LruCache
 import app.marlboroadvance.mpvex.domain.media.model.Video
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.MediaInfoOps
 import `is`.xyz.mpv.FastThumbnails
 import kotlinx.coroutines.CoroutineScope
@@ -78,7 +79,10 @@ class ThumbnailRepository(
         return@withContext null
       }
 
-      memoryCache.get(key)?.let { return@withContext it }
+      memoryCache.get(key)?.let {
+        MpvExLog.v("ThumbnailRepository", "Memory cache hit for ${video.displayName}")
+        return@withContext it
+      }
 
       ongoingOperations[key]?.let {
         return@withContext it.await()
@@ -88,6 +92,7 @@ class ThumbnailRepository(
         async {
           try {
             loadFromDisk(video, widthPx)?.let { thumbnail ->
+              MpvExLog.d("ThumbnailRepository", "Disk cache hit for ${video.displayName}")
               memoryCache.put(key, thumbnail)
               _thumbnailReadyKeys.tryEmit(key)
               return@async thumbnail
@@ -101,14 +106,14 @@ class ThumbnailRepository(
             val videoKey = videoBaseKey(video)
             val thumbnail = if (useMediaStoreForVideo.containsKey(videoKey)) {
               // Use MediaStore for this video
-              android.util.Log.d("ThumbnailRepository", "Using MediaStore for ${video.displayName}")
+              MpvExLog.d("ThumbnailRepository", "Using MediaStore for ${video.displayName}")
               generateWithMediaStore(video, diskCacheDimension)
             } else {
               // Try FastThumbnails first
               val fastResult = generateWithFastThumbnails(video, diskCacheDimension)
               if (fastResult == null) {
                 // FastThumbnails failed, mark for MediaStore and try it
-                android.util.Log.w("ThumbnailRepository", "FastThumbnails failed for ${video.displayName}, falling back to MediaStore")
+                MpvExLog.w("ThumbnailRepository", "FastThumbnails failed for ${video.displayName}, falling back to MediaStore")
                 useMediaStoreForVideo[videoKey] = true
                 generateWithMediaStore(video, diskCacheDimension)
               } else {
@@ -327,7 +332,7 @@ class ThumbnailRepository(
   ): Bitmap? {
     // MediaStore only works for local files, not network URLs
     if (isNetworkUrl(video.path)) {
-      android.util.Log.w("ThumbnailRepository", "Cannot use MediaStore for network URL: ${video.path}")
+      MpvExLog.w("ThumbnailRepository", "Cannot use MediaStore for network URL: ${video.path}")
       return null
     }
     
@@ -341,17 +346,17 @@ class ThumbnailRepository(
             android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
             video.id
           )
-          android.util.Log.d("ThumbnailRepository", "Generating MediaStore thumbnail for ${video.displayName} using loadThumbnail")
+          MpvExLog.d("ThumbnailRepository", "Generating MediaStore thumbnail for ${video.displayName} using loadThumbnail")
           val thumbnail = context.contentResolver.loadThumbnail(
             contentUri,
             android.util.Size(dimension, dimension),
             null
           )
-          android.util.Log.d("ThumbnailRepository", "MediaStore thumbnail generated successfully for ${video.displayName}")
+          MpvExLog.d("ThumbnailRepository", "MediaStore thumbnail generated successfully for ${video.displayName}")
           rotateIfNeeded(video, thumbnail)
         } else {
           // Use legacy API for older versions
-          android.util.Log.d("ThumbnailRepository", "Generating MediaStore thumbnail for ${video.displayName} using getThumbnail")
+          MpvExLog.d("ThumbnailRepository", "Generating MediaStore thumbnail for ${video.displayName} using getThumbnail")
           @Suppress("DEPRECATION")
           val thumbnail = android.provider.MediaStore.Video.Thumbnails.getThumbnail(
             context.contentResolver,
@@ -370,15 +375,15 @@ class ThumbnailRepository(
             if (scaled != thumbnail) {
               thumbnail.recycle()
             }
-            android.util.Log.d("ThumbnailRepository", "MediaStore thumbnail generated successfully for ${video.displayName}")
+            MpvExLog.d("ThumbnailRepository", "MediaStore thumbnail generated successfully for ${video.displayName}")
             rotateIfNeeded(video, scaled)
           } else {
-            android.util.Log.w("ThumbnailRepository", "MediaStore returned null thumbnail for ${video.displayName}")
+            MpvExLog.w("ThumbnailRepository", "MediaStore returned null thumbnail for ${video.displayName}")
             null
           }
         }
       }.onFailure { e ->
-        android.util.Log.w("ThumbnailRepository", "MediaStore thumbnail failed for ${video.displayName}, will try ThumbnailUtils: ${e.message}")
+        MpvExLog.w("ThumbnailRepository", "MediaStore thumbnail failed for ${video.displayName}, will try ThumbnailUtils: ${e.message}")
       }.getOrNull()
       
       // If MediaStore failed, try ThumbnailUtils as last resort
@@ -388,10 +393,10 @@ class ThumbnailRepository(
       
       // Fallback to ThumbnailUtils (extracts directly from file)
       runCatching {
-        android.util.Log.d("ThumbnailRepository", "Generating thumbnail using ThumbnailUtils for ${video.displayName}")
+        MpvExLog.d("ThumbnailRepository", "Generating thumbnail using ThumbnailUtils for ${video.displayName}")
         val file = java.io.File(video.path)
         if (!file.exists()) {
-          android.util.Log.e("ThumbnailRepository", "File does not exist: ${video.path}")
+          MpvExLog.e("ThumbnailRepository", "File does not exist: ${video.path}")
           return@runCatching null
         }
         
@@ -420,14 +425,14 @@ class ThumbnailRepository(
         }
         
         if (thumbnail != null) {
-          android.util.Log.d("ThumbnailRepository", "ThumbnailUtils thumbnail generated successfully for ${video.displayName}")
+          MpvExLog.d("ThumbnailRepository", "ThumbnailUtils thumbnail generated successfully for ${video.displayName}")
           rotateIfNeeded(video, thumbnail)
         } else {
-          android.util.Log.e("ThumbnailRepository", "ThumbnailUtils returned null for ${video.displayName}")
+          MpvExLog.e("ThumbnailRepository", "ThumbnailUtils returned null for ${video.displayName}")
           null
         }
       }.onFailure { e ->
-        android.util.Log.e("ThumbnailRepository", "ThumbnailUtils thumbnail generation failed for ${video.displayName}", e)
+        MpvExLog.e("ThumbnailRepository", e, "ThumbnailUtils thumbnail generation failed for ${video.displayName}")
       }.getOrNull()
     }
   }

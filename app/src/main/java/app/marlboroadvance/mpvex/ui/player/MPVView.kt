@@ -14,9 +14,13 @@ import app.marlboroadvance.mpvex.preferences.SubtitlesPreferences
 import app.marlboroadvance.mpvex.domain.anime4k.Anime4KManager
 import app.marlboroadvance.mpvex.ui.player.PlayerActivity.Companion.TAG
 import app.marlboroadvance.mpvex.ui.player.controls.components.panels.toColorHexString
+import app.marlboroadvance.mpvex.utils.logging.LogFiles
+import app.marlboroadvance.mpvex.utils.logging.LoggingSetup
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import `is`.xyz.mpv.BaseMPVView
 import `is`.xyz.mpv.keyMapping
 import `is`.xyz.mpv.MPVLib
+import java.io.File
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.reflect.KProperty
@@ -95,6 +99,16 @@ class MPVView(
   var aid: Int by TrackDelegate("aid")
 
   override fun initOptions() {
+    // mpv keeps its own log file, independent of the app's log file, so the
+    // native side stays readable even if the app's writer is busy.
+    if (LoggingSetup.isWritingToFile) {
+      val mpvLog = File(LogFiles.directoryOf(context.filesDir), LogFiles.MPV_LOG_NAME)
+      MPVLib.setOptionString("log-file", mpvLog.path)
+    }
+    // Registered before MPVLib.init() so the startup banner is captured too.
+    LoggingSetup.mpvBridge.start()
+    MpvExLog.i(TAG, "Initialising libmpv")
+
     val profile = decoderPreferences.profile.get()
     MPVLib.setOptionString("profile", profile)
     setVo(if (decoderPreferences.gpuNext.get()) "gpu-next" else "gpu")

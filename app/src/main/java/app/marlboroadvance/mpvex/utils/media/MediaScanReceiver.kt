@@ -3,7 +3,7 @@ package app.marlboroadvance.mpvex.utils.media
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 
 /**
  * Broadcast receiver that listens for media scanner events
@@ -22,7 +22,7 @@ class MediaScanReceiver : BroadcastReceiver() {
             Intent.ACTION_MEDIA_SCANNER_FINISHED,
             Intent.ACTION_MEDIA_SCANNER_SCAN_FILE -> {
                 val data = intent.data
-                Log.d(TAG, "Media scan event: ${intent.action}, data: $data")
+                MpvExLog.d(TAG, "Media scan event: ${intent.action}, data: $data")
                 
                 // Notify the app that media library has changed
                 MediaLibraryEvents.notifyChanged()

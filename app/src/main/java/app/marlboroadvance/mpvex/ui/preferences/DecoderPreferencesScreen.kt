@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -45,6 +44,7 @@ import app.marlboroadvance.mpvex.ui.player.Debanding
 import app.marlboroadvance.mpvex.ui.player.MPVProfile
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
 import app.marlboroadvance.mpvex.ui.preferences.VulkanUtils
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.serialization.Serializable
 import me.zhanghai.compose.preference.ListPreference
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
@@ -313,7 +313,7 @@ object VulkanUtils {
         try {
             // Vulkan 1.3 requires Android 13 (API 33) minimum
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                Log.d(TAG, "Vulkan not supported: Android version ${Build.VERSION.SDK_INT} < 33 (Tiramisu)")
+                MpvExLog.d(TAG, "Vulkan not supported: Android version ${Build.VERSION.SDK_INT} < 33 (Tiramisu)")
                 return false
             }
 
@@ -327,11 +327,11 @@ object VulkanUtils {
             val glesMajor = glesVersion shr 16
             val glesMinor = glesVersion and 0xFFFF
 
-            Log.d(TAG, "Device OpenGL ES version: $glesMajor.$glesMinor (raw: 0x${glesVersion.toString(16)})")
+            MpvExLog.d(TAG, "Device OpenGL ES version: $glesMajor.$glesMinor (raw: 0x${glesVersion.toString(16)})")
 
             // OpenGL ES 3.1 = 0x00030001
             if (glesVersion < 0x00030001) {
-                Log.d(TAG, "Vulkan not supported: OpenGL ES $glesMajor.$glesMinor < 3.1")
+                MpvExLog.d(TAG, "Vulkan not supported: OpenGL ES $glesMajor.$glesMinor < 3.1")
                 return false
             }
 
@@ -340,15 +340,15 @@ object VulkanUtils {
                     PackageManager.FEATURE_VULKAN_HARDWARE_VERSION,
                     0x00403000 // Vulkan 1.3
                 )) {
-                Log.d(TAG, "Vulkan 1.3 supported ✓")
+                MpvExLog.d(TAG, "Vulkan 1.3 supported ✓")
                 return true
             }
 
-            Log.d(TAG, "Vulkan not supported: Vulkan 1.3 not available")
+            MpvExLog.d(TAG, "Vulkan not supported: Vulkan 1.3 not available")
             return false
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error checking Vulkan support", e)
+            MpvExLog.e(TAG, e, "Error checking Vulkan support")
             return false
         }
     }

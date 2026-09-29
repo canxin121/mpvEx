@@ -65,6 +65,8 @@ import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.ui.theme.DarkMode
 import app.marlboroadvance.mpvex.ui.theme.MpvexTheme
 import app.marlboroadvance.mpvex.ui.theme.spacing
+import app.marlboroadvance.mpvex.utils.logging.CrashLog
+import app.marlboroadvance.mpvex.utils.logging.LogFiles
 import `is`.xyz.mpv.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -78,12 +80,22 @@ import java.io.InputStreamReader
 class CrashActivity : ComponentActivity() {
   private val clipboardManager by lazy { getSystemService(CLIPBOARD_SERVICE) as ClipboardManager }
   private var logcat: String = ""
+  private var crashLog: String = ""
+  private var nativeLog: String = ""
   private val appearancePreferences: AppearancePreferences by inject()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     lifecycle.coroutineScope.launch {
+      // The crash handler wrote the buffered log lines next to the log files.
+      // Fall back to whatever the in-memory buffer still holds.
+      val crashLogPath = intent.getStringExtra("crash_log")
+      crashLog =
+        withContext(Dispatchers.IO) {
+          crashLogPath?.let { path -> File(path).takeIf(File::exists)?.readText() }
+        } ?: CrashLog.read(filesDir).orEmpty()
       logcat = collectLogcat()
+      nativeLog = NativeLogFinder.find(filesDir, cacheDir)
     }
     setContent {
       val dark by appearancePreferences.darkMode.collectAsState()
@@ -162,12 +174,14 @@ class CrashActivity : ComponentActivity() {
       exceptionString: String? = null,
       logcat: String,
       activity: Activity,
+      appLogs: String? = null,
+      nativeLogs: String? = null,
     ) {
       withContext(NonCancellable) {
         val file = File(activity.cacheDir, "mpvex_logs.txt")
         if (file.exists()) file.delete()
         file.createNewFile()
-        file.appendText(concatLogs(deviceInfo, exceptionString, logcat))
+        file.appendText(concatLogs(deviceInfo, exceptionString, logcat, appLogs, nativeLogs))
         val uri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID + ".provider", file)
         val intent = Intent(Intent.ACTION_SEND)
         intent.putExtra(Intent.EXTRA_STREAM, uri)
@@ -184,6 +198,8 @@ class CrashActivity : ComponentActivity() {
       deviceInfo: String,
       crashLogs: String? = null,
       logcat: String,
+      appLogs: String? = null,
+      nativeLogs: String? = null,
     ): String =
       StringBuilder()
         .apply {
@@ -192,6 +208,16 @@ class CrashActivity : ComponentActivity() {
           if (!crashLogs.isNullOrBlank()) {
             appendLine("Exception:")
             appendLine(crashLogs)
+            appendLine()
+          }
+          if (!appLogs.isNullOrBlank()) {
+            appendLine("App logs:")
+            appendLine(appLogs)
+            appendLine()
+          }
+          if (!nativeLogs.isNullOrBlank()) {
+            appendLine("Native crash log:")
+            appendLine(nativeLogs)
             appendLine()
           }
           appendLine("Logcat:")
@@ -280,7 +306,14 @@ class CrashActivity : ComponentActivity() {
             Button(
               onClick = {
                 scope.launch(Dispatchers.IO) {
-                  shareLogs(collectDeviceInfo(), exceptionString, logcat, this@CrashActivity)
+                  shareLogs(
+                    deviceInfo = collectDeviceInfo(),
+                    exceptionString = exceptionString,
+                    logcat = logcat,
+                    activity = this@CrashActivity,
+                    appLogs = crashLog,
+                    nativeLogs = nativeLog,
+                  )
                 }
               },
               modifier = Modifier.weight(1f),
@@ -290,12 +323,25 @@ class CrashActivity : ComponentActivity() {
                 clipboardManager.setPrimaryClip(
                   ClipData.newPlainText(
                     null,
-                    concatLogs(collectDeviceInfo(), exceptionString, logcat),
+                    concatLogs(collectDeviceInfo(), exceptionString, logcat, crashLog, nativeLog),
                   ),
                 )
               },
             ) {
               Icon(Icons.Default.ContentCopy, null)
+            }
+          }
+          if (LogFiles.isActive) {
+            OutlinedButton(
+              onClick = {
+                finish()
+                startActivity(
+                  Intent(this@CrashActivity, MainActivity::class.java).putExtra("open_logs", true),
+                )
+              },
+              modifier = Modifier.fillMaxWidth(),
+            ) {
+              Text(stringResource(R.string.crash_screen_open_logs))
             }
           }
           OutlinedButton(
@@ -347,6 +393,23 @@ class CrashActivity : ComponentActivity() {
           style = MaterialTheme.typography.headlineSmall,
         )
         LogsContainer(exceptionString)
+
+        if (crashLog.isNotBlank()) {
+          Text(
+            stringResource(R.string.ui_logging),
+            style = MaterialTheme.typography.headlineSmall,
+          )
+          LogsContainer(crashLog)
+        }
+
+        if (nativeLog.isNotBlank()) {
+          Text(
+            stringResource(R.string.crash_screen_native_log_title, NativeLogFinder::class.java.simpleName),
+            style = MaterialTheme.typography.headlineSmall,
+          )
+          LogsContainer(nativeLog)
+        }
+
         Text(
           localizedString(R.string.ui_logcat),
           style = MaterialTheme.typography.headlineSmall,

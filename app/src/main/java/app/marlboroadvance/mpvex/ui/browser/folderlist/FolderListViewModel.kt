@@ -1,7 +1,6 @@
 package app.marlboroadvance.mpvex.ui.browser.folderlist
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -13,6 +12,7 @@ import app.marlboroadvance.mpvex.repository.MediaFileRepository
 import app.marlboroadvance.mpvex.preferences.AppearancePreferences
 import app.marlboroadvance.mpvex.preferences.FoldersPreferences
 import app.marlboroadvance.mpvex.ui.browser.base.BaseBrowserViewModel
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.MediaIdentifier
 import app.marlboroadvance.mpvex.utils.media.MediaLibraryEvents
 import app.marlboroadvance.mpvex.utils.media.MetadataRetrieval
@@ -119,7 +119,7 @@ class FolderListViewModel(
         // Check if folders became empty after having folders
         if (previousFolderCount > 0 && filteredFolders.isEmpty()) {
           _foldersWereDeleted.value = true
-          Log.d(TAG, "Folders became empty (had $previousFolderCount folders before)")
+          MpvExLog.d(TAG, "Folders became empty (had $previousFolderCount folders before)")
         } else if (filteredFolders.isNotEmpty()) {
           // Reset flag if folders now exist
           _foldersWereDeleted.value = false
@@ -154,7 +154,7 @@ class FolderListViewModel(
         // Parse JSON and restore folders
         val folders = parseFoldersFromJson(cachedJson)
         if (folders.isNotEmpty()) {
-          Log.d(TAG, "Loaded ${folders.size} folders from cache instantly")
+          MpvExLog.d(TAG, "Loaded ${folders.size} folders from cache instantly")
           hasCachedData = true
           viewModelScope.launch(Dispatchers.IO) {
             _allVideoFolders.value = folders
@@ -165,7 +165,7 @@ class FolderListViewModel(
           }
         }
       } catch (e: Exception) {
-        Log.e(TAG, "Error loading cached folders", e)
+        MpvExLog.e(TAG, e, "Error loading cached folders")
       }
     }
 
@@ -179,9 +179,9 @@ class FolderListViewModel(
           getApplication<Application>().getSharedPreferences("folder_cache", android.content.Context.MODE_PRIVATE)
         val json = serializeFoldersToJson(folders)
         prefs.edit().putString("folders", json).apply()
-        Log.d(TAG, "Saved ${folders.size} folders to cache")
+        MpvExLog.d(TAG, "Saved ${folders.size} folders to cache")
       } catch (e: Exception) {
-        Log.e(TAG, "Error saving folders to cache", e)
+        MpvExLog.e(TAG, e, "Error saving folders to cache")
       }
     }
   }
@@ -210,7 +210,7 @@ class FolderListViewModel(
         } else null
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Error parsing cached folders", e)
+      MpvExLog.e(TAG, e, "Error parsing cached folders")
       emptyList()
     }
   }
@@ -251,21 +251,21 @@ class FolderListViewModel(
 
             FolderWithNewCount(folder, newCount)
           } catch (e: Exception) {
-            Log.e(TAG, "Error counting new videos for folder ${folder.name}", e)
+            MpvExLog.e(TAG, e, "Error counting new videos for folder ${folder.name}")
             FolderWithNewCount(folder, 0)
           }
         }
 
         _foldersWithNewCount.value = foldersWithCounts
       } catch (e: Exception) {
-        Log.e(TAG, "Error calculating new video counts", e)
+        MpvExLog.e(TAG, e, "Error calculating new video counts")
         _foldersWithNewCount.value = folders.map { FolderWithNewCount(it, 0) }
       }
     }
   }
 
   override fun refresh() {
-    Log.d(TAG, "Refreshing folder list")
+    MpvExLog.d(TAG, "Refreshing folder list")
     _isLoading.value = true
     MediaFileRepository.clearCache()
     viewModelScope.launch(Dispatchers.IO) {
@@ -286,12 +286,12 @@ class FolderListViewModel(
         arrayOf(externalStorage.absolutePath),
         null, // Let MediaScanner detect all media types
       ) { path, uri ->
-        Log.d(TAG, "Media scan completed for: $path -> $uri")
+        MpvExLog.d(TAG, "Media scan completed for: $path -> $uri")
       }
       
-      Log.d(TAG, "Triggered comprehensive media scan")
+      MpvExLog.d(TAG, "Triggered comprehensive media scan")
     } catch (e: Exception) {
-      Log.e(TAG, "Failed to trigger media scan", e)
+      MpvExLog.e(TAG, e, "Failed to trigger media scan")
     }
   }
 
@@ -339,12 +339,12 @@ class FolderListViewModel(
             }
           )
 
-        Log.d(TAG, "Fast scan completed: found ${fastFolders.size} folders")
+        MpvExLog.d(TAG, "Fast scan completed: found ${fastFolders.size} folders")
 
         // EDGE CASE: Empty result when we had data AND storage permission was actually revoked
         val hasPermission = PermissionUtils.hasStoragePermission(getApplication<Application>())
         if (fastFolders.isEmpty() && hasExistingData && !hasPermission) {
-             Log.w(TAG, "Scan returned empty because storage permission was revoked")
+             MpvExLog.w(TAG, "Scan returned empty because storage permission was revoked")
              // Keep existing data, don't clear
              _isLoading.value = false
              _scanStatus.value = null
@@ -394,9 +394,9 @@ class FolderListViewModel(
         
         if (!needsDurationEnrichment) {
              if (!needsEnrichment) {
-                 Log.d(TAG, "Data up to date, skipping enrichment")
+                 MpvExLog.d(TAG, "Data up to date, skipping enrichment")
              } else {
-                 Log.d(TAG, "Duration chip disabled, skipping metadata extraction")
+                 MpvExLog.d(TAG, "Duration chip disabled, skipping metadata extraction")
              }
              _scanStatus.value = null
              return@launch
@@ -416,15 +416,15 @@ class FolderListViewModel(
             }
           )
 
-        Log.d(TAG, "Enrichment completed")
+        MpvExLog.d(TAG, "Enrichment completed")
         _allVideoFolders.value = enrichedFolders
 
       } catch (e: kotlinx.coroutines.CancellationException) {
         // Job was cancelled (new scan started), this is expected
-        Log.d(TAG, "Scan cancelled (new scan started)")
+        MpvExLog.d(TAG, "Scan cancelled (new scan started)")
         throw e // Re-throw to properly cancel the coroutine
       } catch (e: Exception) {
-        Log.e(TAG, "Error loading video folders", e)
+        MpvExLog.e(TAG, e, "Error loading video folders")
         // EDGE CASE: Preserve existing data on error if we have it
         if (_allVideoFolders.value.isEmpty()) {
              _allVideoFolders.value = emptyList()

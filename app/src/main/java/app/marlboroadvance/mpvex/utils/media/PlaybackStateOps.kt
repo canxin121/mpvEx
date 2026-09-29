@@ -1,7 +1,7 @@
 package app.marlboroadvance.mpvex.utils.media
 
-import android.util.Log
 import app.marlboroadvance.mpvex.domain.playbackstate.repository.PlaybackStateRepository
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import org.koin.java.KoinJavaComponent.inject
 
 /**
@@ -41,10 +41,10 @@ object PlaybackStateOps {
 
       if (oldTitle != newTitle) {
         repository.updateMediaTitle(oldTitle, newTitle)
-        Log.d(TAG, "✓ Updated playback state: $oldPath -> $newPath")
+        MpvExLog.d(TAG, "✓ Updated playback state: $oldPath -> $newPath")
       }
     } catch (e: Exception) {
-      Log.w(TAG, "Failed to update playback state: ${e.message}")
+      MpvExLog.w(TAG, "Failed to update playback state: ${e.message}")
     }
   }
 
@@ -60,9 +60,9 @@ object PlaybackStateOps {
     try {
       val title = MediaIdentifier.forLocalPath(filePath)
       repository.deleteByTitle(title)
-      Log.d(TAG, "✓ Deleted playback state for: $filePath")
+      MpvExLog.d(TAG, "✓ Deleted playback state for: $filePath")
     } catch (e: Exception) {
-      Log.w(TAG, "Failed to delete playback state: ${e.message}")
+      MpvExLog.w(TAG, "Failed to delete playback state: ${e.message}")
     }
   }
 }

@@ -82,7 +82,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
-import android.util.Log
 import app.marlboroadvance.mpvex.domain.browser.FileSystemItem
 import app.marlboroadvance.mpvex.domain.media.model.VideoFolder
 import app.marlboroadvance.mpvex.preferences.AppearancePreferences
@@ -114,6 +113,7 @@ import app.marlboroadvance.mpvex.ui.browser.states.LoadingState
 import app.marlboroadvance.mpvex.ui.browser.states.PermissionDeniedState
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.MediaUtils
 import app.marlboroadvance.mpvex.utils.permission.PermissionUtils
 import app.marlboroadvance.mpvex.utils.sort.SortUtils
@@ -205,7 +205,7 @@ object FolderListScreen : Screen {
           val results = searchFoldersAndVideos(context, searchQuery)
           searchResults = results
         } catch (e: Exception) {
-          Log.e("FolderListScreen", "Error during search", e)
+          MpvExLog.e("FolderListScreen", e, "Error during search")
           searchResults = emptyList()
         } finally {
           isSearchLoading = false
@@ -1149,7 +1149,7 @@ private suspend fun searchFoldersAndVideos(
   val results = mutableListOf<FileSystemItem>()
   
   try {
-    Log.d("FolderListScreen", "Searching for: $query")
+    MpvExLog.d("FolderListScreen", "Searching for: $query")
     
     // Get all video folders
     val folders = app.marlboroadvance.mpvex.repository.MediaFileRepository
@@ -1189,9 +1189,9 @@ private suspend fun searchFoldersAndVideos(
       }
     }
     
-    Log.d("FolderListScreen", "Found ${results.size} results for: $query")
+    MpvExLog.d("FolderListScreen", "Found ${results.size} results for: $query")
   } catch (e: Exception) {
-    Log.e("FolderListScreen", "Error searching folders and videos", e)
+    MpvExLog.e("FolderListScreen", e, "Error searching folders and videos")
   }
   
   return results

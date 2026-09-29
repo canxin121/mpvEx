@@ -12,11 +12,11 @@ import android.os.Environment
 import android.os.StatFs
 import android.provider.DocumentsContract
 import android.provider.MediaStore
-import android.util.Log
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.documentfile.provider.DocumentFile
 import app.marlboroadvance.mpvex.domain.media.model.Video
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.permission.PermissionUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -145,10 +145,10 @@ object CopyPasteOps {
               videos.filter { video ->
                 val sourceFile = File(video.path)
                 if (!sourceFile.exists()) {
-                  Log.w(TAG, "Source file does not exist, skipping: ${video.path}")
+                  MpvExLog.w(TAG, "Source file does not exist, skipping: ${video.path}")
                   false
                 } else if (sourceFile.parent == destDir.absolutePath) {
-                  Log.w(TAG, "Source and destination are the same, skipping: ${video.displayName}")
+                  MpvExLog.w(TAG, "Source and destination are the same, skipping: ${video.displayName}")
                   false
                 } else {
                   true
@@ -176,10 +176,10 @@ object CopyPasteOps {
 
         MediaLibraryEvents.notifyChanged()
         triggerMediaScan(context, copiedFilePaths)
-        Log.d(TAG, "Copy operation completed successfully. Copied ${copiedFilePaths.size} files")
+        MpvExLog.d(TAG, "Copy operation completed successfully. Copied ${copiedFilePaths.size} files")
         Result.success(Unit)
       } catch (e: Exception) {
-        Log.e(TAG, "Copy operation failed: ${e.message}", e)
+        MpvExLog.e(TAG, e, "Copy operation failed: ${e.message}")
         _operationProgress.value =
           _operationProgress.value.copy(
             error = e.message ?: localizedString(R.string.ui_unknown_error),
@@ -223,10 +223,10 @@ object CopyPasteOps {
               videos.filter { video ->
                 val sourceFile = File(video.path)
                 if (!sourceFile.exists()) {
-                  Log.w(TAG, "Source file does not exist, skipping: ${video.path}")
+                  MpvExLog.w(TAG, "Source file does not exist, skipping: ${video.path}")
                   false
                 } else if (sourceFile.parent == destDir.absolutePath) {
-                  Log.w(TAG, "Source and destination are the same, skipping: ${video.displayName}")
+                  MpvExLog.w(TAG, "Source and destination are the same, skipping: ${video.displayName}")
                   false
                 } else {
                   true
@@ -257,10 +257,10 @@ object CopyPasteOps {
 
         MediaLibraryEvents.notifyChanged()
         triggerMediaScan(context, movedFilePaths)
-        Log.d(TAG, "Move operation completed successfully. Moved ${movedFilePaths.size} files")
+        MpvExLog.d(TAG, "Move operation completed successfully. Moved ${movedFilePaths.size} files")
         Result.success(Unit)
       } catch (e: Exception) {
-        Log.e(TAG, "Move operation failed: ${e.message}", e)
+        MpvExLog.e(TAG, e, "Move operation failed: ${e.message}")
         _operationProgress.value =
           _operationProgress.value.copy(
             error = e.message ?: localizedString(R.string.ui_unknown_error),
@@ -286,10 +286,10 @@ object CopyPasteOps {
         resetOperation()
         val copiedUris = performTreeCopyOperation(context, videos, destinationTreeUri)
         MediaLibraryEvents.notifyChanged()
-        Log.d(TAG, "Copy (tree) completed successfully. Copied ${copiedUris.size} files")
+        MpvExLog.d(TAG, "Copy (tree) completed successfully. Copied ${copiedUris.size} files")
         Result.success(Unit)
       } catch (e: Exception) {
-        Log.e(TAG, "Copy (tree) failed: ${e.message}", e)
+        MpvExLog.e(TAG, e, "Copy (tree) failed: ${e.message}")
         _operationProgress.value =
           _operationProgress.value.copy(
             error = e.message ?: localizedString(R.string.ui_unknown_error),
@@ -334,10 +334,10 @@ object CopyPasteOps {
         }
 
         MediaLibraryEvents.notifyChanged()
-        Log.d(TAG, "Move (tree) completed successfully. Moved ${videos.size} files")
+        MpvExLog.d(TAG, "Move (tree) completed successfully. Moved ${videos.size} files")
         Result.success(Unit)
       } catch (e: Exception) {
-        Log.e(TAG, "Move (tree) failed: ${e.message}", e)
+        MpvExLog.e(TAG, e, "Move (tree) failed: ${e.message}")
         _operationProgress.value =
           _operationProgress.value.copy(
             error = e.message ?: localizedString(R.string.ui_unknown_error),
@@ -446,7 +446,7 @@ object CopyPasteOps {
 
       copiedUris.add(destFile.uri)
       processedBytes += video.size.coerceAtLeast(0L)
-      Log.d(TAG, "✓ Copied (tree): ${video.displayName} -> $uniqueName")
+      MpvExLog.d(TAG, "✓ Copied (tree): ${video.displayName} -> $uniqueName")
     }
 
     _operationProgress.value =
@@ -527,7 +527,7 @@ object CopyPasteOps {
       videos.filter { video ->
         val sameDir = File(video.path).parent == destinationPath
         if (sameDir) {
-          Log.w(TAG, "Source and destination are the same, skipping: ${video.displayName}")
+          MpvExLog.w(TAG, "Source and destination are the same, skipping: ${video.displayName}")
           false
         } else {
           true
@@ -612,7 +612,7 @@ object CopyPasteOps {
         val newPath = resolveOutputPath(relativePath, uniqueName)
         copiedFilePaths.add(newPath)
         processedBytes += video.size.coerceAtLeast(0L)
-        Log.d(TAG, "✓ Copied (scoped): ${video.displayName} -> $uniqueName")
+        MpvExLog.d(TAG, "✓ Copied (scoped): ${video.displayName} -> $uniqueName")
       } catch (e: Exception) {
         context.contentResolver.delete(insertedUri, null, null)
         throw e
@@ -685,16 +685,16 @@ object CopyPasteOps {
 
       if (dir.exists()) {
         if (!dir.isDirectory) {
-          Log.e(TAG, "Destination exists but is not a directory: $path")
+          MpvExLog.e(TAG, "Destination exists but is not a directory: $path")
           return null
         }
         if (!dir.canWrite()) {
-          Log.e(TAG, "Destination directory is not writable: $path")
+          MpvExLog.e(TAG, "Destination directory is not writable: $path")
           return null
         }
       } else {
         val created = dir.mkdirs()
-        Log.d(TAG, "Created destination directory: $created at $path")
+        MpvExLog.d(TAG, "Created destination directory: $created at $path")
         if (!created) {
           return null
         }
@@ -702,7 +702,7 @@ object CopyPasteOps {
 
       dir
     } catch (e: Exception) {
-      Log.e(TAG, "Error preparing destination directory: ${e.message}", e)
+      MpvExLog.e(TAG, e, "Error preparing destination directory: ${e.message}")
       null
     }
   }
@@ -717,7 +717,7 @@ object CopyPasteOps {
       val hasSpace = availableBytes >= requiredBytes
 
       if (!hasSpace) {
-        Log.w(
+        MpvExLog.w(
           TAG,
           "Insufficient disk space. Required: ${formatBytes(requiredBytes)}, Available: ${formatBytes(availableBytes)}",
         )
@@ -725,7 +725,7 @@ object CopyPasteOps {
 
       hasSpace
     } catch (e: Exception) {
-      Log.w(TAG, "Could not check disk space: ${e.message}")
+      MpvExLog.w(TAG, "Could not check disk space: ${e.message}")
       true // Assume space is available if we can't check
     }
 
@@ -777,7 +777,7 @@ object CopyPasteOps {
       copiedFilePaths.add(finalDestFile.absolutePath)
       processedBytes += video.size
 
-      Log.d(TAG, "✓ Copied: ${video.displayName} -> ${finalDestFile.name}")
+      MpvExLog.d(TAG, "✓ Copied: ${video.displayName} -> ${finalDestFile.name}")
     }
 
     _operationProgress.value =
@@ -859,7 +859,7 @@ object CopyPasteOps {
         totalBytes = totalBytes,
       )
 
-      Log.d(TAG, "✓ Moved: ${video.displayName} -> ${finalDestFile.name}")
+      MpvExLog.d(TAG, "✓ Moved: ${video.displayName} -> ${finalDestFile.name}")
     }
 
     _operationProgress.value =
@@ -879,14 +879,14 @@ object CopyPasteOps {
     try {
       val success = source.renameTo(destination)
       if (success && destination.exists()) {
-        Log.d(TAG, "✓ Direct move successful: ${source.name}")
+        MpvExLog.d(TAG, "✓ Direct move successful: ${source.name}")
         true
       } else {
-        Log.d(TAG, "Direct move failed, will use copy+delete: ${source.name}")
+        MpvExLog.d(TAG, "Direct move failed, will use copy+delete: ${source.name}")
         false
       }
     } catch (e: Exception) {
-      Log.w(TAG, "Direct move threw exception: ${e.message}")
+      MpvExLog.w(TAG, "Direct move threw exception: ${e.message}")
       false
     }
 
@@ -920,7 +920,7 @@ object CopyPasteOps {
 
     // Delete source
     if (!source.delete()) {
-      Log.w(TAG, "Failed to delete source file after copy: ${source.absolutePath}")
+      MpvExLog.w(TAG, "Failed to delete source file after copy: ${source.absolutePath}")
       // Don't throw - the file was successfully copied
     }
   }
@@ -1043,7 +1043,7 @@ object CopyPasteOps {
     if (filePaths.isEmpty()) return
 
     try {
-      Log.d(TAG, "Triggering media scan for ${filePaths.size} files...")
+      MpvExLog.d(TAG, "Triggering media scan for ${filePaths.size} files...")
       android.media.MediaScannerConnection.scanFile(
         context,
         filePaths.toTypedArray(),
@@ -1051,7 +1051,7 @@ object CopyPasteOps {
         null,
       )
     } catch (e: Exception) {
-      Log.w(TAG, "Media scan failed: ${e.message}")
+      MpvExLog.w(TAG, "Media scan failed: ${e.message}")
       // Don't throw - the file operation succeeded
     }
   }

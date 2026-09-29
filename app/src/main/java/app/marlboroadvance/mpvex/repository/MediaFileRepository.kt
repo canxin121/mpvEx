@@ -4,12 +4,12 @@ import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.domain.browser.FileSystemItem
 import app.marlboroadvance.mpvex.domain.browser.PathComponent
 import app.marlboroadvance.mpvex.domain.media.model.Video
 import app.marlboroadvance.mpvex.domain.media.model.VideoFolder
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.MediaFormatUtils
 import app.marlboroadvance.mpvex.utils.media.MediaInfoOps
 import app.marlboroadvance.mpvex.utils.storage.FileFilterUtils
@@ -56,7 +56,7 @@ object MediaFileRepository {
    * Clears all discovery caches.
    */
   fun clearCache() {
-    Log.d(TAG, "Clearing media file caches")
+    MpvExLog.d(TAG, "Clearing media file caches")
     cachedFolders = null
     cachedFolderCounts = emptyMap()
     cachedRecursiveCounts = emptyMap()
@@ -156,7 +156,7 @@ object MediaFileRepository {
           }
         }
       } catch (e: Exception) {
-        Log.e(TAG, "Error querying MediaStore for folders", e)
+        MpvExLog.e(TAG, e, "Error querying MediaStore for folders")
       }
 
       // 2. Check external storage volumes (SD cards, USB OTG) that MediaStore might miss
@@ -170,7 +170,7 @@ object MediaFileRepository {
           }
         }
       } catch (e: Exception) {
-        Log.e(TAG, "Error scanning external volumes", e)
+        MpvExLog.e(TAG, e, "Error scanning external volumes")
       }
 
       val result = foldersMap.values.map { acc ->
@@ -287,7 +287,7 @@ object MediaFileRepository {
       try {
         VideoScanUtils.getVideosInFolder(context, bucketId)
       } catch (e: Exception) {
-        Log.e(TAG, "Error getting videos for folder $bucketId", e)
+        MpvExLog.e(TAG, e, "Error getting videos for folder $bucketId")
         emptyList()
       }
     }
@@ -315,7 +315,7 @@ object MediaFileRepository {
           val folderName = file.parentFile?.name ?: ""
           createVideoFromFile(context, file, folderPath, folderName)
         } catch (e: Exception) {
-          Log.w(TAG, "Error creating video from file: ${file.absolutePath}", e)
+          MpvExLog.w(TAG, e, "Error creating video from file: ${file.absolutePath}")
           null
         }
       }
@@ -497,10 +497,10 @@ object MediaFileRepository {
 
         Result.success(items)
       } catch (e: SecurityException) {
-        Log.e(TAG, "Security exception scanning directory: $path", e)
+        MpvExLog.e(TAG, e, "Security exception scanning directory: $path")
         Result.failure(Exception(context.getString(R.string.ui_permission_denied_reason, e.message ?: context.getString(R.string.ui_unknown_error))))
       } catch (e: Exception) {
-        Log.e(TAG, "Error scanning directory: $path", e)
+        MpvExLog.e(TAG, e, "Error scanning directory: $path")
         Result.failure(e)
       }
     }
@@ -558,7 +558,7 @@ object MediaFileRepository {
           }
         }
       } catch (e: Exception) {
-        Log.e(TAG, "Error getting storage roots", e)
+        MpvExLog.e(TAG, e, "Error getting storage roots")
       }
 
       roots

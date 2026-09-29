@@ -10,6 +10,7 @@ import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.domain.media.model.Video
 import app.marlboroadvance.mpvex.ui.player.PlayerActivity
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import `is`.xyz.mpv.Utils
 import java.io.File
 
@@ -99,7 +100,7 @@ object MediaUtils {
 
         is android.net.Uri -> source
         else -> {
-          android.util.Log.e("MediaUtils", "Unsupported source type: ${source::class.java}")
+          MpvExLog.e("MediaUtils", "Unsupported source type: ${source::class.java}")
           return
         }
       }
@@ -160,7 +161,7 @@ object MediaUtils {
     videos: List<Video>,
   ) {
     if (videos.isEmpty()) {
-      android.util.Log.w("MediaUtils", "Cannot share: video list is empty")
+      MpvExLog.w("MediaUtils", "Cannot share: video list is empty")
       return
     }
 
@@ -169,10 +170,10 @@ object MediaUtils {
         try {
           FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", File(v.path))
         } catch (e: IllegalArgumentException) {
-          android.util.Log.e("MediaUtils", "FileProvider failed for ${v.path}: ${e.message}")
+          MpvExLog.e("MediaUtils", "FileProvider failed for ${v.path}: ${e.message}")
           null
         } catch (e: Exception) {
-          android.util.Log.e("MediaUtils", "Failed to generate URI for ${v.path}", e)
+          MpvExLog.e("MediaUtils", e, "Failed to generate URI for ${v.path}")
           null
         }
       }
@@ -180,12 +181,12 @@ object MediaUtils {
     val uris = videos.mapNotNull { toSharableUri(it) }
 
     if (uris.isEmpty()) {
-      android.util.Log.w("MediaUtils", "Cannot share: no valid URIs generated for any videos")
+      MpvExLog.w("MediaUtils", "Cannot share: no valid URIs generated for any videos")
       return
     }
 
     if (uris.size < videos.size) {
-      android.util.Log.w("MediaUtils", "Only ${uris.size}/${videos.size} videos could be shared")
+      MpvExLog.w("MediaUtils", "Only ${uris.size}/${videos.size} videos could be shared")
     }
 
     val intent =

@@ -1,7 +1,6 @@
 package app.marlboroadvance.mpvex.ui.browser.filesystem
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -12,6 +11,7 @@ import app.marlboroadvance.mpvex.domain.playbackstate.repository.PlaybackStateRe
 import app.marlboroadvance.mpvex.preferences.BrowserPreferences
 import app.marlboroadvance.mpvex.repository.MediaFileRepository
 import app.marlboroadvance.mpvex.ui.browser.base.BaseBrowserViewModel
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import app.marlboroadvance.mpvex.utils.media.MediaIdentifier
 import app.marlboroadvance.mpvex.utils.media.MediaLibraryEvents
 import app.marlboroadvance.mpvex.utils.media.MetadataRetrieval
@@ -123,7 +123,7 @@ class FileSystemBrowserViewModel(
           // Only one storage volume, navigate directly to it and set as home
           val singleRoot = roots.first()
           homeDirectory = singleRoot.path
-          Log.d(TAG, "Single storage volume found, setting as home: ${singleRoot.path}")
+          MpvExLog.d(TAG, "Single storage volume found, setting as home: ${singleRoot.path}")
           _currentPath.value = singleRoot.path
         } else {
           // Multiple roots - home is the storage roots view
@@ -135,7 +135,7 @@ class FileSystemBrowserViewModel(
     } else {
       // Specific path provided - set it as home directory
       homeDirectory = initialPath
-      Log.d(TAG, "Initial path provided, setting as home: $initialPath")
+      MpvExLog.d(TAG, "Initial path provided, setting as home: $initialPath")
       // Load initial directory - similar to Fossify's openPath() in onCreate
       loadCurrentDirectory()
     }
@@ -162,7 +162,7 @@ class FileSystemBrowserViewModel(
         SortUtils.sortFileSystemItems(items, sortType, sortOrder)
       }.collectLatest { sortedItems ->
         _items.value = sortedItems
-        Log.d(TAG, "Items sorted: ${sortedItems.size} items")
+        MpvExLog.d(TAG, "Items sorted: ${sortedItems.size} items")
       }
     }
   }
@@ -172,7 +172,7 @@ class FileSystemBrowserViewModel(
    * Equivalent to Fossify's refreshFragment() callback
    */
   override fun refresh() {
-    Log.d(TAG, "Hard refreshing current directory: ${_currentPath.value}")
+    MpvExLog.d(TAG, "Hard refreshing current directory: ${_currentPath.value}")
     
     // Set loading state
     _isLoading.value = true
@@ -218,12 +218,12 @@ class FileSystemBrowserViewModel(
             filePaths,
             null, // Let MediaScanner detect MIME types
           ) { scanPath, uri ->
-            Log.d(TAG, "Media scan completed for: $scanPath -> $uri")
+            MpvExLog.d(TAG, "Media scan completed for: $scanPath -> $uri")
           }
           
-          Log.d(TAG, "Triggered media scan for ${filePaths.size} files in: $path")
+          MpvExLog.d(TAG, "Triggered media scan for ${filePaths.size} files in: $path")
         } else {
-          Log.d(TAG, "No video files found in folder: $path")
+          MpvExLog.d(TAG, "No video files found in folder: $path")
         }
       } else {
         // Fallback to scanning external storage root
@@ -233,12 +233,12 @@ class FileSystemBrowserViewModel(
           arrayOf(externalStorage.absolutePath),
           null,
         ) { scanPath, uri ->
-          Log.d(TAG, "Media scan completed for: $scanPath -> $uri")
+          MpvExLog.d(TAG, "Media scan completed for: $scanPath -> $uri")
         }
-        Log.d(TAG, "Triggered media scan for: ${externalStorage.absolutePath}")
+        MpvExLog.d(TAG, "Triggered media scan for: ${externalStorage.absolutePath}")
       }
     } catch (e: Exception) {
-      Log.e(TAG, "Failed to trigger media scan", e)
+      MpvExLog.e(TAG, e, "Failed to trigger media scan")
     }
   }
 
@@ -257,20 +257,20 @@ class FileSystemBrowserViewModel(
     var successCount = 0
     var failureCount = 0
 
-    Log.d(TAG, "Deleting ${folders.size} folders")
+    MpvExLog.d(TAG, "Deleting ${folders.size} folders")
 
     folders.forEach { folder ->
       try {
         val dir = File(folder.path)
         if (dir.exists() && dir.deleteRecursively()) {
           successCount++
-          Log.d(TAG, "Successfully deleted folder: ${folder.path}")
+          MpvExLog.d(TAG, "Successfully deleted folder: ${folder.path}")
         } else {
           failureCount++
-          Log.w(TAG, "Failed to delete folder: ${folder.path}")
+          MpvExLog.w(TAG, "Failed to delete folder: ${folder.path}")
         }
       } catch (e: Exception) {
-        Log.e(TAG, "Exception deleting folder: ${folder.path}", e)
+        MpvExLog.e(TAG, e, "Exception deleting folder: ${folder.path}")
         failureCount++
       }
     }
@@ -282,7 +282,7 @@ class FileSystemBrowserViewModel(
       MediaLibraryEvents.notifyChanged()
     }
 
-    Log.d(TAG, "Folder deletion complete: $successCount success, $failureCount failed")
+    MpvExLog.d(TAG, "Folder deletion complete: $successCount success, $failureCount failed")
     return Pair(successCount, failureCount)
   }
 
@@ -291,7 +291,7 @@ class FileSystemBrowserViewModel(
    * Similar to Fossify's deleteFiles() for individual files
    */
   override suspend fun deleteVideos(videos: List<Video>): Pair<Int, Int> {
-    Log.d(TAG, "Deleting ${videos.size} videos")
+    MpvExLog.d(TAG, "Deleting ${videos.size} videos")
     val result = super.deleteVideos(videos)
 
     // Set flag if any deletions were successful
@@ -310,7 +310,7 @@ class FileSystemBrowserViewModel(
     video: Video,
     newDisplayName: String,
   ): Result<Unit> {
-    Log.d(TAG, "Renaming video ${video.displayName} to $newDisplayName")
+    MpvExLog.d(TAG, "Renaming video ${video.displayName} to $newDisplayName")
     return super.renameVideo(video, newDisplayName)
   }
 
@@ -330,16 +330,16 @@ class FileSystemBrowserViewModel(
         // Special case: Show storage roots at the special marker
         // Similar to Fossify's StoragePickerDialog logic
         if (path == STORAGE_ROOTS_MARKER) {
-          Log.d(TAG, "Loading storage roots")
+          MpvExLog.d(TAG, "Loading storage roots")
           _breadcrumbs.value = emptyList()
           val roots = MediaFileRepository.getStorageRoots(getApplication())
           _unsortedItems.value = roots
-          Log.d(TAG, "Loaded ${roots.size} storage roots")
+          MpvExLog.d(TAG, "Loaded ${roots.size} storage roots")
         } else {
           // Update breadcrumbs for real paths
           // Similar to Fossify's Breadcrumbs.setBreadcrumb()
           _breadcrumbs.value = MediaFileRepository.getPathComponents(path)
-          Log.d(TAG, "Breadcrumbs updated: ${_breadcrumbs.value.size} components")
+          MpvExLog.d(TAG, "Breadcrumbs updated: ${_breadcrumbs.value.size} components")
 
           // Get hidden files preference
           // Scan directory - equivalent to Fossify's getRegularItemsOf()
@@ -353,7 +353,7 @@ class FileSystemBrowserViewModel(
               // Check if folder became empty after having items
               if (previousCount > 0 && items.isEmpty()) {
                 _itemsWereDeletedOrMoved.value = true
-                Log.d(TAG, "Folder became empty (had $previousCount items before)")
+                MpvExLog.d(TAG, "Folder became empty (had $previousCount items before)")
               } else if (items.isNotEmpty()) {
                 // Reset flag if folder now has items
                 _itemsWereDeletedOrMoved.value = false
@@ -366,11 +366,11 @@ class FileSystemBrowserViewModel(
 
               val folderCount = items.filterIsInstance<FileSystemItem.Folder>().size
               val videoCount = items.filterIsInstance<FileSystemItem.VideoFile>().size
-              Log.d(TAG, "Loaded directory: $path with $folderCount folders, $videoCount videos")
+              MpvExLog.d(TAG, "Loaded directory: $path with $folderCount folders, $videoCount videos")
 
               // Enrich videos with metadata if chips are enabled
               val enrichedItems = if (MetadataRetrieval.isVideoMetadataNeeded(browserPreferences)) {
-                Log.d(TAG, "Metadata chips enabled, enriching $videoCount videos")
+                MpvExLog.d(TAG, "Metadata chips enabled, enriching $videoCount videos")
                 val videoFiles = items.filterIsInstance<FileSystemItem.VideoFile>()
                 val videos = videoFiles.map { it.video }
                 val enrichedVideos = MetadataRetrieval.enrichVideosIfNeeded(
@@ -407,13 +407,13 @@ class FileSystemBrowserViewModel(
             }.onFailure { error ->
               _error.value = error.message
               _unsortedItems.value = emptyList()
-              Log.e(TAG, "Error loading directory: $path", error)
+              MpvExLog.e(TAG, error, "Error loading directory: $path")
             }
         }
       } catch (e: Exception) {
         _error.value = e.message
         _unsortedItems.value = emptyList()
-        Log.e(TAG, "Exception loading directory", e)
+        MpvExLog.e(TAG, e, "Exception loading directory")
       } finally {
         _isLoading.value = false
       }
@@ -429,7 +429,7 @@ class FileSystemBrowserViewModel(
       val videoFiles = items.filterIsInstance<FileSystemItem.VideoFile>()
       val playbackMap = mutableMapOf<Long, Float>()
 
-      Log.d(TAG, "Loading playback info for ${videoFiles.size} videos")
+      MpvExLog.d(TAG, "Loading playback info for ${videoFiles.size} videos")
 
       videoFiles.forEach { videoFile ->
         val video = videoFile.video
@@ -456,7 +456,7 @@ class FileSystemBrowserViewModel(
       }
 
       _videoFilesWithPlayback.value = playbackMap
-      Log.d(TAG, "Loaded playback info for ${playbackMap.size} videos with progress")
+      MpvExLog.d(TAG, "Loaded playback info for ${playbackMap.size} videos with progress")
     }
   }
 
@@ -515,7 +515,7 @@ class FileSystemBrowserViewModel(
     } catch (e: CancellationException) {
       throw e
     } catch (e: Exception) {
-      Log.e(TAG, "Error searching directory $directoryPath", e)
+      MpvExLog.e(TAG, e, "Error searching directory $directoryPath")
     }
     return results
   }
@@ -544,7 +544,7 @@ class FileSystemBrowserViewModel(
     } catch (e: CancellationException) {
       throw e
     } catch (e: Exception) {
-      Log.e(TAG, "Error collecting videos from $folderPath", e)
+      MpvExLog.e(TAG, e, "Error collecting videos from $folderPath")
     }
     return videos
   }

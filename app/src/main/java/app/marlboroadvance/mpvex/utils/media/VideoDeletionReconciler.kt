@@ -1,10 +1,10 @@
 package app.marlboroadvance.mpvex.utils.media
 
-import android.util.Log
 import app.marlboroadvance.mpvex.database.repository.PlaylistRepository
 import app.marlboroadvance.mpvex.database.repository.VideoMetadataCacheRepository
 import app.marlboroadvance.mpvex.domain.media.model.Video
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.inject
@@ -56,17 +56,17 @@ object VideoDeletionReconciler {
 
     paths.forEach { path ->
       runCatching { RecentlyPlayedOps.onVideoDeleted(path) }
-        .onFailure { Log.w(TAG, "Recently-played cleanup failed for $path", it) }
+        .onFailure { MpvExLog.w(TAG, it, "Recently-played cleanup failed for $path") }
       runCatching { PlaybackStateOps.onVideoDeleted(path) }
-        .onFailure { Log.w(TAG, "Playback-state cleanup failed for $path", it) }
+        .onFailure { MpvExLog.w(TAG, it, "Playback-state cleanup failed for $path") }
     }
 
     runCatching { metadataCache.invalidateVideos(paths) }
-      .onFailure { Log.w(TAG, "Metadata cache cleanup failed", it) }
+      .onFailure { MpvExLog.w(TAG, it, "Metadata cache cleanup failed") }
 
     runCatching {
       val removed = playlistRepository.removeItemsByFilePaths(paths)
-      if (removed > 0) Log.d(TAG, "Removed $removed dangling playlist item(s)")
-    }.onFailure { Log.w(TAG, "Playlist cleanup failed", it) }
+      if (removed > 0) MpvExLog.d(TAG, "Removed $removed dangling playlist item(s)")
+    }.onFailure { MpvExLog.w(TAG, it, "Playlist cleanup failed") }
   }
 }

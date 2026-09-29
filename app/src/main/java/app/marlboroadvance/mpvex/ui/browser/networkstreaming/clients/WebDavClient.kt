@@ -1,11 +1,11 @@
 package app.marlboroadvance.mpvex.ui.browser.networkstreaming.clients
 
 import android.net.Uri
-import android.util.Log
 import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.i18n.localizedString
 import app.marlboroadvance.mpvex.domain.network.NetworkConnection
 import app.marlboroadvance.mpvex.domain.network.NetworkFile
+import app.marlboroadvance.mpvex.utils.logging.MpvExLog
 import com.thegrizzlylabs.sardineandroid.Sardine
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine
 import com.thegrizzlylabs.sardineandroid.DavResource
@@ -59,8 +59,10 @@ class WebDavClient(private val connection: NetworkConnection) : NetworkClient {
         client.exists(testUrl)
 
         sardine = client
+        MpvExLog.i(TAG, "Connected to WebDAV at ${connection.host}:${connection.port}")
         Result.success(Unit)
       } catch (e: Exception) {
+        MpvExLog.w(TAG, e, "Could not connect to WebDAV at ${connection.host}:${connection.port}")
         Result.failure(e)
       }
     }

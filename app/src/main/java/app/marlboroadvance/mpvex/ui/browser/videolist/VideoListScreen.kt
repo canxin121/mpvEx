@@ -141,6 +141,7 @@ data class VideoListScreen(
     val videos by viewModel.videos.collectAsState()
     val videosWithPlaybackInfo by viewModel.videosWithPlaybackInfo.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val hasCompletedInitialLoad by viewModel.hasCompletedInitialLoad.collectAsState()
     val recentlyPlayedFilePath by viewModel.recentlyPlayedFilePath.collectAsState()
     val lastPlayedInFolderPath by viewModel.lastPlayedInFolderPath.collectAsState()
     val playlistMode by playerPreferences.playlistMode.collectAsState()
@@ -150,12 +151,21 @@ data class VideoListScreen(
     val videoSortType by browserPreferences.videoSortType.collectAsState()
     val videoSortOrder by browserPreferences.videoSortOrder.collectAsState()
     val sortedVideosWithInfo =
-      remember(videosWithPlaybackInfo, videoSortType, videoSortOrder) {
-        val infoById = videosWithPlaybackInfo.associateBy { it.video.id }
-        val sortedVideos = SortUtils.sortVideos(videosWithPlaybackInfo.map { it.video }, videoSortType, videoSortOrder)
-        // Maintain the playback info mapping — O(1) lookup per item
-        sortedVideos.map { video ->
-          infoById[video.id] ?: VideoWithPlaybackInfo(video)
+      remember(videos, videosWithPlaybackInfo, videoSortType, videoSortOrder) {
+        if (videos.isEmpty() && videosWithPlaybackInfo.isEmpty()) {
+          emptyList()
+        } else {
+          val infoById = videosWithPlaybackInfo.associateBy { it.video.id }
+          val baseVideos = if (videosWithPlaybackInfo.isNotEmpty()) {
+            videosWithPlaybackInfo.map { it.video }
+          } else {
+            videos
+          }
+          val sortedVideos = SortUtils.sortVideos(baseVideos, videoSortType, videoSortOrder)
+          // Maintain the playback info mapping — O(1) lookup per item
+          sortedVideos.map { video ->
+            infoById[video.id] ?: VideoWithPlaybackInfo(video)
+          }
         }
       }
 
@@ -240,12 +250,17 @@ data class VideoListScreen(
       selectionManager.clear()
     }
 
-    // Listen for lifecycle resume events and refresh videos when coming into focus
+    // Listen for lifecycle resume events to refresh playback progress when returning from player
     DisposableEffect(lifecycleOwner) {
+      var isFirstResume = true
       val observer =
         LifecycleEventObserver { _, event ->
           if (event == Lifecycle.Event.ON_RESUME) {
-            viewModel.refresh()
+            if (isFirstResume) {
+              isFirstResume = false
+            } else {
+              viewModel.refreshPlaybackInfo()
+            }
           }
         }
       lifecycleOwner.lifecycle.addObserver(observer)
@@ -340,7 +355,8 @@ data class VideoListScreen(
         VideoListContent(
           folderId = bucketId,
           videosWithInfo = sortedVideosWithInfo,
-          isLoading = isLoading && videos.isEmpty(),
+          isLoading = isLoading,
+          hasCompletedInitialLoad = hasCompletedInitialLoad,
           isRefreshing = isRefreshing,
           recentlyPlayedFilePath = lastPlayedInFolderPath ?: recentlyPlayedFilePath,
           videosWereDeletedOrMoved = videosWereDeletedOrMoved,
@@ -411,6 +427,7 @@ data class VideoListScreen(
         sortOrder = videoSortOrder,
         onSortTypeChange = { browserPreferences.videoSortType.set(it) },
         onSortOrderChange = { browserPreferences.videoSortOrder.set(it) },
+        onRefresh = { viewModel.refresh() },
       )
 
       // Delete Dialog
@@ -547,6 +564,7 @@ private fun VideoListContent(
   folderId: String,
   videosWithInfo: List<VideoWithPlaybackInfo>,
   isLoading: Boolean,
+  hasCompletedInitialLoad: Boolean,
   isRefreshing: androidx.compose.runtime.MutableState<Boolean>,
   recentlyPlayedFilePath: String?,
   videosWereDeletedOrMoved: Boolean,
@@ -582,6 +600,7 @@ private fun VideoListContent(
 
   LaunchedEffect(folderId, showVideoThumbnails, videosWithInfo.size, thumbWidthPx, thumbHeightPx) {
     if (showVideoThumbnails && videosWithInfo.isNotEmpty()) {
+      kotlinx.coroutines.delay(350)
       thumbnailRepository.startFolderThumbnailGeneration(
         folderId = folderId,
         videos = videosWithInfo.map { it.video },
@@ -591,8 +610,11 @@ private fun VideoListContent(
     }
   }
 
+  val showLoading = isLoading && videosWithInfo.isEmpty()
+  val showEmpty = videosWithInfo.isEmpty() && !isLoading && (hasCompletedInitialLoad || videosWereDeletedOrMoved)
+
   when {
-    isLoading && videosWithInfo.isEmpty() -> {
+    showLoading -> {
       Box(
         modifier = modifier
           .fillMaxSize()
@@ -606,7 +628,7 @@ private fun VideoListContent(
       }
     }
 
-    videosWithInfo.isEmpty() && !isLoading && videosWereDeletedOrMoved -> {
+    showEmpty -> {
       Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
@@ -831,6 +853,7 @@ private fun VideoSortDialog(
   sortOrder: SortOrder,
   onSortTypeChange: (VideoSortType) -> Unit,
   onSortOrderChange: (SortOrder) -> Unit,
+  onRefresh: () -> Unit = {},
 ) {
   val browserPreferences = koinInject<BrowserPreferences>()
   val videoGridColumnsPortrait by browserPreferences.videoGridColumnsPortrait.collectAsState()
@@ -952,7 +975,11 @@ private fun VideoSortDialog(
         VisibilityToggle(
           label = "Subtitle Indicator",
           checked = showSubtitleIndicator,
-          onCheckedChange = { browserPreferences.showSubtitleIndicator.set(it) },
+          onCheckedChange = {
+            browserPreferences.showSubtitleIndicator.set(it)
+            app.marlboroadvance.mpvex.utils.media.MediaLibraryEvents.notifyChanged()
+            onRefresh()
+          },
         ),
         VisibilityToggle(
           label = "Full Name",
@@ -972,7 +999,11 @@ private fun VideoSortDialog(
         VisibilityToggle(
           label = "Framerate",
           checked = showFramerateInResolution,
-          onCheckedChange = { browserPreferences.showFramerateInResolution.set(it) },
+          onCheckedChange = {
+            browserPreferences.showFramerateInResolution.set(it)
+            app.marlboroadvance.mpvex.utils.media.MediaLibraryEvents.notifyChanged()
+            onRefresh()
+          },
         ),
         VisibilityToggle(
           label = "Date",

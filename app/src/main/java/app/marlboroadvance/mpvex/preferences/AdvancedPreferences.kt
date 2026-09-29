@@ -18,5 +18,8 @@ class AdvancedPreferences(
 
   val enableCPlugins = preferenceStore.getBoolean("enable_c_plugins", false)
   val selectedCPlugins = preferenceStore.getStringSet("selected_c_plugins", emptySet())
+  val cPluginConfiguration = preferenceStore.getString("c_plugin_configuration", "{}")
+  val managedCPluginEnvironmentNames =
+    preferenceStore.getStringSet("managed_c_plugin_environment_names", emptySet())
 
 }

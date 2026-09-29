@@ -28,8 +28,6 @@
   <string name="pref_appearance_show_unplayed_old_video_label_summary">Display a \"New\" label on videos added within specified days that have never been played</string>
   <string name="pref_appearance_unplayed_old_video_days_title">Days threshold for new video label</string>
   <string name="pref_appearance_unplayed_old_video_days_summary">Videos added within the last %d days without playback history will be marked as new</string>
-  <string name="pref_appearance_show_network_thumbnails_title">Show network thumbnails (Experimental)</string>
-  <string name="pref_appearance_show_network_thumbnails_summary">Generate thumbnails for network streams (May increase data usage on mobile networks)</string>
   <string name="pref_appearance_theme_picker_label">App Theme</string>
   <string name="pref_appearance_auto_scroll_title">Auto-scroll to last played</string>
   <string name="pref_appearance_auto_scroll_summary">Automatically scroll to the last played video when opening video lists</string>
@@ -181,23 +179,13 @@
   <string name="pref_decoder_yuv420p_title">Use YUV420P pixel format</string>
   <string name="pref_decoder_yuv420p_summary">May fix black screens on some video codecs, can also improve performance at the cost of quality</string>
   <string name="pref_subtitles">Subtitles</string>
-  <string name="pref_subtitles_summary">Preferred languages, fonts and search</string>
-  <string name="pref_subtitle_search_title">Online Subtitle Search</string>
-  <string name="pref_subtitle_search_summary">Search and download subtitles from Online sources</string>
+  <string name="pref_subtitles_summary">Preferred languages, fonts and styling</string>
   <string name="pref_custom_lua_title">Custom Lua Buttons</string>
   <string name="pref_custom_lua_summary">Manage custom player buttons with Lua code</string>
   <string name="pref_preferred_languages">Preferred languages</string>
   <string name="pref_subtitles_fonts_dir">Fonts directory</string>
   <string name="pref_subtitles_autoload_title">Automatically load subtitles</string>
   <string name="pref_subtitles_autoload_summary">Automatically load external subtitles with the same name.</string>
-  <string name="pref_subtitles_save_location">Subtitle Save Location</string>
-  <string name="pref_subtitles_search_online">Online Subtitle Search…</string>
-  <string name="pref_subtitles_subdl_languages">Subtitle Languages</string>
-  <string name="all_languages">All (Selective Filtering)</string>
-  <string name="pref_subtitles_clear_downloads">Clear Subtitle Downloads</string>
-  <string name="pref_subtitles_clear_downloads_summary">Delete all files in the current save location</string>
-  <string name="pref_subtitles_clear_downloads_confirmation">Are you sure you want to delete all downloaded subtitles? This action cannot be undone.</string>
-  <string name="toast_subtitles_cleared">Subtitle downloads cleared</string>
   <string name="pref_audio">Audio</string>
   <string name="pref_audio_summary">Preferred languages, audio channels, pitch correction</string>
   <string name="pref_audio_pitch_correction_title">Enable audio pitch correction</string>
@@ -354,6 +342,7 @@
   <string name="timer_title">Sleep timer</string>
   <string name="timer_remaining">%s remaining</string>
   <string name="toast_sleep_timer_ended">Sleep timer ended</string>
+  <string name="toast_file_no_longer_exists">File no longer exists</string>
   <string name="volume_slider_absolute_value" translatable="false">%d</string>
   <string name="github_repo_url" translatable="false">https://github.com/marlboro-advance/mpvex</string>
   <string name="swap_the_volume_and_brightness_slider">Swap volume and brightness slider</string>

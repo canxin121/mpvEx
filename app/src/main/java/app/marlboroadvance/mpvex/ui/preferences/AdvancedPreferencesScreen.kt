@@ -8,11 +8,9 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
-import app.marlboroadvance.mpvex.utils.media.OpenDocumentTreeContract
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -22,7 +20,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -54,11 +50,15 @@ import app.marlboroadvance.mpvex.domain.thumbnail.ThumbnailRepository
 import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
 import app.marlboroadvance.mpvex.preferences.SettingsManager
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
+import app.marlboroadvance.mpvex.plugins.CPluginCatalogScanner
+import app.marlboroadvance.mpvex.plugins.CPluginConfigurationCodec
+import app.marlboroadvance.mpvex.plugins.CPluginDescriptor
 import app.marlboroadvance.mpvex.presentation.Screen
 import app.marlboroadvance.mpvex.presentation.components.ConfirmDialog
 import app.marlboroadvance.mpvex.presentation.crash.CrashActivity
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
+import app.marlboroadvance.mpvex.utils.media.OpenDocumentTreeContract
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -448,9 +448,27 @@ object AdvancedPreferencesScreen : Screen {
           item {
             PreferenceCard {
               var showCPluginDialog by remember { mutableStateOf(false) }
-              var availableCPlugins by remember { mutableStateOf<List<String>>(emptyList()) }
+              var availableCPlugins by remember { mutableStateOf<List<CPluginDescriptor>>(emptyList()) }
               val selectedCPlugins by preferences.selectedCPlugins.collectAsState()
               val enableCPlugins by preferences.enableCPlugins.collectAsState()
+
+              LaunchedEffect(mpvConfStorageLocation) {
+                availableCPlugins =
+                  if (mpvConfStorageLocation.isBlank()) {
+                    emptyList()
+                  } else {
+                    withContext(Dispatchers.IO) {
+                      runCatching {
+                        val tree = DocumentFile.fromTreeUri(context, mpvConfStorageLocation.toUri())
+                        if (tree == null || !tree.exists() || !tree.canRead()) {
+                          emptyList()
+                        } else {
+                          CPluginCatalogScanner.scan(context, tree)
+                        }
+                      }.getOrDefault(emptyList())
+                    }
+                  }
+              }
 
               SwitchPreference(
                 value = enableCPlugins,
@@ -467,7 +485,7 @@ object AdvancedPreferencesScreen : Screen {
               PreferenceDivider()
 
               Preference(
-                title = { Text("Select C Plugins") },
+                title = { Text("Manage C Plugins") },
                 summary = {
                   when {
                     !enableCPlugins -> Text(
@@ -495,23 +513,7 @@ object AdvancedPreferencesScreen : Screen {
                       if (tree == null || !tree.exists() || !tree.canRead()) {
                         emptyList()
                       } else {
-                        val sourceDirectories = buildList {
-                          add(tree)
-                          tree.listFiles().firstOrNull {
-                            it.isDirectory && it.name?.equals("scripts", ignoreCase = true) == true
-                          }?.let(::add)
-                        }
-                        sourceDirectories
-                          .flatMap { it.listFiles().asList() }
-                          .filter { file ->
-                            val name = file.name
-                            file.isFile &&
-                              name != null &&
-                              name.substringAfterLast('.', "").equals("so", ignoreCase = true)
-                          }
-                          .mapNotNull { it.name }
-                          .distinct()
-                          .sorted()
+                        CPluginCatalogScanner.scan(context, tree)
                       }
                     }.getOrElse { error ->
                       withContext(Dispatchers.Main) {
@@ -540,12 +542,58 @@ object AdvancedPreferencesScreen : Screen {
                 enabled = enableCPlugins && mpvConfStorageLocation.isNotBlank(),
               )
 
+              if (enableCPlugins && selectedCPlugins.isNotEmpty()) {
+                selectedCPlugins
+                  .sortedBy { pluginFileName ->
+                    availableCPlugins.firstOrNull { it.fileName == pluginFileName }
+                      ?.manifest
+                      ?.name
+                      ?.lowercase()
+                      ?: pluginFileName.lowercase()
+                  }
+                  .forEach { pluginFileName ->
+                    val descriptor = availableCPlugins.firstOrNull { it.fileName == pluginFileName }
+                    val manifest = descriptor?.manifest
+                    PreferenceDivider()
+                    Preference(
+                      title = { Text(manifest?.name ?: pluginFileName) },
+                      summary = {
+                        Text(
+                          text =
+                            when {
+                              descriptor == null -> "Plugin file is not available"
+                              descriptor.manifestError != null ->
+                                "Invalid manifest: ${descriptor.manifestError}"
+                              manifest == null -> "Legacy plugin • no independent settings panel"
+                              manifest.config.isEmpty() -> "This plugin declares no settings"
+                              else ->
+                                "${manifest.config.size} independent setting(s) • ${manifest.id}"
+                            },
+                          color =
+                            if (descriptor?.manifestError != null) {
+                              MaterialTheme.colorScheme.error
+                            } else {
+                              MaterialTheme.colorScheme.outline
+                            },
+                        )
+                      },
+                      onClick = { backStack.add(CPluginSettingsScreen(pluginFileName)) },
+                      enabled = descriptor?.manifestError == null && manifest?.config?.isNotEmpty() == true,
+                    )
+                  }
+              }
+
               if (showCPluginDialog) {
                 CPluginSelectionDialog(
                   availablePlugins = availableCPlugins,
                   selectedPlugins = selectedCPlugins,
-                  onPluginsSelected = { newSelection ->
+                  configuration =
+                    CPluginConfigurationCodec.decode(preferences.cPluginConfiguration.get()),
+                  onPluginsSelected = { newSelection, configuration ->
                     preferences.selectedCPlugins.set(newSelection)
+                    preferences.cPluginConfiguration.set(
+                      CPluginConfigurationCodec.encode(configuration),
+                    )
                     showCPluginDialog = false
                   },
                   onDismiss = { showCPluginDialog = false },
@@ -745,6 +793,7 @@ object AdvancedPreferencesScreen : Screen {
           item {
             PreferenceCard {
               val activity = LocalActivity.current!!
+              @Suppress("DEPRECATION")
               val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
               val verboseLogging by preferences.verboseLogging.collectAsState()
               
@@ -786,72 +835,6 @@ object AdvancedPreferencesScreen : Screen {
       }
     }
   }
-}
-
-@Composable
-fun CPluginSelectionDialog(
-  availablePlugins: List<String>,
-  selectedPlugins: Set<String>,
-  onPluginsSelected: (Set<String>) -> Unit,
-  onDismiss: () -> Unit,
-) {
-  var pendingSelection by remember(selectedPlugins) {
-    mutableStateOf(selectedPlugins.toMutableSet())
-  }
-
-  AlertDialog(
-    onDismissRequest = onDismiss,
-    title = { Text("Select C Plugins") },
-    text = {
-      Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .verticalScroll(rememberScrollState()),
-      ) {
-        if (availablePlugins.isEmpty()) {
-          Text("No C plugins found in the configured MPV directory.")
-        } else {
-          Text(
-            text = "Select the C plugins to load with MPV:",
-            modifier = Modifier.padding(bottom = 8.dp),
-          )
-          availablePlugins.forEach { plugin ->
-            Row(
-              modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-              verticalAlignment = Alignment.CenterVertically,
-            ) {
-              Checkbox(
-                checked = plugin in pendingSelection,
-                onCheckedChange = { checked ->
-                  pendingSelection = if (checked) {
-                    (pendingSelection + plugin).toMutableSet()
-                  } else {
-                    (pendingSelection - plugin).toMutableSet()
-                  }
-                },
-              )
-              Text(
-                text = plugin,
-                modifier = Modifier.padding(start = 8.dp),
-              )
-            }
-          }
-        }
-      }
-    },
-    confirmButton = {
-      TextButton(onClick = { onPluginsSelected(pendingSelection) }) {
-        Text("OK")
-      }
-    },
-    dismissButton = {
-      TextButton(onClick = onDismiss) {
-        Text("Cancel")
-      }
-    },
-  )
 }
 
 fun getSimplifiedPathFromUri(uri: String): String =

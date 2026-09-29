@@ -109,6 +109,7 @@ enum class Panels {
   SubtitleDelay,
   AudioDelay,
   VideoFilters,
+  Shortcuts,
 }
 
 sealed class PlayerUpdates {

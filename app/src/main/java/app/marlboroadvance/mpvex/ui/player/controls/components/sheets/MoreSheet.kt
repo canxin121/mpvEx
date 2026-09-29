@@ -50,6 +50,7 @@ import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
 import app.marlboroadvance.mpvex.preferences.DecoderPreferences
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.presentation.components.PlayerSheet
+import app.marlboroadvance.mpvex.ui.player.controls.components.panels.ShortcutActionButtons
 import app.marlboroadvance.mpvex.ui.theme.spacing
 import `is`.xyz.mpv.MPVLib
 import kotlinx.coroutines.Dispatchers
@@ -143,6 +144,13 @@ val scope = rememberCoroutineScope()
         }
       }
 
+
+      Text(
+        text = stringResource(R.string.shortcut_settings_title),
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.primary,
+      )
+      ShortcutActionButtons()
 
       Text(
         text = stringResource(R.string.player_sheets_stats_page_title),
@@ -407,7 +415,5 @@ fun TimePickerDialog(
     }
   }
   }
-
-
 
 

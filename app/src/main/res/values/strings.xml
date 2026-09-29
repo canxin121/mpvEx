@@ -205,6 +205,16 @@
   <string name="pref_advanced_mpv_conf_storage_location">Pick configuration storage location</string>
   <string name="pref_advanced_mpv_conf">Edit mpv.conf</string>
   <string name="pref_advanced_input_conf">Edit input.conf</string>
+  <string name="shortcut_settings_title">Custom shortcuts</string>
+  <string name="shortcut_settings_summary">Assign an mpv key to each button, then bind that key in input.conf. Example: Ctrl+Alt+s screenshot. Shortcuts are available in the player’s More menu; you can also add individual buttons to the control layout. Reopen the player after changing input.conf.</string>
+  <string name="shortcut_controls_summary">Configure buttons that send keys from input.conf</string>
+  <string name="shortcut_not_configured">No key assigned</string>
+  <string name="shortcut_key_summary">Key: %1$s</string>
+  <string name="shortcut_edit_title">Shortcut %1$d</string>
+  <string name="shortcut_label">Button name</string>
+  <string name="shortcut_key">mpv key</string>
+  <string name="shortcut_key_example">Example: Ctrl+Alt+s. Leave empty to hide this shortcut.</string>
+  <string name="shortcut_sheet_empty">Set up a key in Settings → Control layout → Custom shortcuts.</string>
   <string name="pref_advanced_dump_logs_title">Dump logs</string>
   <string name="pref_advanced_dump_logs_summary">Dumps and copies the logs to be shared with the developers</string>
   <string name="pref_advanced_verbose_logging_title">Verbose logging</string>

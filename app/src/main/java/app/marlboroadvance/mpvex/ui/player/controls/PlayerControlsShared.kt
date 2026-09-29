@@ -77,16 +77,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.preferences.PlayerButton
+import app.marlboroadvance.mpvex.preferences.ShortcutPreferences
+import app.marlboroadvance.mpvex.preferences.shortcutSlot
+import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.ui.player.Panels
 import app.marlboroadvance.mpvex.ui.player.PlayerActivity
 import app.marlboroadvance.mpvex.ui.player.PlayerViewModel
 import app.marlboroadvance.mpvex.ui.player.Sheets
+import app.marlboroadvance.mpvex.ui.player.pressShortcutKey
 import app.marlboroadvance.mpvex.ui.player.VideoAspect
 import app.marlboroadvance.mpvex.ui.player.controls.components.ControlsButton
 import app.marlboroadvance.mpvex.ui.player.controls.components.CurrentChapter
 import app.marlboroadvance.mpvex.ui.theme.controlColor
 import app.marlboroadvance.mpvex.ui.theme.spacing
 import dev.vivvvek.seeker.Segment
+import org.koin.compose.koinInject
 
 @Composable
 fun RenderPlayerButton(
@@ -589,6 +594,35 @@ fun RenderPlayerButton(
         color = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.size(buttonSize),
       )
+    }
+
+    PlayerButton.SHORTCUTS -> {
+      ControlsButton(
+        icon = button.icon,
+        onClick = { onOpenPanel(Panels.Shortcuts) },
+        title = "Shortcuts",
+        color = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.size(buttonSize),
+      )
+    }
+
+    PlayerButton.SHORTCUT_1,
+    PlayerButton.SHORTCUT_2,
+    PlayerButton.SHORTCUT_3,
+    PlayerButton.SHORTCUT_4 -> {
+      val slot = requireNotNull(button.shortcutSlot())
+      val shortcuts = koinInject<ShortcutPreferences>()
+      val label by shortcuts.label(slot).collectAsState()
+      val key by shortcuts.key(slot).collectAsState()
+      if (key.isNotBlank()) {
+        ControlsButton(
+          icon = button.icon,
+          onClick = { pressShortcutKey(key) },
+          title = label,
+          color = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
+          modifier = Modifier.size(buttonSize),
+        )
+      }
     }
 
     PlayerButton.CURRENT_CHAPTER -> {

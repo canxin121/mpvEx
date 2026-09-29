@@ -25,6 +25,11 @@ import androidx.compose.material.icons.outlined.Shuffle
 import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material.icons.outlined.PlayCircle
 import androidx.compose.material.icons.outlined.Headset
+import androidx.compose.material.icons.outlined.Keyboard
+import androidx.compose.material.icons.outlined.LooksOne
+import androidx.compose.material.icons.outlined.LooksTwo
+import androidx.compose.material.icons.outlined.Looks3
+import androidx.compose.material.icons.outlined.Looks4
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -57,6 +62,11 @@ enum class PlayerButton(
   AB_LOOP(Icons.Outlined.Autorenew),
   CUSTOM_SKIP(Icons.Outlined.FastForward),
   BACKGROUND_PLAYBACK(Icons.Outlined.Headset),
+  SHORTCUTS(Icons.Outlined.Keyboard),
+  SHORTCUT_1(Icons.Outlined.LooksOne),
+  SHORTCUT_2(Icons.Outlined.LooksTwo),
+  SHORTCUT_3(Icons.Outlined.Looks3),
+  SHORTCUT_4(Icons.Outlined.Looks4),
   NONE(Icons.Outlined.Bookmarks),
 }
 
@@ -100,5 +110,10 @@ fun getPlayerButtonLabel(button: PlayerButton): String =
     PlayerButton.AB_LOOP -> "A-B Loop"
     PlayerButton.CUSTOM_SKIP -> "Custom Skip"
     PlayerButton.BACKGROUND_PLAYBACK -> "Background Playback"
+    PlayerButton.SHORTCUTS -> "Shortcuts"
+    PlayerButton.SHORTCUT_1 -> "Shortcut 1"
+    PlayerButton.SHORTCUT_2 -> "Shortcut 2"
+    PlayerButton.SHORTCUT_3 -> "Shortcut 3"
+    PlayerButton.SHORTCUT_4 -> "Shortcut 4"
     PlayerButton.NONE -> "None"
   }

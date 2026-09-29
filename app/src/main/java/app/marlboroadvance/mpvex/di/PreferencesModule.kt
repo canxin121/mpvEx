@@ -10,6 +10,7 @@ import app.marlboroadvance.mpvex.preferences.FoldersPreferences
 import app.marlboroadvance.mpvex.preferences.GesturePreferences
 import app.marlboroadvance.mpvex.preferences.PlayerPreferences
 import app.marlboroadvance.mpvex.preferences.SettingsManager
+import app.marlboroadvance.mpvex.preferences.ShortcutPreferences
 import app.marlboroadvance.mpvex.preferences.SubtitlesPreferences
 import app.marlboroadvance.mpvex.preferences.preference.AndroidPreferenceStore
 import app.marlboroadvance.mpvex.preferences.preference.PreferenceStore
@@ -24,6 +25,7 @@ val PreferencesModule =
 
     single { AppearancePreferences(get()) }
     singleOf(::PlayerPreferences)
+    singleOf(::ShortcutPreferences)
     singleOf(::GesturePreferences)
     singleOf(::DecoderPreferences)
     singleOf(::SubtitlesPreferences)

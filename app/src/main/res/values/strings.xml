@@ -212,7 +212,7 @@
   <string name="pref_advanced_input_conf">Edit input.conf</string>
   <string name="environment_variables_title">Environment variables</string>
   <string name="environment_variables_summary">View built-in and manage custom variables</string>
-  <string name="environment_variables_description">MPVEX_CONFIG_DIR follows the configuration storage folder selected in Advanced settings. It is unset until you choose a folder. Folders on primary device storage appear as paths; other providers appear as URIs. In a custom value, write ${NAME} to insert another custom variable or a built-in one, ${NAME:-fallback} to supply a fallback, and $$ for a literal dollar sign. References are resolved before the player initializes mpv; a variable whose references cannot be resolved is not exported and the settings list shows why. Reopen the player to apply custom changes; restart the app to update thumbnails.</string>
+  <string name="environment_variables_description">MPVEX_CONFIG_DIR follows the configuration storage folder selected in Advanced settings. It is unset until you choose a folder. Folders on primary device storage appear as paths; other providers appear as URIs. In a custom value, write ${NAME} to insert another custom variable or a built-in one, ${NAME:-fallback} to supply a fallback, and $$ for a literal dollar sign. References are resolved before the player initializes mpv; a variable whose references cannot be resolved is not exported and the settings list shows why. Every value is written into the process environment before mpv starts, so mpv, Lua scripts, and C plugins can all read it with getenv(). Reopen the player to apply custom changes; restart the app to update thumbnails.</string>
   <string name="environment_variables_built_in_header">Built-in variables</string>
   <string name="environment_variables_custom_header">Custom variables</string>
   <string name="environment_variable_config_dir">Selected MPV configuration storage</string>
@@ -225,6 +225,11 @@
   <string name="environment_variable_edit">Edit variable</string>
   <string name="environment_variable_name">Variable name</string>
   <string name="environment_variable_value">Value</string>
+  <string name="environment_variable_resolved_value">Resolved value</string>
+  <string name="environment_variable_reference_unresolved">Cannot be resolved; this variable is not exported</string>
+  <string name="environment_variable_reference_undefined">References undefined variable %1$s</string>
+  <string name="environment_variable_reference_cycle">Reference cycle at %1$s</string>
+  <string name="environment_variable_reference_malformed">Invalid reference %1$s</string>
   <string name="environment_variable_name_required">Enter a variable name</string>
   <string name="environment_variable_name_invalid">Use letters, numbers or underscores; start with a letter or underscore.</string>
   <string name="environment_variable_name_duplicate">This variable already exists</string>

@@ -72,14 +72,6 @@ For testing purposes only
 
 ## Building
 
-### C plugin configuration manifests
-
-C plugins can publish typed configuration fields through a sidecar
-`.mpvex.json` manifest. mpvExtended renders those fields in the plugin settings
-and exports their values as process environment variables before libmpv loads
-the plugin. See [C plugin manifests](docs/c-plugin-manifests.md) for the file
-layout, schema, lifecycle, and compatibility rules.
-
 ### Environment variables
 
 Open **Settings → Advanced → Environment variables** to see the built-in
@@ -94,10 +86,40 @@ plugins. The player copies configuration files from this selected folder to
 its internal mpv directory before initialization. A document-provider URI is
 not a filesystem path and cannot be passed directly to ordinary file APIs.
 You can add your own process variables on the same settings page for
-mpv, Lua scripts, and C plugins. A selected plugin manifest value takes
-priority over a custom value with the same name. Reopen the player to apply
-custom changes; restart the app to update thumbnail services. Settings exports
-include custom values.
+mpv, Lua scripts, and C plugins. Every value is written into the process
+environment before libmpv starts, so a plugin reads it with `getenv()`. C
+plugins have no settings of their own — select the `.so` files under
+**Settings → Advanced → Manage C Plugins** and configure them through these
+variables. Reopen the player to apply custom changes; restart the app to update
+thumbnail services. Settings exports include custom values.
+
+#### Variable references
+
+A custom value can insert another variable:
+
+| Syntax | Result |
+| --- | --- |
+| `${NAME}` | The value of another custom variable, or of a built-in one. |
+| `${NAME:-fallback}` | The same, but the fallback text is used when the variable is unset or empty. The fallback may itself contain references, such as `${NAME:-${MPVEX_CONFIG_DIR}/cache}`. |
+| `$$` | A literal dollar sign, so `$${NAME}` produces the text `${NAME}`. |
+| `$` followed by anything else | Kept as written. `$HOME` and `https://host/$path` are not references. |
+
+Only `${NAME}` is a reference. Shell forms such as `$NAME`, `${NAME-default}`,
+`${NAME:+x}`, and `${NAME:0:2}` are not expanded; write the braces exactly as
+shown.
+
+References are resolved immediately before the player hands the environment to
+mpv, for mpv, Lua scripts, and C plugins alike, so nothing reaches mpv
+unresolved. A value whose references cannot be resolved (an unknown name, a
+cycle, or a malformed reference) is not exported at all, and the Environment
+variables page shows the reason next to that variable. Every other variable is
+unaffected. Deleting a folder in Advanced settings unsets
+`MPVEX_CONFIG_DIR`, so values referencing it report an error until you pick a
+folder again or supply a `${NAME:-fallback}`.
+
+References are looked up in your own custom values and in the built-in
+variables. Nothing else is consulted, and no reference text is ever left
+behind for mpv or a plugin to see.
 
 ### Mobile input.conf shortcuts
 
@@ -131,8 +153,41 @@ The app generates multiple APK variants for different CPU architectures:
 
 ### Setting Up Release Signing
 
-To enable automatic signing for release builds in GitHub Actions, you need to configure the
-following secrets in your GitHub repository:
+Never commit the keystore or its passwords. `keystore.properties` and
+`app/release/` are both git-ignored.
+
+#### Signing local release builds
+
+Create the keystore once:
+
+```bash
+mkdir -p app/release
+keytool -genkeypair -v \
+  -keystore app/release/release.jks \
+  -storetype PKCS12 -keyalg RSA -keysize 4096 -validity 10000 \
+  -alias mpvex -storepass "$STORE_PASS" -keypass "$STORE_PASS" \
+  -dname "CN=mpvEx, OU=mpvEx, O=mpvEx, L=Unknown, ST=Unknown, C=CN"
+```
+
+Then write `keystore.properties` in the repository root, pointing at it:
+
+```properties
+storeFile=app/release/release.jks
+storePassword=...
+keyAlias=mpvex
+keyPassword=...
+```
+
+When that file exists, `assembleStandardRelease` (and the `preview` builds
+derived from it) signs with it, and the APKs are named without `-unsigned`.
+Keep the same keystore and the same `applicationId` for every release:
+Android only accepts an update that is signed by the same key as the installed
+app, so losing the keystore means users must uninstall before reinstalling.
+
+#### Signing GitHub Actions builds
+
+CI signs the unsigned APKs with `apksigner` after assembling, so it needs the
+same key in four repository secrets:
 
 1. Navigate to your repository on GitHub
 2. Go to **Settings** → **Secrets and variables** → **Actions**
@@ -162,6 +217,7 @@ base64 -i your-keystore.jks | tr -d '\n' > keystore.txt
 ```
 
 Copy the contents of `keystore.txt` and paste it as the value for the `SIGNING_KEYSTORE` secret.
+Delete `keystore.txt` afterwards; it holds the key in plain text.
 
 ### Creating a Release
 

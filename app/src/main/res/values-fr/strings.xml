@@ -1049,7 +1049,7 @@
   </plurals>
   <string name="environment_variables_title">Variables d’environnement</string>
   <string name="environment_variables_summary">Consultez les variables intégrées et gérez les variables personnalisées</string>
-  <string name="environment_variables_description">MPVEX_CONFIG_DIR indique le dossier de configuration de mpv choisi dans les paramètres avancés. La variable reste indéfinie tant qu’aucun dossier n’est choisi. Le stockage principal de l’appareil s’affiche sous forme de chemin ; les autres fournisseurs, sous forme d’URI. Dans la valeur d’une variable personnalisée, écrivez ${NAME} pour insérer une autre variable personnalisée ou une variable intégrée, ${NAME:-valeur par défaut} pour indiquer une valeur de repli et $$ pour un signe dollar littéral. Les références sont résolues avant que le lecteur n’initialise mpv ; une variable dont les références ne peuvent pas être résolues n’est pas exportée et la liste des paramètres en indique la raison. Rouvrez le lecteur pour appliquer les modifications et redémarrez l’application pour actualiser les miniatures.</string>
+  <string name="environment_variables_description">MPVEX_CONFIG_DIR indique le dossier de configuration de mpv choisi dans les paramètres avancés. La variable reste indéfinie tant qu’aucun dossier n’est choisi. Le stockage principal de l’appareil s’affiche sous forme de chemin ; les autres fournisseurs, sous forme d’URI. Dans la valeur d’une variable personnalisée, écrivez ${NAME} pour insérer une autre variable personnalisée ou une variable intégrée, ${NAME:-valeur par défaut} pour indiquer une valeur de repli et $$ pour un signe dollar littéral. Les références sont résolues avant que le lecteur n’initialise mpv ; une variable dont les références ne peuvent pas être résolues n’est pas exportée et la liste des paramètres en indique la raison.Chaque valeur est écrite dans l’environnement du processus avant le démarrage de mpv, si bien que mpv, les scripts Lua et les modules C peuvent tous la lire avec getenv(). Rouvrez le lecteur pour appliquer les modifications et redémarrez l’application pour actualiser les miniatures.</string>
   <string name="environment_variables_empty">Aucune variable personnalisée pour le moment</string>
   <string name="environment_variables_backup_notice">Les sauvegardes des paramètres exportés contiennent ces valeurs. Conservez-les en lieu sûr.</string>
   <string name="environment_variable_value_hidden">Valeur masquée</string>
@@ -1069,6 +1069,11 @@
   <string name="environment_variable_config_dir">Dossier de configuration de mpv choisi</string>
   <string name="environment_variable_config_unavailable">Aucun dossier de configuration choisi</string>
   <string name="environment_variable_name_reserved">Ce nom est réservé à une variable intégrée</string>
+  <string name="environment_variable_resolved_value">Valeur résolue</string>
+  <string name="environment_variable_reference_unresolved">Impossible à résoudre ; cette variable n’est pas exportée</string>
+  <string name="environment_variable_reference_undefined">Référence à la variable non définie %1$s</string>
+  <string name="environment_variable_reference_cycle">Référence circulaire en %1$s</string>
+  <string name="environment_variable_reference_malformed">Référence %1$s non valide</string>
   <string name="ui_select_c_plugins">Sélectionner les modules C</string>
   <string name="ui_select_c_plugins_summary">Sélectionnez les modules C à charger avec MPV. Un module n’a pas de réglages propres ; il lit les variables d’environnement que vous définissez dans la page Variables d’environnement.</string>
 </resources>

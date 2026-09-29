@@ -1023,7 +1023,7 @@
   </plurals>
   <string name="environment_variables_title">環境變數</string>
   <string name="environment_variables_summary">查看內建變數並管理自訂變數</string>
-  <string name="environment_variables_description">MPVEX_CONFIG_DIR 會顯示你在「進階設定」中選取的 mpv 設定檔儲存位置。尚未選取資料夾時不會設定此變數。裝置主要儲存空間會顯示檔案路徑；其他來源則顯示 URI。在自訂變數的值裡，用 ${NAME} 插入另一個自訂變數或內建變數，用 ${NAME:-預設值} 指定備援值，用 $$ 表示字面的貨幣符號。參照會在播放器初始化 mpv 之前解析完成；無法解析的自訂變數不會被匯出，設定清單會說明原因。重新開啟播放器以套用自訂變數的變更；若縮圖也需要使用新值，請重新啟動應用程式。</string>
+  <string name="environment_variables_description">MPVEX_CONFIG_DIR 會顯示你在「進階設定」中選取的 mpv 設定檔儲存位置。尚未選取資料夾時不會設定此變數。裝置主要儲存空間會顯示檔案路徑；其他來源則顯示 URI。在自訂變數的值裡，用 ${NAME} 插入另一個自訂變數或內建變數，用 ${NAME:-預設值} 指定備援值，用 $$ 表示字面的貨幣符號。參照會在播放器初始化 mpv 之前解析完成；無法解析的自訂變數不會被匯出，設定清單會說明原因。每個值都會在 mpv 啟動前寫入處理程序環境，mpv、Lua 腳本和 C 外掛都能用 getenv() 讀取。重新開啟播放器以套用自訂變數的變更；若縮圖也需要使用新值，請重新啟動應用程式。</string>
   <string name="environment_variables_empty">尚未新增自訂變數</string>
   <string name="environment_variables_backup_notice">匯出的設定也包含這些變數值，請妥善保管備份檔。</string>
   <string name="environment_variable_value_hidden">已隱藏變數值</string>
@@ -1043,6 +1043,11 @@
   <string name="environment_variable_config_dir">選取的 mpv 設定檔儲存位置</string>
   <string name="environment_variable_config_unavailable">尚未選取 mpv 設定檔資料夾</string>
   <string name="environment_variable_name_reserved">此名稱保留給內建變數使用</string>
+  <string name="environment_variable_resolved_value">解析後的值</string>
+  <string name="environment_variable_reference_unresolved">無法解析，此變數不會被匯出</string>
+  <string name="environment_variable_reference_undefined">參照了未定義的變數 %1$s</string>
+  <string name="environment_variable_reference_cycle">%1$s 處存在循環參照</string>
+  <string name="environment_variable_reference_malformed">參照 %1$s 寫法無效</string>
   <string name="ui_select_c_plugins">選擇 C 外掛</string>
   <string name="ui_select_c_plugins_summary">選擇要隨 MPV 載入的 C 外掛。外掛本身沒有設定項目；它會讀取你在環境變數頁面定義的環境變數。</string>
 </resources>

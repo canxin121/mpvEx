@@ -1023,7 +1023,7 @@
   </plurals>
   <string name="environment_variables_title">環境変数</string>
   <string name="environment_variables_summary">組み込み変数の確認とカスタム変数の管理</string>
-  <string name="environment_variables_description">MPVEX_CONFIG_DIR には「詳細設定」で選んだ mpv の設定保存先が入ります。フォルダーを選ぶまでは設定されません。端末の主ストレージではファイルパスを、ほかの保存先では URI を表示します。カスタム変数の値では、${NAME} で別のカスタム変数や組み込み変数を挿入し、${NAME:-既定値} で代替値を指定し、$$ で文字どおりのドル記号を表します。参照はプレーヤーが mpv を初期化する前に解決されます。解決できないカスタム変数はエクスポートされず、設定一覧に理由が表示されます。変更を反映するにはプレーヤーを開き直し、サムネイルにも反映するにはアプリを再起動してください。</string>
+  <string name="environment_variables_description">MPVEX_CONFIG_DIR には「詳細設定」で選んだ mpv の設定保存先が入ります。フォルダーを選ぶまでは設定されません。端末の主ストレージではファイルパスを、ほかの保存先では URI を表示します。カスタム変数の値では、${NAME} で別のカスタム変数や組み込み変数を挿入し、${NAME:-既定値} で代替値を指定し、$$ で文字どおりのドル記号を表します。参照はプレーヤーが mpv を初期化する前に解決されます。解決できないカスタム変数はエクスポートされず、設定一覧に理由が表示されます。すべての値は mpv の起動前にプロセス環境へ書き込まれ、mpv、Lua スクリプト、C プラグインがいずれも getenv() で読み取れます。変更を反映するにはプレーヤーを開き直し、サムネイルにも反映するにはアプリを再起動してください。</string>
   <string name="environment_variables_empty">カスタム変数はまだありません</string>
   <string name="environment_variables_backup_notice">設定のエクスポートには変数の値も含まれます。バックアップは安全な場所に保管してください。</string>
   <string name="environment_variable_value_hidden">値を非表示</string>
@@ -1043,6 +1043,11 @@
   <string name="environment_variable_config_dir">選択した mpv の設定保存先</string>
   <string name="environment_variable_config_unavailable">mpv の設定フォルダーが未選択です</string>
   <string name="environment_variable_name_reserved">この名前は組み込み変数に予約されています</string>
+  <string name="environment_variable_resolved_value">解決後の値</string>
+  <string name="environment_variable_reference_unresolved">解決できないため、この変数はエクスポートされません</string>
+  <string name="environment_variable_reference_undefined">未定義の変数 %1$s を参照しています</string>
+  <string name="environment_variable_reference_cycle">%1$s で参照が循環しています</string>
+  <string name="environment_variable_reference_malformed">参照 %1$s の書式が正しくありません</string>
   <string name="ui_select_c_plugins">C プラグインを選択</string>
   <string name="ui_select_c_plugins_summary">MPV と一緒に読み込む C プラグインを選択します。プラグイン自体に設定項目はなく、環境変数ページで定義した環境変数を読み取ります。</string>
 </resources>

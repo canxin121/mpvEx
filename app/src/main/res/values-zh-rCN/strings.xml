@@ -1023,7 +1023,7 @@
   </plurals>
   <string name="environment_variables_title">环境变量</string>
   <string name="environment_variables_summary">查看内置变量并管理自定义变量</string>
-  <string name="environment_variables_description">MPVEX_CONFIG_DIR 指向你在“高级”中选择的 MPV 配置存储位置。未选择文件夹时不设置该变量；手机主存储显示为文件路径，其他来源显示为 URI。在自定义变量的值里，用 ${NAME} 插入另一个自定义变量或内置变量，用 ${NAME:-默认值} 指定兜底值，用 $$ 表示字面的美元符号。引用会在播放器初始化 mpv 之前解析完成；无法解析的自定义变量不会被导出，设置列表会说明原因。重新打开播放器后，自定义变量的修改才会生效；要让缩略图也使用新值，请重启应用。</string>
+  <string name="environment_variables_description">MPVEX_CONFIG_DIR 指向你在“高级”中选择的 MPV 配置存储位置。未选择文件夹时不设置该变量；手机主存储显示为文件路径，其他来源显示为 URI。在自定义变量的值里，用 ${NAME} 插入另一个自定义变量或内置变量，用 ${NAME:-默认值} 指定兜底值，用 $$ 表示字面的美元符号。引用会在播放器初始化 mpv 之前解析完成；无法解析的自定义变量不会被导出，设置列表会说明原因。每个值都会在 mpv 启动前写入进程环境，mpv、Lua 脚本和 C 插件都可以用 getenv() 读取。重新打开播放器后，自定义变量的修改才会生效；要让缩略图也使用新值，请重启应用。</string>
   <string name="environment_variables_empty">尚未添加自定义变量</string>
   <string name="environment_variables_backup_notice">导出的设置包含这些变量值，请妥善保管备份文件。</string>
   <string name="environment_variable_value_hidden">值已隐藏</string>
@@ -1043,6 +1043,11 @@
   <string name="environment_variable_config_dir">所选 MPV 配置存储位置</string>
   <string name="environment_variable_config_unavailable">尚未选择 MPV 配置文件夹</string>
   <string name="environment_variable_name_reserved">此名称已留给内置变量</string>
+  <string name="environment_variable_resolved_value">解析后的值</string>
+  <string name="environment_variable_reference_unresolved">无法解析，该变量不会被导出</string>
+  <string name="environment_variable_reference_undefined">引用了未定义的变量 %1$s</string>
+  <string name="environment_variable_reference_cycle">%1$s 处存在循环引用</string>
+  <string name="environment_variable_reference_malformed">引用 %1$s 写法无效</string>
   <string name="ui_select_c_plugins">选择 C 插件</string>
   <string name="ui_select_c_plugins_summary">选择要随 MPV 加载的 C 插件。插件本身没有设置项；它读取你在环境变量页面定义的环境变量。</string>
 </resources>

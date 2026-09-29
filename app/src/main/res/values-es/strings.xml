@@ -1049,7 +1049,7 @@
   </plurals>
   <string name="environment_variables_title">Variables de entorno</string>
   <string name="environment_variables_summary">Consulta las variables integradas y gestiona las personalizadas</string>
-  <string name="environment_variables_description">MPVEX_CONFIG_DIR indica la carpeta de configuración de mpv elegida en los ajustes avanzados. No se define hasta que elijas una carpeta. En el almacenamiento principal del dispositivo se muestra una ruta; con otros proveedores se muestra un URI. En el valor de una variable personalizada, escribe ${NAME} para insertar otra variable personalizada o una integrada, ${NAME:-valor predeterminado} para indicar un valor de reserva y $$ para un signo de dólar literal. Las referencias se resuelven antes de que el reproductor inicialice mpv; una variable cuyas referencias no puedan resolverse no se exporta y la lista de ajustes indica el motivo. Vuelve a abrir el reproductor para aplicar los cambios y reinicia la aplicación para actualizar las miniaturas.</string>
+  <string name="environment_variables_description">MPVEX_CONFIG_DIR indica la carpeta de configuración de mpv elegida en los ajustes avanzados. No se define hasta que elijas una carpeta. En el almacenamiento principal del dispositivo se muestra una ruta; con otros proveedores se muestra un URI. En el valor de una variable personalizada, escribe ${NAME} para insertar otra variable personalizada o una integrada, ${NAME:-valor predeterminado} para indicar un valor de reserva y $$ para un signo de dólar literal. Las referencias se resuelven antes de que el reproductor inicialice mpv; una variable cuyas referencias no puedan resolverse no se exporta y la lista de ajustes indica el motivo.Todos los valores se escriben en el entorno del proceso antes de que arranque mpv, de modo que mpv, los scripts de Lua y los complementos C pueden leerlos con getenv(). Vuelve a abrir el reproductor para aplicar los cambios y reinicia la aplicación para actualizar las miniaturas.</string>
   <string name="environment_variables_empty">Aún no hay variables personalizadas</string>
   <string name="environment_variables_backup_notice">Las copias de ajustes exportadas incluyen estos valores. Guárdalas en un lugar seguro.</string>
   <string name="environment_variable_value_hidden">Valor oculto</string>
@@ -1069,6 +1069,11 @@
   <string name="environment_variable_config_dir">Carpeta de configuración de mpv elegida</string>
   <string name="environment_variable_config_unavailable">Aún no has elegido una carpeta de configuración</string>
   <string name="environment_variable_name_reserved">Este nombre está reservado para una variable integrada</string>
+  <string name="environment_variable_resolved_value">Valor resuelto</string>
+  <string name="environment_variable_reference_unresolved">No se puede resolver; esta variable no se exporta</string>
+  <string name="environment_variable_reference_undefined">Hace referencia a la variable no definida %1$s</string>
+  <string name="environment_variable_reference_cycle">Referencia circular en %1$s</string>
+  <string name="environment_variable_reference_malformed">Referencia %1$s no válida</string>
   <string name="ui_select_c_plugins">Seleccionar complementos C</string>
   <string name="ui_select_c_plugins_summary">Selecciona los complementos C que se cargarán con MPV. Un complemento no tiene ajustes propios; lee las variables de entorno que definas en la página Variables de entorno.</string>
 </resources>

@@ -37,6 +37,9 @@ import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.environment.MpvExEnvironment
 import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
+import app.marlboroadvance.mpvex.plugins.EnvironmentVariableExpander
+import app.marlboroadvance.mpvex.plugins.EnvironmentVariableExpansionError
+import app.marlboroadvance.mpvex.plugins.EnvironmentVariableExpansionErrorReason
 import app.marlboroadvance.mpvex.plugins.EnvironmentVariablesCodec
 import app.marlboroadvance.mpvex.presentation.Screen
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
@@ -53,11 +56,20 @@ object EnvironmentVariablesScreen : Screen {
     val encodedVariables by preferences.environmentVariables.collectAsState()
     val configTreeUri by preferences.mpvConfStorageUri.collectAsState()
     val variables = remember(encodedVariables) { EnvironmentVariablesCodec.decode(encodedVariables) }
+    val builtIns = remember(configTreeUri) { MpvExEnvironment.builtInValues(configTreeUri) }
+    // Errors only, so the list keeps hiding every value.
+    val referenceErrors =
+      remember(variables, builtIns) {
+        EnvironmentVariableExpander
+          .expand(variables, builtIns)
+          .errors
+          .groupBy(EnvironmentVariableExpansionError::name)
+      }
     val builtInVariables = listOf(
       Triple(
         MpvExEnvironment.CONFIG_DIR,
         R.string.environment_variable_config_dir,
-        MpvExEnvironment.selectedConfigLocation(configTreeUri),
+        builtIns[MpvExEnvironment.CONFIG_DIR],
       ),
     )
     // An empty string means a new entry; valid environment names are never empty.
@@ -121,7 +133,17 @@ object EnvironmentVariablesScreen : Screen {
         items(variables.keys.sorted()) { name ->
           ListItem(
             headlineContent = { Text(name) },
-            supportingContent = { Text(stringResource(R.string.environment_variable_value_hidden)) },
+            supportingContent = {
+              Column {
+                Text(stringResource(R.string.environment_variable_value_hidden))
+                referenceErrors[name].orEmpty().forEach { error ->
+                  Text(
+                    text = stringResource(error.reason.messageResource(), error.reference),
+                    color = MaterialTheme.colorScheme.error,
+                  )
+                }
+              }
+            },
             modifier = Modifier.clickable { editingName = name },
           )
         }
@@ -149,6 +171,8 @@ object EnvironmentVariablesScreen : Screen {
         originalName = originalName.takeIf(String::isNotEmpty),
         initialValue = variables[originalName].orEmpty(),
         existingNames = variables.keys,
+        otherVariables = variables.filterKeys { it != originalName },
+        builtIns = builtIns,
         onSave = { name, value ->
           val current = EnvironmentVariablesCodec.decode(preferences.environmentVariables.get())
           val updated = current.toMutableMap()
@@ -168,11 +192,20 @@ object EnvironmentVariablesScreen : Screen {
   }
 }
 
+private fun EnvironmentVariableExpansionErrorReason.messageResource(): Int =
+  when (this) {
+    EnvironmentVariableExpansionErrorReason.UNDEFINED -> R.string.environment_variable_reference_undefined
+    EnvironmentVariableExpansionErrorReason.CYCLE -> R.string.environment_variable_reference_cycle
+    EnvironmentVariableExpansionErrorReason.MALFORMED -> R.string.environment_variable_reference_malformed
+  }
+
 @Composable
 private fun EnvironmentVariableEditorDialog(
   originalName: String?,
   initialValue: String,
   existingNames: Set<String>,
+  otherVariables: Map<String, String>,
+  builtIns: Map<String, String>,
   onSave: (String, String) -> Unit,
   onDelete: () -> Unit,
   onDismiss: () -> Unit,
@@ -190,6 +223,14 @@ private fun EnvironmentVariableEditorDialog(
   }
   val valueError = if (EnvironmentVariablesCodec.isValidValue(value)) null
   else R.string.environment_variable_value_invalid
+  // Preview only: saving keeps the original text. The entry itself is excluded
+  // from the resolution set because it is not saved yet.
+  val resolvedValue =
+    remember(normalizedName, value, otherVariables, builtIns) {
+      EnvironmentVariableExpander
+        .expand(otherVariables + (normalizedName to value), builtIns)
+        .values[normalizedName]
+    }
 
   AlertDialog(
     onDismissRequest = onDismiss,
@@ -222,6 +263,23 @@ private fun EnvironmentVariableEditorDialog(
           minLines = 1,
           maxLines = 4,
           modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+          text = stringResource(R.string.environment_variable_resolved_value),
+          style = MaterialTheme.typography.labelMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        val resolvedText =
+          when {
+            resolvedValue == null -> stringResource(R.string.environment_variable_reference_unresolved)
+            // The same toggle as the raw value: a resolved value can embed a secret.
+            !valueVisible -> "•".repeat(minOf(resolvedValue.length, 64))
+            else -> resolvedValue
+          }
+        Text(
+          text = resolvedText,
+          style = MaterialTheme.typography.bodyMedium,
+          color = if (resolvedValue == null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
         )
       }
     },

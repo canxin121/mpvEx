@@ -1036,7 +1036,7 @@
   </plurals>
   <string name="environment_variables_title">Umgebungsvariablen</string>
   <string name="environment_variables_summary">Integrierte Variablen anzeigen und eigene verwalten</string>
-  <string name="environment_variables_description">MPVEX_CONFIG_DIR enthält den Speicherort für die mpv-Konfiguration, den Sie in den erweiterten Einstellungen auswählen. Ohne ausgewählten Ordner ist die Variable nicht gesetzt. Beim primären Gerätespeicher wird ein Dateipfad angezeigt, bei anderen Anbietern ein URI. Schreiben Sie im Wert einer eigenen Variablen ${NAME}, um eine andere eigene oder eine integrierte Variable einzufügen, ${NAME:-Standardwert} für einen Ersatzwert und $$ für ein wörtliches Dollarzeichen. Verweise werden aufgelöst, bevor der Player mpv initialisiert; eine Variable, deren Verweise nicht aufgelöst werden können, wird nicht exportiert und die Einstellungsliste nennt den Grund. Öffnen Sie den Player erneut, um Änderungen zu übernehmen, und starten Sie die App für aktualisierte Vorschaubilder neu.</string>
+  <string name="environment_variables_description">MPVEX_CONFIG_DIR enthält den Speicherort für die mpv-Konfiguration, den Sie in den erweiterten Einstellungen auswählen. Ohne ausgewählten Ordner ist die Variable nicht gesetzt. Beim primären Gerätespeicher wird ein Dateipfad angezeigt, bei anderen Anbietern ein URI. Schreiben Sie im Wert einer eigenen Variablen ${NAME}, um eine andere eigene oder eine integrierte Variable einzufügen, ${NAME:-Standardwert} für einen Ersatzwert und $$ für ein wörtliches Dollarzeichen. Verweise werden aufgelöst, bevor der Player mpv initialisiert; eine Variable, deren Verweise nicht aufgelöst werden können, wird nicht exportiert und die Einstellungsliste nennt den Grund.Jeder Wert wird vor dem Start von mpv in die Prozessumgebung geschrieben, sodass mpv, Lua-Skripte und C-Plugins ihn mit getenv() lesen können. Öffnen Sie den Player erneut, um Änderungen zu übernehmen, und starten Sie die App für aktualisierte Vorschaubilder neu.</string>
   <string name="environment_variables_empty">Noch keine eigenen Variablen hinzugefügt</string>
   <string name="environment_variables_backup_notice">Exportierte Einstellungen enthalten diese Werte. Bewahren Sie Sicherungen sicher auf.</string>
   <string name="environment_variable_value_hidden">Wert ausgeblendet</string>
@@ -1056,6 +1056,11 @@
   <string name="environment_variable_config_dir">Gewählter Speicherort für die mpv-Konfiguration</string>
   <string name="environment_variable_config_unavailable">Kein Konfigurationsordner ausgewählt</string>
   <string name="environment_variable_name_reserved">Dieser Name ist für eine integrierte Variable reserviert</string>
+  <string name="environment_variable_resolved_value">Aufgelöster Wert</string>
+  <string name="environment_variable_reference_unresolved">Kann nicht aufgelöst werden; diese Variable wird nicht exportiert</string>
+  <string name="environment_variable_reference_undefined">Verweist auf die nicht definierte Variable %1$s</string>
+  <string name="environment_variable_reference_cycle">Zirkulärer Verweis bei %1$s</string>
+  <string name="environment_variable_reference_malformed">Ungültiger Verweis %1$s</string>
   <string name="ui_select_c_plugins">C-Plugins auswählen</string>
   <string name="ui_select_c_plugins_summary">Wählen Sie die C-Plugins, die mit MPV geladen werden. Ein Plugin hat keine eigenen Einstellungen; es liest die Umgebungsvariablen, die Sie auf der Seite „Umgebungsvariablen“ festlegen.</string>
 </resources>

@@ -240,9 +240,6 @@
   <string name="pref_about_title">關於</string>
   <string name="pref_about_summary">致謝、許可</string>
   <string name="pref_about_oss_libraries">開放原始碼程式庫</string>
-  <string name="pref_about_donate_title">捐贈</string>
-  <string name="pref_about_donate_kofi_summary">支援 Ko-fi 上的開發者</string>
-  <string name="pref_about_donate_paypal_summary">支援 PayPal 上的開發者</string>
   <string name="player_sheets_add_ext_sub">新增外部字幕</string>
   <string name="player_sheets_add_ext_audio">新增外部音軌</string>
   <string name="player_sheets_tracks_off">關閉</string>
@@ -1084,4 +1081,5 @@
   <string name="crash_screen_open_logs">開啟日誌</string>
   <string name="pref_advanced_native_logs_title">捕獲原生輸出</string>
   <string name="pref_advanced_native_logs_summary">重定向處理程序主控台，讓 C 外掛與函式庫的輸出也能寫入日誌</string>
+  <string name="ui_fork_notice">mpvExtended 的 fork 版本，上游儲存庫 %1$s</string>
 </resources>

@@ -240,9 +240,6 @@
   <string name="pref_about_title">О</string>
   <string name="pref_about_summary">Благодарности, лицензии</string>
   <string name="pref_about_oss_libraries">Библиотеки с открытым кодом</string>
-  <string name="pref_about_donate_title">Пожертвовать</string>
-  <string name="pref_about_donate_kofi_summary">Поддержите разработчика на Ko-fi</string>
-  <string name="pref_about_donate_paypal_summary">Поддержите разработчика через PayPal</string>
   <string name="player_sheets_add_ext_sub">Добавить внешние субтитры</string>
   <string name="player_sheets_add_ext_audio">Добавить внешние звуковые дорожки</string>
   <string name="player_sheets_tracks_off">Выкл.</string>
@@ -1123,4 +1120,5 @@
   <string name="crash_screen_open_logs">Открыть журналы</string>
   <string name="pref_advanced_native_logs_title">Захват встроенного вывода</string>
   <string name="pref_advanced_native_logs_summary">Перенаправляет консоль процесса, чтобы вывод C-плагинов и библиотек тоже попадал в журнал</string>
+  <string name="ui_fork_notice">Форк mpvExtended, исходный репозиторий: %1$s</string>
 </resources>

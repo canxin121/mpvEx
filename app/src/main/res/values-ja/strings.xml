@@ -240,9 +240,6 @@
   <string name="pref_about_title">について</string>
   <string name="pref_about_summary">謝辞、ライセンス</string>
   <string name="pref_about_oss_libraries">オープンソースライブラリ</string>
-  <string name="pref_about_donate_title">寄付する</string>
-  <string name="pref_about_donate_kofi_summary">Ko-fi で開発者をサポートする</string>
-  <string name="pref_about_donate_paypal_summary">PayPal で開発者をサポートする</string>
   <string name="player_sheets_add_ext_sub">外部字幕を追加する</string>
   <string name="player_sheets_add_ext_audio">外部オーディオトラックを追加する</string>
   <string name="player_sheets_tracks_off">オフ</string>
@@ -1084,4 +1081,5 @@
   <string name="crash_screen_open_logs">ログを開く</string>
   <string name="pref_advanced_native_logs_title">ネイティブ出力を取得</string>
   <string name="pref_advanced_native_logs_summary">プロセスのコンソールをリダイレクトし、C プラグインやライブラリの出力もログに記録します</string>
+  <string name="ui_fork_notice">mpvExtended のフォーク版です。上流リポジトリは %1$s</string>
 </resources>

@@ -24,6 +24,18 @@ val releaseSigningConfigured =
     !keystoreProperties.getProperty(it).isNullOrBlank()
   }
 
+// This app is a fork of mpvExtended (github.com/marlboro-advance/mpvEx). Every
+// project link the app shows or fetches — the About screen's GitHub button, the
+// permission dialog's repository link, the update checker's API call — is
+// derived from these four values, so changing them here is the whole edit and
+// nothing under app/ hardcodes an owner again.
+val repoOwner = "canxin121"
+val repoName = "mpvEx"
+val upstreamOwner = "marlboro-advance"
+val upstreamName = "mpvEx"
+val repoUrl = "https://github.com/$repoOwner/$repoName"
+val upstreamUrl = "https://github.com/$upstreamOwner/$upstreamName"
+
 android {
   namespace = "app.marlboroadvance.mpvex"
   compileSdk = 37
@@ -41,6 +53,17 @@ android {
 
     buildConfigField("String", "GIT_SHA", "\"${getCommitSha()}\"")
     buildConfigField("int", "GIT_COUNT", getCommitCount())
+    buildConfigField("String", "REPO_OWNER", "\"$repoOwner\"")
+    buildConfigField("String", "REPO_NAME", "\"$repoName\"")
+    buildConfigField("String", "UPSTREAM_OWNER", "\"$upstreamOwner\"")
+    buildConfigField("String", "UPSTREAM_NAME", "\"$upstreamName\"")
+
+    // Link resources are generated rather than listed in values/strings.xml: an
+    // XML entry of the same name would be a duplicate resource and fail the
+    // build, and keeping them non-translatable means the i18n glossary never has
+    // to carry a URL.
+    resValue("string", "github_repo_url", repoUrl)
+    resValue("string", "github_upstream_url", upstreamUrl)
   }
 
   flavorDimensions += "distribution"
@@ -143,6 +166,10 @@ android {
     compose = true
     viewBinding = true
     buildConfig = true
+    // `resValue` is opt-in in AGP 9; the project links in defaultConfig need it.
+    // Without this the configuration fails with "defaultConfig contains custom
+    // resource values, but the feature is disabled".
+    resValues = true
   }
 
   packaging {

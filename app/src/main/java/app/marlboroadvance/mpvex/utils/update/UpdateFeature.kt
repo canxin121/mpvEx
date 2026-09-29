@@ -88,7 +88,7 @@ class UpdateManager(
             return null
         }
         
-        val release = getLatestRelease("https://api.github.com/repos/marlboro-advance/mpvEx/releases/latest")
+        val release = getLatestRelease("https://api.github.com/repos/${BuildConfig.REPO_OWNER}/${BuildConfig.REPO_NAME}/releases/latest") ?: return null
         val currentVersion = BuildConfig.VERSION_NAME.replace("-dev", "")
         val remoteVersion = release.tagName.removePrefix("v")
         val prefs = context.getSharedPreferences("mpvEx_prefs", Context.MODE_PRIVATE)
@@ -118,9 +118,15 @@ class UpdateManager(
             .apply()
     }
 
-    private suspend fun getLatestRelease(url: String): Release = withContext(Dispatchers.IO) {
+    private suspend fun getLatestRelease(url: String): Release? = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(url).build()
         val response = client.newCall(request).execute()
+        // A 404 here means the repository has no published release yet, which is
+        // the normal state of a fresh fork. GitHub answers 404 rather than an
+        // empty list, so without this the manual "check for updates" reports a
+        // failure on a fork that simply has not shipped anything — a false
+        // alarm, since there is nothing to install either way.
+        if (response.code == 404) return@withContext null
         if (!response.isSuccessful) throw IOException(context.getString(R.string.ui_server_error_code, response.code))
 
         val responseBody = response.body.string()

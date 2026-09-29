@@ -240,9 +240,6 @@
   <string name="pref_about_title">Sobre</string>
   <string name="pref_about_summary">Agradecimentos, licenças</string>
   <string name="pref_about_oss_libraries">Bibliotecas de código aberto</string>
-  <string name="pref_about_donate_title">Doe</string>
-  <string name="pref_about_donate_kofi_summary">Apoie o desenvolvedor no Ko-fi</string>
-  <string name="pref_about_donate_paypal_summary">Apoie o desenvolvedor no PayPal</string>
   <string name="player_sheets_add_ext_sub">Adicione legendas externas</string>
   <string name="player_sheets_add_ext_audio">Adicione faixas de áudio externas</string>
   <string name="player_sheets_tracks_off">Desligado</string>
@@ -1110,4 +1107,5 @@
   <string name="crash_screen_open_logs">Abrir registros</string>
   <string name="pref_advanced_native_logs_title">Capturar saída nativa</string>
   <string name="pref_advanced_native_logs_summary">Redireciona o console do processo para registrar também a saída de plugins e bibliotecas em C</string>
+  <string name="ui_fork_notice">Versão derivada (fork) do mpvExtended, repositório original em %1$s</string>
 </resources>

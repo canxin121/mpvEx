@@ -240,9 +240,6 @@
   <string name="pref_about_title">关于</string>
   <string name="pref_about_summary">致谢、许可</string>
   <string name="pref_about_oss_libraries">开源库</string>
-  <string name="pref_about_donate_title">捐赠</string>
-  <string name="pref_about_donate_kofi_summary">支持 Ko-fi 上的开发者</string>
-  <string name="pref_about_donate_paypal_summary">支持 PayPal 上的开发者</string>
   <string name="player_sheets_add_ext_sub">添加外部字幕</string>
   <string name="player_sheets_add_ext_audio">添加外部音轨</string>
   <string name="player_sheets_tracks_off">关闭</string>
@@ -1084,4 +1081,5 @@
   <string name="crash_screen_open_logs">打开日志</string>
   <string name="pref_advanced_native_logs_title">捕获原生输出</string>
   <string name="pref_advanced_native_logs_summary">重定向进程控制台，使 C 插件与库的输出也能写入日志</string>
+  <string name="ui_fork_notice">mpvExtended 的 fork 版本，上游仓库 %1$s</string>
 </resources>

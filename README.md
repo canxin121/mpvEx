@@ -44,8 +44,10 @@ Download the latest stable version from the [GitHub releases page](https://githu
 
 [![Download Release](https://img.shields.io/badge/Download-Release-blue?style=for-the-badge)](https://github.com/canxin121/mpvEx/releases)
 
-This fork has not published a release of its own yet, so the badge above renders empty. Until it does,
-the upstream listed under [Acknowledgments](#acknowledgments) is the place to get a build.
+Each release carries a universal APK and one per CPU architecture, built and
+signed by GitHub Actions from the tag. The app checks this repository's latest
+release when you ask it to, so an update installs this fork rather than
+upstream.
 
 ### Preview Builds
 For testing purposes only

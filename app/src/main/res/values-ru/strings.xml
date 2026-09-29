@@ -714,7 +714,7 @@
   <string name="ui_logcat">Logcat:</string>
   <string name="ui_error_1_s">Ошибка: %1$s.</string>
   <string name="ui_failed_to_share_1_s">Не удалось поделиться: %1$s.</string>
-  <string name="ui_current_1_s">Текущее: %1$s%</string>
+  <string name="ui_current_1_s">Сейчас: %1$s %%</string>
   <string name="ui_1_s_settings_saved">Настройки %1$s сохранены.</string>
   <string name="ui_settings_in_this_panel_belong_only_to_1_s">Настройки в этой панели принадлежат только %1$s.</string>
   <string name="ui_save_1_s_settings">Сохраните настройки %1$s.</string>

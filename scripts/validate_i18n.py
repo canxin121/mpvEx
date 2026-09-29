@@ -44,10 +44,22 @@ def arguments(text: str):
     return Counter(token for token in FORMAT.findall(text) if token != "%%")
 
 
+def has_unescaped_percent(text: str):
+    """A formatted string must use %% for every literal percent sign."""
+    if not arguments(text):
+        return False
+    matches = list(FORMAT.finditer(text))
+    covered = {index for match in matches for index in range(*match.span())}
+    return any(char == "%" and index not in covered for index, char in enumerate(text))
+
+
 def main():
     original, original_plurals = load(BASE)
     expected = {key for key, item in original.items() if item.get("translatable") != "false"}
     errors = []
+    for key, item in original.items():
+        if has_unescaped_percent(item.text or ""):
+            errors.append(f"values/{key}: unescaped percent sign in a formatted string")
     for path in sorted(ROOT.glob("values-*/strings.xml")):
         strings, plurals = load(path)
         missing = expected - strings.keys()
@@ -66,6 +78,8 @@ def main():
                     f"{path.parent.name}/{key}: arguments {arguments(translated)} "
                     f"do not match {arguments(source)}"
                 )
+            if has_unescaped_percent(translated):
+                errors.append(f"{path.parent.name}/{key}: unescaped percent sign in a formatted string")
             if "MPVEXARG" in translated or "MPVEXSEP" in translated:
                 errors.append(f"{path.parent.name}/{key}: translation marker remains")
         for key in original_plurals.keys():

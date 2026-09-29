@@ -714,7 +714,7 @@
   <string name="ui_logcat">Logcat: </string>
   <string name="ui_error_1_s">Erro: %1$s</string>
   <string name="ui_failed_to_share_1_s">Falha ao compartilhar: %1$s</string>
-  <string name="ui_current_1_s">Atual: %1$s%</string>
+  <string name="ui_current_1_s">Atual: %1$s%%</string>
   <string name="ui_1_s_settings_saved">Configurações %1$s salvas</string>
   <string name="ui_settings_in_this_panel_belong_only_to_1_s">As configurações neste painel pertencem apenas ao %1$s.</string>
   <string name="ui_save_1_s_settings">Salvar configurações do %1$s</string>

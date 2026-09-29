@@ -714,7 +714,7 @@
   <string name="ui_logcat">Logcat: </string>
   <string name="ui_error_1_s">Error: %1$s</string>
   <string name="ui_failed_to_share_1_s">No se pudo compartir: %1$s</string>
-  <string name="ui_current_1_s">Actual: %1$s%</string>
+  <string name="ui_current_1_s">Actual: %1$s%%</string>
   <string name="ui_1_s_settings_saved">Configuración %1$s guardada</string>
   <string name="ui_settings_in_this_panel_belong_only_to_1_s">Las configuraciones en este panel pertenecen únicamente a %1$s.</string>
   <string name="ui_save_1_s_settings">Guarde la configuración de %1$s</string>

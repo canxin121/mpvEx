@@ -714,7 +714,7 @@
   <string name="ui_logcat">Logcat：</string>
   <string name="ui_error_1_s">错误：%1$s</string>
   <string name="ui_failed_to_share_1_s">分享失败：%1$s</string>
-  <string name="ui_current_1_s">当前：%1$s%</string>
+  <string name="ui_current_1_s">当前：%1$s%%</string>
   <string name="ui_1_s_settings_saved">%1$s 设置已保存</string>
   <string name="ui_settings_in_this_panel_belong_only_to_1_s">该面板中的设置仅属于 %1$s。</string>
   <string name="ui_save_1_s_settings">保存 %1$s 设置</string>

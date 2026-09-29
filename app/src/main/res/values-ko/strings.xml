@@ -714,7 +714,7 @@
   <string name="ui_logcat">Logcat: </string>
   <string name="ui_error_1_s">오류: %1$s</string>
   <string name="ui_failed_to_share_1_s">공유 실패: %1$s</string>
-  <string name="ui_current_1_s">현재: %1$s%</string>
+  <string name="ui_current_1_s">현재: %1$s%%</string>
   <string name="ui_1_s_settings_saved">%1$s 설정이 저장되었습니다.</string>
   <string name="ui_settings_in_this_panel_belong_only_to_1_s">이 패널의 설정은 %1$s에만 속합니다.</string>
   <string name="ui_save_1_s_settings">%1$s 설정 저장</string>

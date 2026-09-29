@@ -788,7 +788,7 @@
   <!-- Dynamic UI strings -->
   <string name="ui_error_1_s">Error: %1$s</string>
   <string name="ui_failed_to_share_1_s">Failed to share: %1$s</string>
-  <string name="ui_current_1_s">Current: %1$s%</string>
+  <string name="ui_current_1_s">Current: %1$s%%</string>
   <string name="ui_1_s_settings_saved">%1$s settings saved</string>
   <string name="ui_settings_in_this_panel_belong_only_to_1_s">Settings in this panel belong only to %1$s.</string>
   <string name="ui_save_1_s_settings">Save %1$s settings</string>

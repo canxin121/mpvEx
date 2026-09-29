@@ -525,6 +525,20 @@ object SearchablePreferences {
                 screen = AdvancedPreferencesScreen,
             ))
             add(SearchablePreference(
+                titleRes = R.string.pref_enable_lua_scripts_title,
+                summaryRes = R.string.pref_enable_lua_scripts_summary,
+                keywords = listOf("lua", "scripts", "enable", "load"),
+                category = "Advanced",
+                screen = AdvancedPreferencesScreen,
+            ))
+            add(SearchablePreference(
+                titleRes = R.string.pref_manage_lua_scripts_title,
+                summaryRes = R.string.pref_manage_lua_scripts_summary,
+                keywords = listOf("lua", "scripts", "manage", "edit", "select"),
+                category = "Advanced",
+                screen = LuaScriptsScreen,
+            ))
+            add(SearchablePreference(
                 titleRes = R.string.pref_advanced_enable_recently_played_title,
                 summaryRes = R.string.pref_advanced_enable_recently_played_summary,
                 keywords = listOf("recently", "played", "history", "enable", "track"),

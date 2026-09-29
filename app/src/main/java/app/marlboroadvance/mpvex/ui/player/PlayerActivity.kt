@@ -49,6 +49,8 @@ import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentApplicator
 import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentPlan
 import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentPlanBuilder
 import app.marlboroadvance.mpvex.plugins.isSafeCPluginFileName
+import app.marlboroadvance.mpvex.plugins.hasScriptFileExtension
+import app.marlboroadvance.mpvex.plugins.isSafeScriptFileName
 import app.marlboroadvance.mpvex.ui.player.controls.PlayerControls
 import app.marlboroadvance.mpvex.ui.theme.MpvexTheme
 import app.marlboroadvance.mpvex.utils.history.RecentlyPlayedOps
@@ -895,7 +897,7 @@ class PlayerActivity :
 
   /**
    * Syncs MPV assets from the user's configured MPV directory to internal storage.
-   * Handles: mpv.conf, input.conf, selected C plugins, and fonts.
+   * Handles: mpv.conf, input.conf, selected Lua scripts, C plugins, and fonts.
    *
    * Uses case-insensitive subfolder matching and falls back to root scanning
    * if standard subfolders don't exist. Falls back to preferences-based config
@@ -969,9 +971,18 @@ class PlayerActivity :
     }
     removeInternalCPlugins(environmentResult.failedPluginFileNames)
 
+    // Lua and C plugins share mpv's scripts directory. The Lua sync only touches
+    // .lua/.js files, leaving selected .so plugins in place.
+    runCatching { syncLuaScripts(tree) }
+      .onFailure { error -> Log.e(TAG, "Could not sync Lua scripts", error) }
+    runCatching { syncScriptOptions(tree) }
+      .onFailure { error -> Log.e(TAG, "Could not sync script options", error) }
+
     if (tree != null) {
       Log.d(TAG, "Syncing from user MPV directory: ${tree.uri}")
       syncConfigFiles(tree)
+      runCatching { syncUserShaders(tree) }
+        .onFailure { error -> Log.e(TAG, "Could not sync user shaders", error) }
       syncFonts(tree)
       Log.d(TAG, "Full MPV directory sync completed")
     } else {
@@ -980,6 +991,96 @@ class PlayerActivity :
       copyMPVConfigFromPreferences()
     }
   }
+
+  // ==================== Lua Scripts Sync ====================
+
+  /** Copies selected user scripts before libmpv initializes and removes deselected ones. */
+  private fun syncLuaScripts(tree: DocumentFile?) {
+    val targetDir = File(filesDir, "scripts").apply { mkdirs() }
+    targetDir.listFiles()?.forEach { file ->
+      if (file.isFile && hasScriptFileExtension(file.name) && !file.delete()) {
+        Log.w(TAG, "Could not remove stale script: ${file.name}")
+      }
+    }
+
+    if (!advancedPreferences.enableLuaScripts.get() || tree == null) return
+
+    val selected = advancedPreferences.selectedLuaScripts.get()
+    val sourceDir = findSubdirCaseInsensitive(tree, "scripts") ?: tree
+    var copied = 0
+    sourceDir.listFiles().forEach { script ->
+      val name = script.name ?: return@forEach
+      if (!script.isFile || !script.canRead() || !isSafeScriptFileName(name) || name !in selected) {
+        return@forEach
+      }
+      runCatching {
+        val input = checkNotNull(contentResolver.openInputStream(script.uri)) {
+          "Could not open $name"
+        }
+        input.use { source ->
+          File(targetDir, name).outputStream().use { output -> source.copyTo(output) }
+        }
+      }.onSuccess {
+        copied++
+      }.onFailure { error ->
+        File(targetDir, name).delete()
+        Log.e(TAG, "Could not sync Lua script: $name", error)
+      }
+    }
+    Log.d(TAG, "Lua scripts sync: $copied/${selected.size} selected file(s)")
+  }
+
+  private fun syncScriptOptions(tree: DocumentFile?) {
+    val targetDir = File(filesDir, "script-opts").apply { mkdirs() }
+    targetDir.listFiles()?.forEach { file ->
+      if (file.isFile && !file.delete()) {
+        Log.w(TAG, "Could not remove stale script option: ${file.name}")
+      }
+    }
+    if (tree == null) return
+    val sourceDir = findSubdirCaseInsensitive(tree, "script-opts") ?: return
+    sourceDir.listFiles().forEach { sourceFile ->
+      val name = sourceFile.name ?: return@forEach
+      if (!sourceFile.isFile || !sourceFile.canRead() || !isSafeConfigFileName(name)) return@forEach
+      runCatching {
+        val input = checkNotNull(contentResolver.openInputStream(sourceFile.uri)) {
+          "Could not open $name"
+        }
+        input.use { input ->
+          File(targetDir, name).outputStream().use { output -> input.copyTo(output) }
+        }
+      }.onFailure { error ->
+        File(targetDir, name).delete()
+        Log.e(TAG, "Could not sync script option: $name", error)
+      }
+    }
+  }
+
+  private fun syncUserShaders(tree: DocumentFile) {
+    val sourceDir = findSubdirCaseInsensitive(tree, "shaders") ?: tree
+    val targetDir = File(filesDir, "shaders").apply { mkdirs() }
+    sourceDir.listFiles().forEach { sourceFile ->
+      val name = sourceFile.name ?: return@forEach
+      if (!sourceFile.isFile || !sourceFile.canRead() || !isSafeConfigFileName(name)) return@forEach
+      if (name.substringAfterLast('.', "").lowercase() !in setOf("glsl", "hook", "comp")) return@forEach
+      runCatching {
+        val input = checkNotNull(contentResolver.openInputStream(sourceFile.uri)) {
+          "Could not open $name"
+        }
+        input.use { input ->
+          File(targetDir, name).outputStream().use { output -> input.copyTo(output) }
+        }
+      }.onFailure { error ->
+        File(targetDir, name).delete()
+        Log.e(TAG, "Could not sync shader: $name", error)
+      }
+    }
+  }
+
+  private fun isSafeConfigFileName(name: String): Boolean =
+    name.isNotBlank() && name != "." && name != ".." &&
+      !name.contains('/') && !name.contains('\\') &&
+      !name.any { it.code < 0x20 || it.code == 0x7f }
 
   // ==================== Config Files Sync ====================
 

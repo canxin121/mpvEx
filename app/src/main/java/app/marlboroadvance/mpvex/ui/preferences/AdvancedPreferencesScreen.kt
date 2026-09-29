@@ -440,6 +440,50 @@ object AdvancedPreferencesScreen : Screen {
             }
           }
           
+          // Lua Scripts Section
+          item {
+            PreferenceSectionHeader(title = "Lua Scripts")
+          }
+
+          item {
+            PreferenceCard {
+              val enabled by preferences.enableLuaScripts.collectAsState()
+              val selected by preferences.selectedLuaScripts.collectAsState()
+
+              SwitchPreference(
+                value = enabled,
+                onValueChange = preferences.enableLuaScripts::set,
+                title = { Text(stringResource(R.string.pref_enable_lua_scripts_title)) },
+                summary = { Text(stringResource(R.string.pref_enable_lua_scripts_summary)) },
+              )
+
+              PreferenceDivider()
+
+              Preference(
+                title = { Text(stringResource(R.string.pref_manage_lua_scripts_title)) },
+                summary = {
+                  Text(
+                    if (mpvConfStorageLocation.isBlank()) {
+                      stringResource(R.string.pref_lua_pick_directory)
+                    } else {
+                      stringResource(R.string.pref_lua_selected_count, selected.size)
+                    },
+                    color = MaterialTheme.colorScheme.outline,
+                  )
+                },
+                onClick = { backStack.add(LuaScriptsScreen) },
+                enabled = mpvConfStorageLocation.isNotBlank(),
+              )
+
+              Text(
+                stringResource(R.string.pref_lua_restart_summary),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+              )
+            }
+          }
+
           // C Plugins Section
           item {
             PreferenceSectionHeader(title = "C Plugins")

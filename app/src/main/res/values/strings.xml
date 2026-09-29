@@ -92,6 +92,9 @@
   <string name="pref_enable_lua_scripts_summary">Load Lua scripts from configuration directory</string>
   <string name="pref_manage_lua_scripts_title">Manage Lua Scripts</string>
   <string name="pref_manage_lua_scripts_summary">Manage enabled Lua scripts</string>
+  <string name="pref_lua_pick_directory">Choose an MPV configuration directory first</string>
+  <string name="pref_lua_selected_count">%1$d script(s) selected</string>
+  <string name="pref_lua_restart_summary">Open the player again after changing scripts or this setting.</string>
   <string name="pref_clear_config_cache_title">Clear config cache</string>
   <string name="pref_clear_config_cache_summary">Clear the cached mpv.conf settings</string>
   <string name="pref_clear_thumbnail_cache_title">Clear thumbnail cache</string>

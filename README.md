@@ -85,6 +85,11 @@ layout, schema, lifecycle, and compatibility rules.
 Configure on-screen buttons for mpv key bindings and trigger them from the
 player's More menu or shortcut side panel. See [Mobile shortcuts](docs/mobile-shortcuts.md).
 
+### Lua scripts
+
+Select and edit scripts from **Settings → Advanced → Manage Lua Scripts**.
+Scripts can also register actions for mobile shortcut buttons. See [Lua scripts](docs/lua-scripts.md).
+
 ### Prerequisites
 
 - JDK 17

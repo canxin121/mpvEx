@@ -9,6 +9,8 @@ class AdvancedPreferences(
   val mpvConfStorageUri = preferenceStore.getString("mpv_conf_storage_location_uri")
   val mpvConf = preferenceStore.getString("mpv.conf")
   val inputConf = preferenceStore.getString("input.conf")
+  val enableLuaScripts = preferenceStore.getBoolean("enable_lua_scripts", false)
+  val selectedLuaScripts = preferenceStore.getStringSet("selected_lua_scripts", emptySet())
 
   val verboseLogging = preferenceStore.getBoolean("verbose_logging", BuildConfig.BUILD_TYPE != "release")
 

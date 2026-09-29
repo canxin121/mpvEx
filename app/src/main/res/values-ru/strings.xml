@@ -1128,7 +1128,7 @@
   </plurals>
   <string name="environment_variables_title">Переменные окружения</string>
   <string name="environment_variables_summary">Просмотр встроенных и настройка пользовательских переменных</string>
-  <string name="environment_variables_description">Встроенные переменные нельзя изменять. MPVEX_MEDIA_PATH меняется вместе с загруженным файлом или потоком и удаляется, когда ничего не загружено. Пользовательские переменные доступны mpv, скриптам Lua и плагинам C. При совпадении имён приоритет имеет настройка плагина. Чтобы применить изменения пользовательских переменных, откройте плеер заново; чтобы обновить миниатюры, перезапустите приложение.</string>
+  <string name="environment_variables_description">MPVEX_CONFIG_DIR указывает на папку настроек mpv, выбранную в дополнительных настройках. Пока папка не выбрана, переменная не задана. Для основного хранилища устройства отображается путь к папке, для других поставщиков — URI. Пользовательские переменные доступны mpv, скриптам Lua и плагинам C. При совпадении имён приоритет имеет настройка плагина. Чтобы применить изменения, откройте плеер заново; чтобы обновить миниатюры, перезапустите приложение.</string>
   <string name="environment_variables_empty">Пользовательские переменные ещё не добавлены</string>
   <string name="environment_variables_backup_notice">Экспортированные настройки содержат эти значения. Храните резервные копии в надёжном месте.</string>
   <string name="environment_variable_value_hidden">Значение скрыто</string>
@@ -1147,11 +1147,8 @@
   <string name="environment_variable_set_failed">Не удалось задать переменную окружения «%1$s»</string>
   <string name="environment_variables_built_in_header">Встроенные переменные</string>
   <string name="environment_variables_custom_header">Пользовательские переменные</string>
-  <string name="environment_variable_app_dir">Каталог данных приложения</string>
-  <string name="environment_variable_config_dir">Каталог настроек mpv</string>
-  <string name="environment_variable_cache_dir">Каталог кеша</string>
-  <string name="environment_variable_media_path">Путь или адрес текущего файла или потока</string>
-  <string name="environment_variable_media_unavailable">Ничего не загружено</string>
+  <string name="environment_variable_config_dir">Выбранная папка настроек mpv</string>
+  <string name="environment_variable_config_unavailable">Папка настроек не выбрана</string>
   <string name="environment_variable_name_reserved">Это имя зарезервировано для встроенной переменной</string>
   <string name="plugin_field_reserved_environment">Поле %1$s использует зарезервированную переменную окружения %2$s</string>
 </resources>

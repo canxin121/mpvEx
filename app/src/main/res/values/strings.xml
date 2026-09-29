@@ -212,14 +212,11 @@
   <string name="pref_advanced_input_conf">Edit input.conf</string>
   <string name="environment_variables_title">Environment variables</string>
   <string name="environment_variables_summary">View built-in and manage custom variables</string>
-  <string name="environment_variables_description">Built-in variables are read-only. MPVEX_MEDIA_PATH follows the loaded media and is unset when none is loaded. Custom variables are available to mpv, Lua scripts and C plugins; plugin settings take priority when names match. Reopen the player to apply custom changes; restart the app to update thumbnails.</string>
+  <string name="environment_variables_description">MPVEX_CONFIG_DIR follows the configuration storage folder selected in Advanced settings. It is unset until you choose a folder. Folders on primary device storage appear as paths; other providers appear as URIs. Custom variables are available to mpv, Lua scripts and C plugins; plugin settings take priority when names match. Reopen the player to apply custom changes; restart the app to update thumbnails.</string>
   <string name="environment_variables_built_in_header">Built-in variables</string>
   <string name="environment_variables_custom_header">Custom variables</string>
-  <string name="environment_variable_app_dir">App data directory</string>
-  <string name="environment_variable_config_dir">mpv configuration directory</string>
-  <string name="environment_variable_cache_dir">Cache directory</string>
-  <string name="environment_variable_media_path">Current media path or URL</string>
-  <string name="environment_variable_media_unavailable">No media loaded</string>
+  <string name="environment_variable_config_dir">Selected MPV configuration storage</string>
+  <string name="environment_variable_config_unavailable">No configuration folder selected</string>
   <string name="environment_variable_name_reserved">This name is reserved for a built-in variable</string>
   <string name="environment_variables_empty">No custom variables yet</string>
   <string name="environment_variables_backup_notice">Exported settings include these values. Keep backups private.</string>

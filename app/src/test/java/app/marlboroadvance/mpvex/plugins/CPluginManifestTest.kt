@@ -316,11 +316,11 @@ class CPluginManifestTest {
   @Test
   fun `built in names cannot be saved or applied as custom variables`() {
     val imported = kotlinx.serialization.json.Json.encodeToString(
-      mapOf(MpvExEnvironment.APP_DIR to "/wrong", "CUSTOM" to "value"),
+      mapOf(MpvExEnvironment.CONFIG_DIR to "/wrong", "CUSTOM" to "value"),
     )
     assertEquals(mapOf("CUSTOM" to "value"), EnvironmentVariablesCodec.decode(imported))
     assertThrows(IllegalArgumentException::class.java) {
-      EnvironmentVariablesCodec.encode(mapOf(MpvExEnvironment.MEDIA_PATH to "/wrong"))
+      EnvironmentVariablesCodec.encode(mapOf(MpvExEnvironment.CONFIG_DIR to "/wrong"))
     }
 
     val environment = FakeEnvironment()

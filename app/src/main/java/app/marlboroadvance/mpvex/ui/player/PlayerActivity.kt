@@ -352,10 +352,8 @@ class PlayerActivity :
       return
     }
 
-    // C plugins can read the initial media path during mpv initialization.
     // Resolve it once: content URIs may open a file descriptor as a fallback.
     val initialPlayableUri = getPlayableUri(intent)
-    MpvExEnvironment.setMediaPath(initialPlayableUri)
     setupMPV()
     MediaPlaybackService.createNotificationChannel(this)
     setupAudio()
@@ -610,7 +608,6 @@ class PlayerActivity :
       }
 
       cleanupMPV()
-      if (!mpvInitialized) MpvExEnvironment.setMediaPath(null)
       cleanupAudio()
       cleanupReceivers()
       releaseMediaSession()
@@ -890,7 +887,7 @@ class PlayerActivity :
       Log.e(TAG, "Error copying MPV config and scripts", e)
     }
 
-    MpvExEnvironment.apply(this)
+    MpvExEnvironment.apply(advancedPreferences.mpvConfStorageUri.get())
 
     // NOW initialize MPV - it will find and load the scripts we just copied
     player.initialize(filesDir.path, cacheDir.path)
@@ -1886,36 +1883,6 @@ class PlayerActivity :
   }
 
   /**
-   * Observer callback for MPV property changes (String values).
-   *
-   * This method is called when an MPV property (with String value) changes.
-   * Extend this method to handle properties as needed.
-   *
-   * @param property The property name that changed
-   * @param value The new String value
-   */
-  internal fun onObserverEvent(
-    property: String,
-    value: String,
-  ) {
-    if (property == "path" && mpvInitialized && !player.isExiting) {
-      MpvExEnvironment.setMediaPath(value)
-    }
-  }
-
-  /**
-   * Observer callback for MPV property changes (no value parameter).
-   * Handles properties with no value parameter.
-   *
-   * @param property The property name that changed
-   */
-  internal fun onObserverEvent(property: String) {
-    if (property == "path" && mpvInitialized && !player.isExiting) {
-      MpvExEnvironment.setMediaPath(MPVLib.getPropertyString("path"))
-    }
-  }
-
-  /**
    * Handles MPV core events such as file loaded and playback restart.
    *
    * Called by the player when critical playback events occur.
@@ -2648,7 +2615,6 @@ class PlayerActivity :
 
     // Load the new file
     playableUri?.let { uri ->
-      MpvExEnvironment.setMediaPath(uri)
       // Avoid blocking UI thread while mpv opens network streams (e.g., HLS).
       lifecycleScope.launch(Dispatchers.Default) {
         MPVLib.command("loadfile", uri)
@@ -3371,7 +3337,6 @@ class PlayerActivity :
 
     // Load the new video
     // Avoid blocking UI thread while mpv opens network streams (e.g., HLS).
-    MpvExEnvironment.setMediaPath(playableUri)
     lifecycleScope.launch(Dispatchers.Default) {
       MPVLib.command("loadfile", playableUri)
     }

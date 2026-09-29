@@ -7,8 +7,7 @@ class PlayerObserver(
   private val activity: PlayerActivity,
 ) : MPVLib.EventObserver {
   override fun eventProperty(property: String) {
-    if (activity.player.isExiting) return
-    activity.runOnUiThread { activity.onObserverEvent(property) }
+    // No property without a value is currently observed.
   }
 
   override fun eventProperty(
@@ -31,8 +30,7 @@ class PlayerObserver(
     property: String,
     value: String,
   ) {
-    if (activity.player.isExiting) return
-    activity.runOnUiThread { activity.onObserverEvent(property, value) }
+    // No string property is currently observed.
   }
 
   override fun eventProperty(

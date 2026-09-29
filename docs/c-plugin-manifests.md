@@ -117,11 +117,13 @@ Field properties:
 Plugin IDs and field IDs may contain ASCII letters, digits, `.`, `_`, and `-`.
 They must begin with a letter or digit and are limited to 128 characters.
 Environment names must match `[A-Za-z_][A-Za-z0-9_]*`.
-The built-in names `MPVEX_APP_DIR`, `MPVEX_CONFIG_DIR`, `MPVEX_CACHE_DIR`,
-and `MPVEX_MEDIA_PATH` are reserved and cannot be used as manifest bindings.
-Their current values are visible in **Settings → Advanced → Environment
-variables**. `MPVEX_MEDIA_PATH` changes as playback switches files and is unset
-when no media is loaded; it can be an `fd://` path for Android content URIs.
+The built-in name `MPVEX_CONFIG_DIR` is reserved and cannot be used as a manifest
+binding. Its current value is visible in **Settings → Advanced → Environment
+variables**. It follows the MPV configuration storage folder chosen in Advanced
+settings and is unset until a folder is selected. Primary device storage is
+shown as a filesystem path; other document providers retain their tree URI.
+Plugins must use Android content APIs to read a tree URI; ordinary file APIs
+cannot open it as a directory path.
 
 Use a plugin-specific environment prefix such as
 `MPVEX_ORG_EXAMPLE_DANMAKU_`. mpvExtended rejects a selection when two enabled

@@ -18,6 +18,7 @@ import `is`.xyz.mpv.FastThumbnails
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
@@ -63,7 +64,10 @@ class App : Application() {
     advancedPreferences.managedCPluginEnvironmentNames.set(environmentResult.managedEnvironmentNames)
     advancedPreferences.managedUserEnvironmentNames.set(environmentResult.managedUserEnvironmentNames)
     environmentResult.warnings.forEach { warning -> Log.w("App", warning) }
-    MpvExEnvironment.apply(this)
+    MpvExEnvironment.apply(advancedPreferences.mpvConfStorageUri.get())
+    applicationScope.launch {
+      advancedPreferences.mpvConfStorageUri.changes().collect(MpvExEnvironment::apply)
+    }
 
     FastThumbnails.initialize(this)
 

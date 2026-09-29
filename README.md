@@ -83,17 +83,17 @@ layout, schema, lifecycle, and compatibility rules.
 ### Environment variables
 
 Open **Settings → Advanced → Environment variables** to see the built-in
-variables and their current values:
+variable and its current value:
 
 | Name | Value |
 | --- | --- |
-| `MPVEX_APP_DIR` | This installation's private app data directory. |
-| `MPVEX_CONFIG_DIR` | The internal directory passed to mpv as its configuration directory; user configuration and selected scripts are copied here. |
-| `MPVEX_CACHE_DIR` | The app's private cache directory, also passed to mpv. |
-| `MPVEX_MEDIA_PATH` | The currently loaded media path, URI, or URL. It may be an `fd://` path for media shared through Android storage. It is unset when no media is loaded and changes when the player switches files. |
+| `MPVEX_CONFIG_DIR` | The MPV configuration storage folder selected in Advanced settings. A folder on primary device storage appears as a filesystem path; other document providers appear as their original tree URI. The variable is unset until a folder is selected. |
 
-Built-in names are read-only. They are set before mpv loads scripts and C
-plugins. You can add your own process variables on the same settings page for
+The built-in name is read-only. It is set before mpv loads scripts and C
+plugins. The player copies configuration files from this selected folder to
+its internal mpv directory before initialization. A document-provider URI is
+not a filesystem path and cannot be passed directly to ordinary file APIs.
+You can add your own process variables on the same settings page for
 mpv, Lua scripts, and C plugins. A selected plugin manifest value takes
 priority over a custom value with the same name. Reopen the player to apply
 custom changes; restart the app to update thumbnail services. Settings exports

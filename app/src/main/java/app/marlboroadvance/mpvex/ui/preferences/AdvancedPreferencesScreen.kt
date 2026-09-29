@@ -2,8 +2,6 @@ package app.marlboroadvance.mpvex.ui.preferences
 
 import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Intent
-import android.net.Uri
-import android.os.Environment
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -48,6 +46,7 @@ import androidx.documentfile.provider.DocumentFile
 import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.database.MpvExDatabase
 import app.marlboroadvance.mpvex.domain.thumbnail.ThumbnailRepository
+import app.marlboroadvance.mpvex.environment.MpvExEnvironment
 import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
 import app.marlboroadvance.mpvex.preferences.SettingsManager
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
@@ -378,7 +377,8 @@ object AdvancedPreferencesScreen : Screen {
                 summary = {
                   if (mpvConfStorageLocation.isNotBlank()) {
                     Text(
-                      getSimplifiedPathFromUri(mpvConfStorageLocation),
+                      MpvExEnvironment.selectedConfigLocation(mpvConfStorageLocation)
+                        ?: mpvConfStorageLocation,
                       color = MaterialTheme.colorScheme.outline,
                     )
                   }
@@ -898,6 +898,3 @@ object AdvancedPreferencesScreen : Screen {
     }
   }
 }
-
-fun getSimplifiedPathFromUri(uri: String): String =
-  Environment.getExternalStorageDirectory().canonicalPath + "/" + Uri.decode(uri).substringAfterLast(":")

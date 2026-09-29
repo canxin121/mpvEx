@@ -46,8 +46,6 @@ fun copyFontsFromDirectory(
   }
 }
 
-// getSimplifiedPathFromUri is defined in AdvancedPreferencesScreen.kt within this package.
-
 /** Represents a custom font discovered in the app's internal fonts directory. */
 data class CustomFontEntry(
   val familyName: String,

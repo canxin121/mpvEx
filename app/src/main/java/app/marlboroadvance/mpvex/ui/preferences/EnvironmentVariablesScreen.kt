@@ -24,13 +24,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState as collectFlowAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -51,17 +49,16 @@ object EnvironmentVariablesScreen : Screen {
   @Composable
   override fun Content() {
     val backStack = LocalBackStack.current
-    val context = LocalContext.current
     val preferences = koinInject<AdvancedPreferences>()
     val encodedVariables by preferences.environmentVariables.collectAsState()
-    val mediaPath by MpvExEnvironment.mediaPath.collectFlowAsState()
+    val configTreeUri by preferences.mpvConfStorageUri.collectAsState()
     val variables = remember(encodedVariables) { EnvironmentVariablesCodec.decode(encodedVariables) }
-    val builtInValues = MpvExEnvironment.staticValues(context)
     val builtInVariables = listOf(
-      Triple(MpvExEnvironment.APP_DIR, R.string.environment_variable_app_dir, builtInValues.getValue(MpvExEnvironment.APP_DIR)),
-      Triple(MpvExEnvironment.CONFIG_DIR, R.string.environment_variable_config_dir, builtInValues.getValue(MpvExEnvironment.CONFIG_DIR)),
-      Triple(MpvExEnvironment.CACHE_DIR, R.string.environment_variable_cache_dir, builtInValues.getValue(MpvExEnvironment.CACHE_DIR)),
-      Triple(MpvExEnvironment.MEDIA_PATH, R.string.environment_variable_media_path, mediaPath),
+      Triple(
+        MpvExEnvironment.CONFIG_DIR,
+        R.string.environment_variable_config_dir,
+        MpvExEnvironment.selectedConfigLocation(configTreeUri),
+      ),
     )
     // An empty string means a new entry; valid environment names are never empty.
     var editingName by remember { mutableStateOf<String?>(null) }
@@ -100,7 +97,7 @@ object EnvironmentVariablesScreen : Screen {
             headlineContent = { Text(name) },
             supportingContent = {
               SelectionContainer {
-                Text(value ?: stringResource(R.string.environment_variable_media_unavailable))
+                Text(value ?: stringResource(R.string.environment_variable_config_unavailable))
               }
             },
           )

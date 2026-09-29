@@ -6,46 +6,42 @@ import org.junit.Test
 
 class MpvExEnvironmentTest {
   @Test
-  fun `directory values use the actual Android paths passed to the player`() {
-    val values = MpvExEnvironment.staticValues(
-      appDir = "/data/user/0/app.marlboroadvance.mpvex",
-      configDir = "/data/user/0/app.marlboroadvance.mpvex/files",
-      cacheDir = "/data/user/0/app.marlboroadvance.mpvex/cache",
-    )
+  fun `selected primary storage tree becomes the same editable directory shown in settings`() {
+    val treeUri = "content://com.android.externalstorage.documents/tree/primary%3AmpvEx%2FMy%20Configs"
 
     assertEquals(
-      mapOf(
-        MpvExEnvironment.APP_DIR to "/data/user/0/app.marlboroadvance.mpvex",
-        MpvExEnvironment.CONFIG_DIR to "/data/user/0/app.marlboroadvance.mpvex/files",
-        MpvExEnvironment.CACHE_DIR to "/data/user/0/app.marlboroadvance.mpvex/cache",
-      ),
-      values,
+      "/storage/emulated/0/mpvEx/My Configs",
+      MpvExEnvironment.selectedConfigLocation(treeUri, "/storage/emulated/0"),
     )
-    assertEquals(values.keys + MpvExEnvironment.MEDIA_PATH, MpvExEnvironment.reservedNames)
+    assertEquals(setOf(MpvExEnvironment.CONFIG_DIR), MpvExEnvironment.reservedNames)
   }
 
   @Test
-  fun `reapplying built ins clears an absent media path and preserves a loaded one`() {
+  fun `other providers keep their URI rather than inventing a filesystem path`() {
+    val sdCard = "content://com.android.externalstorage.documents/tree/1234-ABCD%3AmpvEx"
+    val cloud = "content://example.documents/tree/folder%3A42"
+
+    assertEquals(sdCard, MpvExEnvironment.selectedConfigLocation(sdCard, "/storage/emulated/0"))
+    assertEquals(cloud, MpvExEnvironment.selectedConfigLocation(cloud, "/storage/emulated/0"))
+  }
+
+  @Test
+  fun `clearing the selected folder unsets the built in variable`() {
     val environment = RecordingEnvironment()
-    val directories = MpvExEnvironment.staticValues("/app", "/config", "/cache")
+    val value = MpvExEnvironment.selectedConfigLocation(
+      "content://com.android.externalstorage.documents/tree/primary%3AmpvEx",
+      "/storage/emulated/0",
+    )
 
-    MpvExEnvironment.applyValues(directories, null, environment)
-    assertEquals(directories, environment.values)
+    MpvExEnvironment.applyValue(value, environment)
+    assertEquals("/storage/emulated/0/mpvEx", environment.values[MpvExEnvironment.CONFIG_DIR])
 
-    MpvExEnvironment.applyValues(directories, "https://example.org/video.mp4", environment)
-    assertEquals("https://example.org/video.mp4", environment.values[MpvExEnvironment.MEDIA_PATH])
-
-    MpvExEnvironment.applyValues(directories, "", environment)
-    assertNull(environment.values[MpvExEnvironment.MEDIA_PATH])
-    assertEquals(directories, environment.values)
-  }
-
-  @Test
-  fun `invalid media paths cannot enter the process environment`() {
-    assertNull(MpvExEnvironment.normalizeMediaPath(null))
-    assertNull(MpvExEnvironment.normalizeMediaPath(" "))
-    assertNull(MpvExEnvironment.normalizeMediaPath("bad\u0000path"))
-    assertEquals("fd://42", MpvExEnvironment.normalizeMediaPath("fd://42"))
+    MpvExEnvironment.applyValue(
+      MpvExEnvironment.selectedConfigLocation("", "/storage/emulated/0"),
+      environment,
+    )
+    assertNull(environment.values[MpvExEnvironment.CONFIG_DIR])
+    assertNull(MpvExEnvironment.selectedConfigLocation("file:///data/user/0/config", "/storage/emulated/0"))
   }
 
   private class RecordingEnvironment : MpvExEnvironmentAccess {

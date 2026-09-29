@@ -1115,7 +1115,7 @@
   </plurals>
   <string name="environment_variables_title">Variables de entorno</string>
   <string name="environment_variables_summary">Consulta las variables integradas y gestiona las personalizadas</string>
-  <string name="environment_variables_description">Las variables integradas no se pueden modificar. MPVEX_MEDIA_PATH cambia con el contenido cargado y deja de estar definida cuando no hay ninguno. Las variables personalizadas están disponibles para mpv, los scripts Lua y los complementos C. Si coinciden los nombres, prevalece el ajuste del complemento. Vuelve a abrir el reproductor para aplicar los cambios en las variables personalizadas; reinicia la aplicación para actualizar las miniaturas.</string>
+  <string name="environment_variables_description">MPVEX_CONFIG_DIR indica la carpeta de configuración de mpv elegida en los ajustes avanzados. No se define hasta que elijas una carpeta. En el almacenamiento principal del dispositivo se muestra una ruta; con otros proveedores se muestra un URI. Las variables personalizadas están disponibles para mpv, los scripts Lua y los complementos C. Si coinciden los nombres, prevalece el ajuste del complemento. Vuelve a abrir el reproductor para aplicar los cambios y reinicia la aplicación para actualizar las miniaturas.</string>
   <string name="environment_variables_empty">Aún no hay variables personalizadas</string>
   <string name="environment_variables_backup_notice">Las copias de ajustes exportadas incluyen estos valores. Guárdalas en un lugar seguro.</string>
   <string name="environment_variable_value_hidden">Valor oculto</string>
@@ -1134,11 +1134,8 @@
   <string name="environment_variable_set_failed">No se pudo definir la variable de entorno «%1$s»</string>
   <string name="environment_variables_built_in_header">Variables integradas</string>
   <string name="environment_variables_custom_header">Variables personalizadas</string>
-  <string name="environment_variable_app_dir">Carpeta de datos de la aplicación</string>
-  <string name="environment_variable_config_dir">Carpeta de configuración de mpv</string>
-  <string name="environment_variable_cache_dir">Carpeta de caché</string>
-  <string name="environment_variable_media_path">Ruta o URL del contenido actual</string>
-  <string name="environment_variable_media_unavailable">No hay contenido cargado</string>
+  <string name="environment_variable_config_dir">Carpeta de configuración de mpv elegida</string>
+  <string name="environment_variable_config_unavailable">Aún no has elegido una carpeta de configuración</string>
   <string name="environment_variable_name_reserved">Este nombre está reservado para una variable integrada</string>
   <string name="plugin_field_reserved_environment">El campo %1$s usa la variable de entorno reservada %2$s</string>
 </resources>

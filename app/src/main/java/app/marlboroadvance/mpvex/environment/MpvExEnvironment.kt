@@ -1,10 +1,11 @@
 package app.marlboroadvance.mpvex.environment
 
-import android.content.Context
+import android.os.Environment
 import android.system.Os
 import android.util.Log
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import java.net.URI
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 internal interface MpvExEnvironmentAccess {
   fun set(name: String, value: String)
@@ -16,67 +17,46 @@ private object AndroidMpvExEnvironmentAccess : MpvExEnvironmentAccess {
   override fun unset(name: String) = Os.unsetenv(name)
 }
 
-/** Process variables supplied by mpvEx independently of user and plugin settings. */
+/** The user-selected configuration location, shared by settings and the process environment. */
 object MpvExEnvironment {
-  const val APP_DIR = "MPVEX_APP_DIR"
   const val CONFIG_DIR = "MPVEX_CONFIG_DIR"
-  const val CACHE_DIR = "MPVEX_CACHE_DIR"
-  const val MEDIA_PATH = "MPVEX_MEDIA_PATH"
+  val reservedNames = setOf(CONFIG_DIR)
 
-  val reservedNames = setOf(APP_DIR, CONFIG_DIR, CACHE_DIR, MEDIA_PATH)
+  /** Resolve local primary storage to a path. Keep other providers as their original tree URI. */
+  fun selectedConfigLocation(treeUri: String): String? =
+    selectedConfigLocation(treeUri, Environment.getExternalStorageDirectory().absolutePath)
 
-  private val currentMediaPath = MutableStateFlow<String?>(null)
-  val mediaPath = currentMediaPath.asStateFlow()
+  internal fun selectedConfigLocation(treeUri: String, primaryStoragePath: String): String? {
+    if (treeUri.isBlank() || '\u0000' in treeUri) return null
+    val uri = runCatching { URI(treeUri) }.getOrNull() ?: return null
+    if (uri.scheme != "content" || uri.host.isNullOrBlank()) return null
+    if (uri.host != "com.android.externalstorage.documents") return treeUri
 
-  fun staticValues(context: Context): Map<String, String> =
-    staticValues(
-      appDir = context.applicationInfo.dataDir,
-      configDir = context.filesDir.absolutePath,
-      cacheDir = context.cacheDir.absolutePath,
-    )
+    val rawPath = uri.rawPath ?: return treeUri
+    if (!rawPath.startsWith("/tree/")) return treeUri
+    val rawTreeId = rawPath.removePrefix("/tree/")
+    if ('/' in rawTreeId) return treeUri
+    val documentId = runCatching {
+      URLDecoder.decode(rawTreeId.replace("+", "%2B"), StandardCharsets.UTF_8.name())
+    }.getOrNull() ?: return treeUri
+    if (!documentId.startsWith("primary:")) return treeUri
 
-  internal fun staticValues(
-    appDir: String,
-    configDir: String,
-    cacheDir: String,
-  ): Map<String, String> =
-    linkedMapOf(APP_DIR to appDir, CONFIG_DIR to configDir, CACHE_DIR to cacheDir)
-
-  /** Reapply after user and plugin settings so reserved names keep their actual values. */
-  fun apply(context: Context) {
-    applyValues(staticValues(context), currentMediaPath.value, AndroidMpvExEnvironmentAccess)
+    val relativePath = documentId.removePrefix("primary:")
+    if ('\u0000' in relativePath || relativePath.startsWith('/') ||
+      relativePath.split('/').any { it == "." || it == ".." }
+    ) return treeUri
+    val root = primaryStoragePath.trimEnd('/')
+    return if (relativePath.isEmpty()) root else "$root/$relativePath"
   }
 
-  /** A path, content URI, or network URL; unset when no media is loaded. */
-  fun setMediaPath(path: String?) {
-    val normalized = normalizeMediaPath(path)
-    currentMediaPath.value = normalized
-    applyMediaPath(normalized, AndroidMpvExEnvironmentAccess)
+  /** Reapply after user and plugin settings so the reserved name stays accurate. */
+  fun apply(treeUri: String) {
+    applyValue(selectedConfigLocation(treeUri), AndroidMpvExEnvironmentAccess)
   }
 
-  internal fun applyValues(
-    staticValues: Map<String, String>,
-    mediaPath: String?,
-    environment: MpvExEnvironmentAccess,
-  ) {
-    staticValues.forEach { (name, value) -> set(name, value, environment) }
-    applyMediaPath(normalizeMediaPath(mediaPath), environment)
-  }
-
-  internal fun normalizeMediaPath(path: String?): String? =
-    path?.takeIf { it.isNotBlank() && '\u0000' !in it }
-
-  private fun applyMediaPath(path: String?, environment: MpvExEnvironmentAccess) {
-    if (path == null) {
-      runCatching { environment.unset(MEDIA_PATH) }
-        .onFailure { Log.w("MpvExEnvironment", "Could not clear $MEDIA_PATH", it) }
-    } else {
-      set(MEDIA_PATH, path, environment)
-    }
-  }
-
-  private fun set(name: String, value: String, environment: MpvExEnvironmentAccess) {
-    runCatching { environment.set(name, value) }
-      .onFailure { Log.w("MpvExEnvironment", "Could not set $name", it) }
+  internal fun applyValue(value: String?, environment: MpvExEnvironmentAccess) {
+    runCatching {
+      if (value == null) environment.unset(CONFIG_DIR) else environment.set(CONFIG_DIR, value)
+    }.onFailure { Log.w("MpvExEnvironment", "Could not update $CONFIG_DIR", it) }
   }
 }

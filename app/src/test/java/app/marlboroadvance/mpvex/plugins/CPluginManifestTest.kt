@@ -1,6 +1,7 @@
 package app.marlboroadvance.mpvex.plugins
 
 import app.marlboroadvance.mpvex.R
+import kotlinx.serialization.encodeToString
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
@@ -226,6 +227,107 @@ class CPluginManifestTest {
     assertTrue(environment.operations.takeLast(2).containsAll(listOf("unset:MPVEX_FIRST", "unset:MPVEX_SECOND")))
   }
 
+  @Test
+  fun `user variables are applied before plugins and plugin bindings take priority`() {
+    val environment = FakeEnvironment()
+    val result = CPluginEnvironmentApplicator.apply(
+      plan = CPluginEnvironmentPlan(
+        assignments = listOf(CPluginEnvironmentAssignment("SHARED", "plugin", "example.so")),
+        excludedPluginFileNames = emptySet(),
+        warnings = emptyList(),
+      ),
+      previouslyManagedEnvironmentNames = setOf("STALE_PLUGIN"),
+      environment = environment,
+      messages = testMessages,
+      userDefinedVariables = mapOf("SHARED" to "user", "USER_ONLY" to "value"),
+      previouslyManagedUserEnvironmentNames = setOf("STALE_USER"),
+    )
+
+    assertEquals(
+      listOf(
+        "unset:STALE_PLUGIN", "unset:SHARED", "unset:STALE_USER", "unset:USER_ONLY",
+        "set:USER_ONLY=value", "set:SHARED=plugin",
+      ),
+      environment.operations,
+    )
+    assertEquals(setOf("SHARED"), result.managedEnvironmentNames)
+    assertEquals(setOf("USER_ONLY"), result.managedUserEnvironmentNames)
+  }
+
+  @Test
+  fun `user value returns when a plugin using the same name is disabled`() {
+    val environment = FakeEnvironment()
+    val result = CPluginEnvironmentApplicator.apply(
+      plan = CPluginEnvironmentPlan(emptyList(), emptySet(), emptyList()),
+      previouslyManagedEnvironmentNames = setOf("SHARED"),
+      environment = environment,
+      messages = testMessages,
+      userDefinedVariables = mapOf("SHARED" to "user"),
+    )
+
+    assertEquals(listOf("unset:SHARED", "set:SHARED=user"), environment.operations)
+    assertTrue(result.managedEnvironmentNames.isEmpty())
+    assertEquals(setOf("SHARED"), result.managedUserEnvironmentNames)
+  }
+
+  @Test
+  fun `failed plugin setup restores a user value for the same name`() {
+    val environment = FakeEnvironment(failingSetValue = "plugin")
+    val result = CPluginEnvironmentApplicator.apply(
+      plan = CPluginEnvironmentPlan(
+        assignments = listOf(CPluginEnvironmentAssignment("SHARED", "plugin", "example.so")),
+        excludedPluginFileNames = emptySet(),
+        warnings = emptyList(),
+      ),
+      previouslyManagedEnvironmentNames = emptySet(),
+      environment = environment,
+      messages = testMessages,
+      userDefinedVariables = mapOf("SHARED" to "user"),
+    )
+
+    assertEquals(setOf("example.so"), result.failedPluginFileNames)
+    assertEquals(setOf("SHARED"), result.managedUserEnvironmentNames)
+    assertTrue(result.managedEnvironmentNames.isEmpty())
+    assertEquals(listOf("unset:SHARED", "set:SHARED=plugin", "unset:SHARED", "set:SHARED=user"), environment.operations)
+  }
+
+  @Test
+  fun `user environment codec preserves values and ignores invalid imported names`() {
+    val values = mapOf("MPVEX_TOKEN" to "quote \" and ü", "EMPTY" to "")
+    assertEquals(values, EnvironmentVariablesCodec.decode(EnvironmentVariablesCodec.encode(values)))
+    val imported = kotlinx.serialization.json.Json.encodeToString(
+      mapOf("VALID" to "value", "BAD-NAME" to "ignored", "NUL" to "\u0000"),
+    )
+    assertEquals(mapOf("VALID" to "value"), EnvironmentVariablesCodec.decode(imported))
+    assertTrue(EnvironmentVariablesCodec.decode("not JSON").isEmpty())
+  }
+
+  @Test
+  fun `removing a user override restores the inherited process value`() {
+    val environment = FakeEnvironment(initialValues = mutableMapOf("PATH" to "system-path"))
+    val originalValues = mutableMapOf<String, String?>()
+    val first = CPluginEnvironmentApplicator.apply(
+      plan = CPluginEnvironmentPlan(emptyList(), emptySet(), emptyList()),
+      previouslyManagedEnvironmentNames = emptySet(),
+      environment = environment,
+      messages = testMessages,
+      userDefinedVariables = mapOf("PATH" to "custom-path"),
+      originalValues = originalValues,
+    )
+    val second = CPluginEnvironmentApplicator.apply(
+      plan = CPluginEnvironmentPlan(emptyList(), emptySet(), emptyList()),
+      previouslyManagedEnvironmentNames = emptySet(),
+      environment = environment,
+      messages = testMessages,
+      previouslyManagedUserEnvironmentNames = first.managedUserEnvironmentNames,
+      originalValues = originalValues,
+    )
+
+    assertEquals("system-path", environment.values["PATH"])
+    assertTrue(second.managedUserEnvironmentNames.isEmpty())
+    assertEquals(listOf("unset:PATH", "set:PATH=custom-path", "set:PATH=system-path"), environment.operations)
+  }
+
   private val testMessages = object : CPluginMessages {
     override fun get(id: Int, vararg args: Any?): String = when (id) {
       R.string.plugin_entry_mismatch -> "Manifest entry ${args[0]} does not match plugin file ${args[1]}"
@@ -258,11 +360,17 @@ class CPluginManifestTest {
 
   private class FakeEnvironment(
     private val failingSetName: String? = null,
+    private val failingSetValue: String? = null,
+    initialValues: MutableMap<String, String> = mutableMapOf(),
   ) : CPluginEnvironmentAccess {
     val operations = mutableListOf<String>()
+    val values = initialValues
+
+    override fun get(name: String): String? = values[name]
 
     override fun unset(name: String) {
       operations += "unset:$name"
+      values.remove(name)
     }
 
     override fun set(
@@ -270,7 +378,8 @@ class CPluginManifestTest {
       value: String,
     ) {
       operations += "set:$name=$value"
-      if (name == failingSetName) error("set failed")
+      if (name == failingSetName || value == failingSetValue) error("set failed")
+      values[name] = value
     }
   }
 

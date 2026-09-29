@@ -137,6 +137,11 @@ The player performs the following work before calling `mpv_initialize()`:
    successfully.
 6. Initialize libmpv, which loads the plugins.
 
+Variables entered in **Settings → Advanced → Environment variables** are also
+applied before libmpv starts. A selected plugin's manifest value takes
+priority when both configurations use the same name. If the plugin is disabled
+or cannot load, the user-defined value is used again.
+
 The plugin can read a value normally:
 
 ```c

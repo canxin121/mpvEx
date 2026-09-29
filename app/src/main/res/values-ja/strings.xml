@@ -1087,4 +1087,23 @@
   <plurals name="file_unique_filename_failed">
     <item quantity="other">%1$d 回試しても使用できるファイル名が見つかりませんでした</item>
   </plurals>
+  <string name="environment_variables_title">環境変数</string>
+  <string name="environment_variables_summary">mpv やスクリプトで使う環境変数を設定</string>
+  <string name="environment_variables_description">これらの変数は mpv、Lua スクリプト、C プラグインで使用できます。同じ名前の変数がプラグインにも設定されている場合は、プラグイン側の値が優先されます。変更はプレーヤーを開き直すと反映されます。サムネイルにも反映するにはアプリを再起動してください。</string>
+  <string name="environment_variables_empty">環境変数はまだありません</string>
+  <string name="environment_variables_backup_notice">設定のエクスポートには変数の値も含まれます。バックアップは安全な場所に保管してください。</string>
+  <string name="environment_variable_value_hidden">値を非表示</string>
+  <string name="environment_variable_add">変数を追加</string>
+  <string name="environment_variable_edit">変数を編集</string>
+  <string name="environment_variable_name">変数名</string>
+  <string name="environment_variable_value">値</string>
+  <string name="environment_variable_name_required">変数名を入力してください</string>
+  <string name="environment_variable_name_invalid">半角英字・数字・アンダースコアを使用し、先頭は英字かアンダースコアにしてください。</string>
+  <string name="environment_variable_name_duplicate">同じ名前の変数がすでにあります</string>
+  <string name="environment_variable_value_invalid">値に NUL 文字は使用できません</string>
+  <string name="environment_variable_show_value">表示</string>
+  <string name="environment_variable_hide_value">非表示</string>
+  <string name="environment_variable_delete">削除</string>
+  <string name="environment_variable_clear_failed">環境変数「%1$s」を削除できませんでした</string>
+  <string name="environment_variable_set_failed">環境変数「%1$s」を設定できませんでした</string>
 </resources>

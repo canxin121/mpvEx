@@ -1087,4 +1087,23 @@
   <plurals name="file_unique_filename_failed">
     <item quantity="other">尝试 %1$d 次后，仍找不到可用的文件名</item>
   </plurals>
+  <string name="environment_variables_title">环境变量</string>
+  <string name="environment_variables_summary">为 mpv 和脚本提供环境变量</string>
+  <string name="environment_variables_description">这些变量可供 mpv、Lua 脚本和 C 插件使用。名称冲突时，以插件自身的设置为准。重新打开播放器即可应用更改；若要更新缩略图服务，请重启应用。</string>
+  <string name="environment_variables_empty">尚未添加环境变量</string>
+  <string name="environment_variables_backup_notice">导出的设置包含这些变量值，请妥善保管备份文件。</string>
+  <string name="environment_variable_value_hidden">值已隐藏</string>
+  <string name="environment_variable_add">添加变量</string>
+  <string name="environment_variable_edit">编辑变量</string>
+  <string name="environment_variable_name">变量名</string>
+  <string name="environment_variable_value">值</string>
+  <string name="environment_variable_name_required">请输入变量名</string>
+  <string name="environment_variable_name_invalid">只能使用英文字母、数字和下划线，且必须以英文字母或下划线开头。</string>
+  <string name="environment_variable_name_duplicate">该变量已存在</string>
+  <string name="environment_variable_value_invalid">变量值不能包含 NUL 字符</string>
+  <string name="environment_variable_show_value">显示</string>
+  <string name="environment_variable_hide_value">隐藏</string>
+  <string name="environment_variable_delete">删除</string>
+  <string name="environment_variable_clear_failed">无法清除环境变量“%1$s”</string>
+  <string name="environment_variable_set_failed">无法设置环境变量“%1$s”</string>
 </resources>

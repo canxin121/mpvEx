@@ -80,6 +80,14 @@ and exports their values as process environment variables before libmpv loads
 the plugin. See [C plugin manifests](docs/c-plugin-manifests.md) for the file
 layout, schema, lifecycle, and compatibility rules.
 
+### Environment variables
+
+Add or edit process environment variables in **Settings → Advanced → Environment
+variables**. They are available to mpv, Lua scripts, and C plugins. Selected
+plugin manifest values take priority when a name is shared. Reopen the player
+to apply changes; restart the app to update thumbnail services. Settings
+exports include these values.
+
 ### Mobile input.conf shortcuts
 
 Configure on-screen buttons for mpv key bindings and trigger them from the

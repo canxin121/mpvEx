@@ -9,6 +9,9 @@ class AdvancedPreferences(
   val mpvConfStorageUri = preferenceStore.getString("mpv_conf_storage_location_uri")
   val mpvConf = preferenceStore.getString("mpv.conf")
   val inputConf = preferenceStore.getString("input.conf")
+  val environmentVariables = preferenceStore.getString("environment_variables", "{}")
+  val managedUserEnvironmentNames =
+    preferenceStore.getStringSet("managed_user_environment_names", emptySet())
   val enableLuaScripts = preferenceStore.getBoolean("enable_lua_scripts", false)
   val selectedLuaScripts = preferenceStore.getStringSet("selected_lua_scripts", emptySet())
 

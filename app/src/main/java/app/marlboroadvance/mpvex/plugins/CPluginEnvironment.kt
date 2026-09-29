@@ -17,11 +17,14 @@ data class CPluginEnvironmentPlan(
 
 data class CPluginEnvironmentApplyResult(
   val managedEnvironmentNames: Set<String>,
+  val managedUserEnvironmentNames: Set<String>,
   val failedPluginFileNames: Set<String>,
   val warnings: List<String>,
 )
 
 interface CPluginEnvironmentAccess {
+  fun get(name: String): String? = null
+
   fun unset(name: String)
 
   fun set(
@@ -31,6 +34,8 @@ interface CPluginEnvironmentAccess {
 }
 
 private object AndroidCPluginEnvironmentAccess : CPluginEnvironmentAccess {
+  override fun get(name: String): String? = Os.getenv(name)
+
   override fun unset(name: String) {
     Os.unsetenv(name)
   }
@@ -127,23 +132,72 @@ object CPluginEnvironmentPlanBuilder {
 }
 
 object CPluginEnvironmentApplicator {
+  // Keep the value inherited by this Android process so removing a user entry
+  // does not erase an existing variable such as PATH or TMPDIR.
+  private val processOriginalValues = mutableMapOf<String, String?>()
+
   fun apply(
     plan: CPluginEnvironmentPlan,
     previouslyManagedEnvironmentNames: Set<String>,
     environment: CPluginEnvironmentAccess = AndroidCPluginEnvironmentAccess,
     messages: CPluginMessages = AndroidCPluginMessages,
+    userDefinedVariables: Map<String, String> = emptyMap(),
+    previouslyManagedUserEnvironmentNames: Set<String> = emptySet(),
+    originalValues: MutableMap<String, String?> = processOriginalValues,
   ): CPluginEnvironmentApplyResult {
     val warnings = mutableListOf<String>()
     val failedToClear = mutableSetOf<String>()
-    val namesToClear = previouslyManagedEnvironmentNames + plan.assignments.map { it.name }
+    val pluginNames = plan.assignments.mapTo(mutableSetOf()) { it.name }
+    val validUserVariables =
+      userDefinedVariables.filter { (name, value) ->
+        EnvironmentVariablesCodec.isValidName(name) && EnvironmentVariablesCodec.isValidValue(value)
+      }
+    val namesToClear =
+      (previouslyManagedEnvironmentNames + pluginNames +
+        previouslyManagedUserEnvironmentNames + validUserVariables.keys)
+        .filter(EnvironmentVariablesCodec::isValidName)
+    val currentNames = pluginNames + validUserVariables.keys
+
+    fun restoreOriginal(name: String) {
+      runCatching {
+        val original = originalValues[name]
+        if (original == null) environment.unset(name) else environment.set(name, original)
+      }.onFailure {
+        failedToClear += name
+        warnings += messages.get(R.string.environment_variable_clear_failed, name)
+      }
+    }
 
     namesToClear.forEach { name ->
+      if (name !in originalValues) {
+        originalValues[name] = runCatching { environment.get(name) }.getOrNull()
+      }
+      if (name !in currentNames) {
+        restoreOriginal(name)
+        return@forEach
+      }
       runCatching { environment.unset(name) }
         .onFailure {
           failedToClear += name
-          warnings += messages.get(R.string.plugin_environment_clear_failed, name)
+          warnings += messages.get(R.string.environment_variable_clear_failed, name)
         }
     }
+
+    val managedUserNames = mutableSetOf<String>()
+    fun setUserVariable(name: String, value: String) {
+      runCatching { environment.set(name, value) }
+        .onSuccess { managedUserNames += name }
+        .onFailure {
+          warnings += messages.get(R.string.environment_variable_set_failed, name)
+          restoreOriginal(name)
+        }
+    }
+
+    // A selected plugin owns its manifest bindings. A matching user-defined
+    // value remains saved and takes effect again when the plugin is disabled.
+    validUserVariables
+      .filterKeys { it !in pluginNames }
+      .forEach { (name, value) -> setUserVariable(name, value) }
 
     val failedPlugins = mutableSetOf<String>()
     plan.assignments.forEach { assignment ->
@@ -158,11 +212,17 @@ object CPluginEnvironmentApplicator {
       plan.assignments
         .filter { it.pluginFileName in failedPlugins }
         .forEach { assignment ->
-          runCatching { environment.unset(assignment.name) }
-            .onFailure {
-              failedToClear += assignment.name
-              warnings += messages.get(R.string.plugin_environment_rollback_failed, assignment.name)
-            }
+          val userValue = validUserVariables[assignment.name]
+          if (userValue == null) {
+            restoreOriginal(assignment.name)
+          } else {
+            runCatching { environment.unset(assignment.name) }
+              .onSuccess { setUserVariable(assignment.name, userValue) }
+              .onFailure {
+                failedToClear += assignment.name
+                warnings += messages.get(R.string.plugin_environment_rollback_failed, assignment.name)
+              }
+          }
         }
     }
 
@@ -172,7 +232,12 @@ object CPluginEnvironmentApplicator {
         .mapTo(mutableSetOf()) { it.name }
 
     return CPluginEnvironmentApplyResult(
-      managedEnvironmentNames = successfullyManaged + failedToClear,
+      managedEnvironmentNames =
+        successfullyManaged + failedToClear.filter { it in previouslyManagedEnvironmentNames || it in pluginNames },
+      managedUserEnvironmentNames =
+        managedUserNames + failedToClear.filter {
+          it in previouslyManagedUserEnvironmentNames || it in validUserVariables
+        },
       failedPluginFileNames = failedPlugins,
       warnings = warnings,
     )

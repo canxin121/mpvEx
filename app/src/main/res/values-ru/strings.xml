@@ -1126,4 +1126,23 @@
     <item quantity="many">После %1$d попыток не удалось найти свободное имя файла</item>
     <item quantity="other">После %1$d попыток не удалось найти свободное имя файла</item>
   </plurals>
+  <string name="environment_variables_title">Переменные окружения</string>
+  <string name="environment_variables_summary">Задайте переменные окружения для mpv и скриптов</string>
+  <string name="environment_variables_description">Эти переменные доступны mpv, скриптам Lua и плагинам C. Если плагин задаёт переменную с тем же именем, используется его значение. Чтобы применить изменения, откройте плеер заново; чтобы обновить миниатюры, перезапустите приложение.</string>
+  <string name="environment_variables_empty">Переменные окружения пока не добавлены</string>
+  <string name="environment_variables_backup_notice">Экспортированные настройки содержат эти значения. Храните резервные копии в надёжном месте.</string>
+  <string name="environment_variable_value_hidden">Значение скрыто</string>
+  <string name="environment_variable_add">Добавить переменную</string>
+  <string name="environment_variable_edit">Изменить переменную</string>
+  <string name="environment_variable_name">Имя переменной</string>
+  <string name="environment_variable_value">Значение</string>
+  <string name="environment_variable_name_required">Введите имя переменной</string>
+  <string name="environment_variable_name_invalid">Используйте латинские буквы, цифры и знак подчёркивания. Первый символ — буква или знак подчёркивания.</string>
+  <string name="environment_variable_name_duplicate">Переменная с таким именем уже существует</string>
+  <string name="environment_variable_value_invalid">Значение не может содержать символ NUL</string>
+  <string name="environment_variable_show_value">Показать</string>
+  <string name="environment_variable_hide_value">Скрыть</string>
+  <string name="environment_variable_delete">Удалить</string>
+  <string name="environment_variable_clear_failed">Не удалось удалить переменную окружения «%1$s»</string>
+  <string name="environment_variable_set_failed">Не удалось задать переменную окружения «%1$s»</string>
 </resources>

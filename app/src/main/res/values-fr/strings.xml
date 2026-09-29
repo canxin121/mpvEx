@@ -1113,4 +1113,23 @@
     <item quantity="other">Aucun nom de fichier disponible après %1$d tentatives</item>
     <item quantity="many">Aucun nom de fichier disponible après %1$d tentatives</item>
   </plurals>
+  <string name="environment_variables_title">Variables d’environnement</string>
+  <string name="environment_variables_summary">Définissez les variables d’environnement de mpv et des scripts</string>
+  <string name="environment_variables_description">Ces variables sont accessibles à mpv, aux scripts Lua et aux modules C. Si un module définit une variable du même nom, sa valeur est prioritaire. Rouvrez le lecteur pour appliquer les modifications ; redémarrez l’application pour mettre aussi à jour les miniatures.</string>
+  <string name="environment_variables_empty">Aucune variable d’environnement pour le moment</string>
+  <string name="environment_variables_backup_notice">Les sauvegardes des paramètres exportés contiennent ces valeurs. Conservez-les en lieu sûr.</string>
+  <string name="environment_variable_value_hidden">Valeur masquée</string>
+  <string name="environment_variable_add">Ajouter une variable</string>
+  <string name="environment_variable_edit">Modifier la variable</string>
+  <string name="environment_variable_name">Nom de la variable</string>
+  <string name="environment_variable_value">Valeur</string>
+  <string name="environment_variable_name_required">Saisissez un nom de variable</string>
+  <string name="environment_variable_name_invalid">Utilisez des lettres latines, des chiffres ou des traits de soulignement ; le nom doit commencer par une lettre ou un trait de soulignement.</string>
+  <string name="environment_variable_name_duplicate">Une variable portant ce nom existe déjà</string>
+  <string name="environment_variable_value_invalid">La valeur ne peut pas contenir le caractère NUL</string>
+  <string name="environment_variable_show_value">Afficher</string>
+  <string name="environment_variable_hide_value">Masquer</string>
+  <string name="environment_variable_delete">Supprimer</string>
+  <string name="environment_variable_clear_failed">Impossible d’effacer la variable d’environnement « %1$s »</string>
+  <string name="environment_variable_set_failed">Impossible de définir la variable d’environnement « %1$s »</string>
 </resources>

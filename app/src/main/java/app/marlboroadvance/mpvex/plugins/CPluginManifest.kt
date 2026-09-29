@@ -84,7 +84,6 @@ object CPluginManifestParser {
 
   private val pluginIdPattern = Regex("[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
   private val fieldIdPattern = Regex("[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
-  private val environmentNamePattern = Regex("[A-Za-z_][A-Za-z0-9_]*")
 
   fun parse(
     content: String,
@@ -147,7 +146,7 @@ object CPluginManifestParser {
       if (field.binding.type != CPluginBindingType.ENVIRONMENT) {
         errors += messages.get(R.string.plugin_field_unsupported_binding, field.id, field.binding.type)
       }
-      if (!environmentNamePattern.matches(field.binding.name)) {
+      if (!EnvironmentVariablesCodec.isValidName(field.binding.name)) {
         errors += messages.get(R.string.plugin_field_invalid_environment, field.id, field.binding.name)
       }
       if (field.minimum != null && field.maximum != null && field.minimum > field.maximum) {

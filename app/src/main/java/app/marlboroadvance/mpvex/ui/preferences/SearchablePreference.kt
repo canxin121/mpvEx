@@ -525,6 +525,13 @@ object SearchablePreferences {
                 screen = AdvancedPreferencesScreen,
             ))
             add(SearchablePreference(
+                titleRes = R.string.environment_variables_title,
+                summaryRes = R.string.environment_variables_summary,
+                keywords = listOf("environment", "variables", "env", "mpv", "scripts", "plugins", "环境变量"),
+                categoryRes = R.string.pref_advanced,
+                screen = EnvironmentVariablesScreen,
+            ))
+            add(SearchablePreference(
                 titleRes = R.string.pref_enable_lua_scripts_title,
                 summaryRes = R.string.pref_enable_lua_scripts_summary,
                 keywords = listOf("lua", "scripts", "enable", "load"),

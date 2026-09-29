@@ -1,10 +1,15 @@
 package app.marlboroadvance.mpvex
 
 import android.app.Application
+import android.util.Log
 import app.marlboroadvance.mpvex.database.repository.VideoMetadataCacheRepository
 import app.marlboroadvance.mpvex.di.DatabaseModule
 import app.marlboroadvance.mpvex.di.FileManagerModule
 import app.marlboroadvance.mpvex.di.PreferencesModule
+import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
+import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentApplicator
+import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentPlan
+import app.marlboroadvance.mpvex.plugins.EnvironmentVariablesCodec
 import app.marlboroadvance.mpvex.presentation.crash.CrashActivity
 import app.marlboroadvance.mpvex.presentation.crash.GlobalExceptionHandler
 import app.marlboroadvance.mpvex.utils.media.MediaLibraryEvents
@@ -27,6 +32,7 @@ class App : Application() {
 
   private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
   private val metadataCache: VideoMetadataCacheRepository by inject()
+  private val advancedPreferences: AdvancedPreferences by inject()
 
   override fun onCreate() {
     super.onCreate()
@@ -44,6 +50,18 @@ class App : Application() {
     }
 
     Thread.setDefaultUncaughtExceptionHandler(GlobalExceptionHandler(applicationContext, CrashActivity::class.java))
+
+    // Native thumbnail code can load before a player is opened. Supply user
+    // variables now; the player later applies plugin-specific overrides.
+    val environmentResult = CPluginEnvironmentApplicator.apply(
+      plan = CPluginEnvironmentPlan(emptyList(), emptySet(), emptyList()),
+      previouslyManagedEnvironmentNames = advancedPreferences.managedCPluginEnvironmentNames.get(),
+      userDefinedVariables = EnvironmentVariablesCodec.decode(advancedPreferences.environmentVariables.get()),
+      previouslyManagedUserEnvironmentNames = advancedPreferences.managedUserEnvironmentNames.get(),
+    )
+    advancedPreferences.managedCPluginEnvironmentNames.set(environmentResult.managedEnvironmentNames)
+    advancedPreferences.managedUserEnvironmentNames.set(environmentResult.managedUserEnvironmentNames)
+    environmentResult.warnings.forEach { warning -> Log.w("App", warning) }
 
     FastThumbnails.initialize(this)
 

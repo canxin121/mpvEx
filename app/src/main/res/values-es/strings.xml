@@ -1113,4 +1113,23 @@
     <item quantity="other">No se encontró un nombre de archivo disponible tras %1$d intentos</item>
     <item quantity="many">No se encontró un nombre de archivo disponible tras %1$d intentos</item>
   </plurals>
+  <string name="environment_variables_title">Variables de entorno</string>
+  <string name="environment_variables_summary">Configura variables de entorno para mpv y los scripts</string>
+  <string name="environment_variables_description">Estas variables estarán disponibles para mpv, los scripts Lua y los complementos C. Si un complemento define una variable con el mismo nombre, prevalece su valor. Vuelve a abrir el reproductor para aplicar los cambios; reinicia la aplicación para que afecten también a las miniaturas.</string>
+  <string name="environment_variables_empty">Aún no hay variables de entorno</string>
+  <string name="environment_variables_backup_notice">Las copias de ajustes exportadas incluyen estos valores. Guárdalas en un lugar seguro.</string>
+  <string name="environment_variable_value_hidden">Valor oculto</string>
+  <string name="environment_variable_add">Añadir variable</string>
+  <string name="environment_variable_edit">Editar variable</string>
+  <string name="environment_variable_name">Nombre de la variable</string>
+  <string name="environment_variable_value">Valor</string>
+  <string name="environment_variable_name_required">Introduce un nombre para la variable</string>
+  <string name="environment_variable_name_invalid">Usa letras inglesas, números o guiones bajos; el primer carácter debe ser una letra o un guion bajo.</string>
+  <string name="environment_variable_name_duplicate">Ya existe una variable con ese nombre</string>
+  <string name="environment_variable_value_invalid">El valor no puede contener el carácter NUL</string>
+  <string name="environment_variable_show_value">Mostrar</string>
+  <string name="environment_variable_hide_value">Ocultar</string>
+  <string name="environment_variable_delete">Eliminar</string>
+  <string name="environment_variable_clear_failed">No se pudo borrar la variable de entorno «%1$s»</string>
+  <string name="environment_variable_set_failed">No se pudo definir la variable de entorno «%1$s»</string>
 </resources>

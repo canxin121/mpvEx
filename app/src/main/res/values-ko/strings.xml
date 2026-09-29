@@ -1087,4 +1087,23 @@
   <plurals name="file_unique_filename_failed">
     <item quantity="other">%1$d번 시도했지만 사용할 수 있는 파일 이름을 찾지 못했습니다</item>
   </plurals>
+  <string name="environment_variables_title">환경 변수</string>
+  <string name="environment_variables_summary">mpv와 스크립트에 사용할 환경 변수 설정</string>
+  <string name="environment_variables_description">이 변수는 mpv, Lua 스크립트, C 플러그인에서 사용할 수 있습니다. 플러그인이 같은 이름의 변수를 설정한 경우 플러그인 값이 우선합니다. 플레이어를 다시 열면 변경 사항이 적용됩니다. 썸네일에도 적용하려면 앱을 다시 시작하세요.</string>
+  <string name="environment_variables_empty">추가된 환경 변수가 없습니다</string>
+  <string name="environment_variables_backup_notice">내보낸 설정에는 변수 값도 포함됩니다. 백업 파일을 안전하게 보관하세요.</string>
+  <string name="environment_variable_value_hidden">값 숨김</string>
+  <string name="environment_variable_add">변수 추가</string>
+  <string name="environment_variable_edit">변수 수정</string>
+  <string name="environment_variable_name">변수 이름</string>
+  <string name="environment_variable_value">값</string>
+  <string name="environment_variable_name_required">변수 이름을 입력하세요</string>
+  <string name="environment_variable_name_invalid">영문자, 숫자, 밑줄만 사용할 수 있으며 첫 글자는 영문자 또는 밑줄이어야 합니다.</string>
+  <string name="environment_variable_name_duplicate">같은 이름의 변수가 이미 있습니다</string>
+  <string name="environment_variable_value_invalid">값에 NUL 문자를 넣을 수 없습니다</string>
+  <string name="environment_variable_show_value">표시</string>
+  <string name="environment_variable_hide_value">숨기기</string>
+  <string name="environment_variable_delete">삭제</string>
+  <string name="environment_variable_clear_failed">환경 변수 ‘%1$s’을 지울 수 없습니다</string>
+  <string name="environment_variable_set_failed">환경 변수 ‘%1$s’을 설정할 수 없습니다</string>
 </resources>

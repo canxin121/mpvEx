@@ -1100,4 +1100,23 @@
     <item quantity="one">Nach %1$d Versuch wurde kein freier Dateiname gefunden</item>
     <item quantity="other">Nach %1$d Versuchen wurde kein freier Dateiname gefunden</item>
   </plurals>
+  <string name="environment_variables_title">Umgebungsvariablen</string>
+  <string name="environment_variables_summary">Umgebungsvariablen für mpv und Skripte festlegen</string>
+  <string name="environment_variables_description">Diese Variablen stehen mpv, Lua-Skripten und C-Plugins zur Verfügung. Bei gleichem Namen hat der Wert des Plugins Vorrang. Öffnen Sie den Player erneut, damit Änderungen wirksam werden; starten Sie für Vorschaubilder auch die App neu.</string>
+  <string name="environment_variables_empty">Noch keine Umgebungsvariablen hinzugefügt</string>
+  <string name="environment_variables_backup_notice">Exportierte Einstellungen enthalten diese Werte. Bewahren Sie Sicherungen sicher auf.</string>
+  <string name="environment_variable_value_hidden">Wert ausgeblendet</string>
+  <string name="environment_variable_add">Variable hinzufügen</string>
+  <string name="environment_variable_edit">Variable bearbeiten</string>
+  <string name="environment_variable_name">Variablenname</string>
+  <string name="environment_variable_value">Wert</string>
+  <string name="environment_variable_name_required">Variablennamen eingeben</string>
+  <string name="environment_variable_name_invalid">Nur englische Buchstaben, Ziffern und Unterstriche sind erlaubt. Der Name muss mit einem Buchstaben oder Unterstrich beginnen.</string>
+  <string name="environment_variable_name_duplicate">Eine Variable mit diesem Namen ist bereits vorhanden</string>
+  <string name="environment_variable_value_invalid">Der Wert darf kein NUL-Zeichen enthalten</string>
+  <string name="environment_variable_show_value">Anzeigen</string>
+  <string name="environment_variable_hide_value">Verbergen</string>
+  <string name="environment_variable_delete">Löschen</string>
+  <string name="environment_variable_clear_failed">Umgebungsvariable „%1$s“ konnte nicht entfernt werden</string>
+  <string name="environment_variable_set_failed">Umgebungsvariable „%1$s“ konnte nicht gesetzt werden</string>
 </resources>

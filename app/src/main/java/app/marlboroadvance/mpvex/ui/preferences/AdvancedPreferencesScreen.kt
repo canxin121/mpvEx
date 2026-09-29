@@ -440,6 +440,19 @@ object AdvancedPreferencesScreen : Screen {
                   backStack.add(ConfigEditorScreen(ConfigEditorScreen.ConfigType.INPUT_CONF))
                 },
               )
+
+              PreferenceDivider()
+
+              Preference(
+                title = { Text(stringResource(R.string.environment_variables_title)) },
+                summary = {
+                  Text(
+                    stringResource(R.string.environment_variables_summary),
+                    color = MaterialTheme.colorScheme.outline,
+                  )
+                },
+                onClick = { backStack.add(EnvironmentVariablesScreen) },
+              )
             }
           }
           

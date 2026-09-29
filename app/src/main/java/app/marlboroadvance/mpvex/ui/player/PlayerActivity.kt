@@ -48,6 +48,7 @@ import app.marlboroadvance.mpvex.plugins.CPluginConfigurationCodec
 import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentApplicator
 import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentPlan
 import app.marlboroadvance.mpvex.plugins.CPluginEnvironmentPlanBuilder
+import app.marlboroadvance.mpvex.plugins.EnvironmentVariablesCodec
 import app.marlboroadvance.mpvex.plugins.isSafeCPluginFileName
 import app.marlboroadvance.mpvex.plugins.hasScriptFileExtension
 import app.marlboroadvance.mpvex.plugins.isSafeScriptFileName
@@ -963,9 +964,16 @@ class PlayerActivity :
         plan = effectiveEnvironmentPlan,
         previouslyManagedEnvironmentNames =
           advancedPreferences.managedCPluginEnvironmentNames.get(),
+        userDefinedVariables =
+          EnvironmentVariablesCodec.decode(advancedPreferences.environmentVariables.get()),
+        previouslyManagedUserEnvironmentNames =
+          advancedPreferences.managedUserEnvironmentNames.get(),
       )
     advancedPreferences.managedCPluginEnvironmentNames.set(
       environmentResult.managedEnvironmentNames,
+    )
+    advancedPreferences.managedUserEnvironmentNames.set(
+      environmentResult.managedUserEnvironmentNames,
     )
     environmentResult.warnings.forEach { warning ->
       Log.w(TAG, warning)

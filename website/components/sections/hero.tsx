@@ -103,6 +103,22 @@ export function HeroSection({
           Material3 design, background playback, and picture-in-picture.
         </motion.p>
 
+        <motion.p
+          variants={itemVariants}
+          className="text-sm text-muted-foreground/80 mb-10 max-w-2xl mx-auto"
+        >
+          This site documents a fork of mpvExtended. The{" "}
+          <a
+            href={siteConfig.links.upstream}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-primary/40 underline-offset-4 hover:text-primary transition-colors"
+          >
+            upstream project
+          </a>{" "}
+          is the original.
+        </motion.p>
+
         <motion.div
           variants={itemVariants}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20"

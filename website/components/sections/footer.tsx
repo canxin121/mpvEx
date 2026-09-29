@@ -2,6 +2,8 @@
 
 import { Github, Heart } from "lucide-react";
 
+import { siteConfig } from "@/lib/site";
+
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -86,7 +88,7 @@ export function Footer() {
           </a>
           <span className="text-muted-foreground/30">•</span>
           <a
-            href="https://marlboro-advance.github.io/mpvEx/privacy-policy.html"
+            href={siteConfig.links.privacyPolicy}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-muted-foreground hover:text-primary transition-colors"

@@ -5,6 +5,29 @@
  */
 
 /**
+ * Repository identity. This site describes a fork of mpvExtended, so every
+ * repository link and API call is composed from these two values rather than
+ * spelled out per call site — `lib/github.ts` reads them instead of keeping its
+ * own copy.
+ */
+export const repo = {
+  owner: "canxin121",
+  name: "mpvEx",
+  upstream: {
+    owner: "marlboro-advance",
+    name: "mpvEx",
+  },
+} as const;
+
+const repoUrl = `https://github.com/${repo.owner}/${repo.name}`;
+
+// The privacy policy is served from GitHub Pages, which the preview workflow
+// (.github/workflows/preview.yml) deploys under a path named after the
+// repository.
+const pagesUrl = (path: string) =>
+  `https://${repo.owner.toLowerCase()}.github.io/${repo.name}/${path}`;
+
+/**
  * Global site configuration object.
  * Contains metadata, external links, and author information used throughout the application.
  */
@@ -19,16 +42,19 @@ export const siteConfig = {
     icon: "/icon.svg",
     apple: "/apple-icon.png",
   },
+  repo,
   links: {
-    github: "https://github.com/marlboro-advance/mpvEx",
-    releases: "https://github.com/marlboro-advance/mpvEx/releases",
-    latestRelease: "https://github.com/marlboro-advance/mpvEx/releases/latest",
+    github: repoUrl,
+    releases: `${repoUrl}/releases`,
+    latestRelease: `${repoUrl}/releases/latest`,
     izzyOnAndroid: "https://apt.izzysoft.de/packages/app.marlboroadvance.mpvex",
-    contributors: "https://github.com/marlboro-advance/mpvEx/graphs/contributors",
+    contributors: `${repoUrl}/graphs/contributors`,
+    upstream: `https://github.com/${repo.upstream.owner}/${repo.upstream.name}`,
+    privacyPolicy: pagesUrl("privacy-policy.html"),
   },
   author: {
-    name: "marlboro-advance",
-    url: "https://github.com/marlboro-advance",
+    name: repo.owner,
+    url: `https://github.com/${repo.owner}`,
   },
 } as const;
 

@@ -5,6 +5,8 @@
  * @module lib/github
  */
 
+import { repo } from "@/lib/site";
+
 export interface GitHubContributor {
   login: string;
   id: number;
@@ -18,15 +20,16 @@ export interface GitHubContributor {
   public_repos?: number;
 }
 
-const REPO_OWNER = "marlboro-advance";
-const REPO_NAME = "mpvEx";
+// The repository this site describes lives in `lib/site.ts`; these functions
+// compose URLs from it rather than keeping a second copy of the owner/repo.
+const REPO = `${repo.owner}/${repo.name}`;
 const GITHUB_API_URL = "https://api.github.com";
 
 export async function getRepositoryContributors(
   limit?: number,
 ): Promise<GitHubContributor[]> {
   try {
-    const url = `${GITHUB_API_URL}/repos/${REPO_OWNER}/${REPO_NAME}/contributors?per_page=${limit || 100}&sort=contributions`;
+    const url = `${GITHUB_API_URL}/repos/${REPO}/contributors?per_page=${limit || 100}&sort=contributions`;
 
     const response = await fetch(url, {
       next: { revalidate: 86400 }, // Cache for 24 hours
@@ -74,7 +77,7 @@ export async function getContributorDetails(
 
 export async function getRepositoryStats() {
   try {
-    const url = `${GITHUB_API_URL}/repos/${REPO_OWNER}/${REPO_NAME}`;
+    const url = `${GITHUB_API_URL}/repos/${REPO}`;
 
     const response = await fetch(url, {
       next: { revalidate: 3600 }, // Cache for 1 hour
@@ -106,7 +109,7 @@ export async function getRepositoryStats() {
 export async function getLatestRelease() {
   try {
     // Fetch the latest stable release
-    const url = `${GITHUB_API_URL}/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`;
+    const url = `${GITHUB_API_URL}/repos/${REPO}/releases/latest`;
     const response = await fetch(url, {
       next: { revalidate: 3600 }, // Cache for 1 hour
       headers: {

@@ -617,13 +617,14 @@ fun RenderPlayerButton(
     PlayerButton.SHORTCUT_3,
     PlayerButton.SHORTCUT_4 -> {
       val index = requireNotNull(button.shortcutIndex)
-      val shortcuts by koinInject<ShortcutPreferences>().shortcuts.collectAsState()
-      val entry = shortcuts.getOrNull(index - 1)
-      if (entry != null && entry.key.isNotBlank()) {
+      val preferences = koinInject<ShortcutPreferences>()
+      val entry by remember(preferences) { preferences.shortcutsFlow() }.collectAsState(initial = preferences.shortcuts())
+      val shortcut = entry.getOrNull(index - 1)
+      if (shortcut != null && shortcut.key.isNotBlank()) {
         ControlsButton(
           icon = button.icon,
-          onClick = { pressShortcutKey(entry.key) },
-          title = displayLabel(entry.label, index),
+          onClick = { pressShortcutKey(shortcut.key) },
+          title = displayLabel(shortcut.label, index),
           color = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
           modifier = Modifier.size(buttonSize),
         )

@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +43,6 @@ import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.preferences.CustomShortcut
 import app.marlboroadvance.mpvex.preferences.ShortcutPreferences
 import app.marlboroadvance.mpvex.preferences.displayLabel
-import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.presentation.Screen
 import app.marlboroadvance.mpvex.presentation.components.ConfirmDialog
 import app.marlboroadvance.mpvex.ui.utils.LocalBackStack
@@ -59,7 +59,8 @@ object ShortcutPreferencesScreen : Screen {
   override fun Content() {
     val backstack = LocalBackStack.current
     val preferences = koinInject<ShortcutPreferences>()
-    val shortcuts by preferences.shortcuts.collectAsState()
+    val shortcutsState = remember(preferences) { preferences.shortcutsFlow() }
+    val shortcuts by shortcutsState.collectAsState(initial = preferences.shortcuts())
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
@@ -73,7 +74,7 @@ object ShortcutPreferencesScreen : Screen {
     val headerItemCount = if (shortcuts.isEmpty()) 2 else 1
 
     fun move(from: Int, to: Int) {
-      val current = preferences.shortcuts.get()
+      val current = preferences.shortcuts()
       if (from !in current.indices || to !in current.indices || from == to) return
       preferences.save(current.toMutableList().apply { add(to, removeAt(from)) })
       scope.launch { listState.animateScrollToItem(headerItemCount + to) }
@@ -86,7 +87,7 @@ object ShortcutPreferencesScreen : Screen {
         val fromId = from.key as? String
         val toId = to.key as? String
         if (fromId != null && toId != null) {
-          val current = preferences.shortcuts.get()
+          val current = preferences.shortcuts()
           val fromIndex = current.indexOfFirst { it.id == fromId }
           val toIndex = current.indexOfFirst { it.id == toId }
           if (fromIndex >= 0 && toIndex >= 0 && fromIndex != toIndex) {
@@ -170,7 +171,7 @@ object ShortcutPreferencesScreen : Screen {
               modifier =
                 Modifier.clickable {
                   // Adding opens the editor straight away, so a new row is never left blank.
-                  val (updated, added) = preferences.add(preferences.shortcuts.get())
+                  val (updated, added) = preferences.add(preferences.shortcuts())
                   preferences.save(updated)
                   editingId = added.id
                 },
@@ -196,7 +197,7 @@ object ShortcutPreferencesScreen : Screen {
         shortcut = shortcut,
         position = editingIndex + 1,
         onSave = { label, key ->
-          val current = preferences.shortcuts.get()
+          val current = preferences.shortcuts()
           preferences.save(
             current.map { if (it.id == shortcut.id) it.copy(label = label, key = key) else it },
           )
@@ -216,7 +217,7 @@ object ShortcutPreferencesScreen : Screen {
           if (deletingIndex >= 0) displayLabel(shortcuts[deletingIndex].label, deletingIndex + 1) else "",
         ),
         onConfirm = {
-          preferences.save(preferences.shortcuts.get().filterNot { it.id == deletingId })
+          preferences.save(preferences.shortcuts().filterNot { it.id == deletingId })
           deletingId = null
           editingId = null
         },

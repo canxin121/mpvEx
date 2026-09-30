@@ -18,7 +18,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.preferences.ShortcutPreferences
 import app.marlboroadvance.mpvex.preferences.displayLabel
-import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.ui.player.pressShortcutKey
 import org.koin.compose.koinInject
 
@@ -56,7 +57,9 @@ fun ShortcutsPanel(onDismissRequest: () -> Unit) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ShortcutActionButtons() {
-  val shortcuts by koinInject<ShortcutPreferences>().shortcuts.collectAsState()
+  val preferences = koinInject<ShortcutPreferences>()
+  val shortcutsFlow = remember(preferences) { preferences.shortcutsFlow() }
+  val shortcuts by shortcutsFlow.collectAsState(initial = preferences.shortcuts())
   val configured = shortcuts.withIndex().filter { it.value.key.isNotBlank() }
 
   if (configured.isEmpty()) {

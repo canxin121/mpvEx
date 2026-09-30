@@ -4,6 +4,8 @@ import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.i18n.localizedString
 import app.marlboroadvance.mpvex.preferences.preference.Preference
 import app.marlboroadvance.mpvex.preferences.preference.PreferenceStore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.util.UUID
 
 /**
@@ -13,24 +15,33 @@ import java.util.UUID
  * preserved; see [ShortcutListCodec].
  */
 class ShortcutPreferences(
-  preferenceStore: PreferenceStore,
+  private val preferenceStore: PreferenceStore,
 ) {
   /**
    * The saved list, or - while nothing has been saved yet - the four entries the previous
    * version kept in separate `shortcut_1..4_label` / `_key` preferences. Reading the old
-   * keys without deleting them keeps a downgrade working, and because the migration is only
-   * the preference's default value, merely opening the settings page writes nothing.
+   * keys without deleting them keeps a downgrade working.
    *
-   * The default is computed once, when Koin builds this class, so importing a backup in the
-   * old format while the app runs does not re-derive it.
+   * That fallback is recomputed on every read rather than captured once when Koin builds this
+   * class, because on API 33+ the interface language lives in the framework store and a
+   * language change recreates the activities but not the Koin singletons: a value captured at
+   * construction time would still be in the old language afterwards. Merely opening the
+   * settings page writes nothing, so `isSet()` stays false until the user edits.
    */
   val shortcuts: Preference<List<CustomShortcut>> =
     preferenceStore.getObject(
       key = ShortcutListCodec.KEY,
-      defaultValue = legacyShortcuts(preferenceStore),
+      defaultValue = emptyList(),
       serializer = ShortcutListCodec::encode,
       deserializer = ShortcutListCodec::decode,
     )
+
+  /** The list to show, including the entries migrated from the previous version's keys. */
+  fun shortcuts(): List<CustomShortcut> =
+    if (this.shortcuts.isSet()) this.shortcuts.get() else legacyShortcuts(preferenceStore)
+
+  /** The same list, re-read whenever the stored value changes. */
+  fun shortcutsFlow(): Flow<List<CustomShortcut>> = this.shortcuts.changes().map { shortcuts() }
 
   fun save(shortcuts: List<CustomShortcut>) = this.shortcuts.set(shortcuts)
 

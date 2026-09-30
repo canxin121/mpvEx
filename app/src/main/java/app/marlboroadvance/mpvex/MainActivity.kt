@@ -1,6 +1,7 @@
 package app.marlboroadvance.mpvex
 
 import android.os.Bundle
+import app.marlboroadvance.mpvex.presentation.BaseActivity
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -54,7 +55,7 @@ import org.koin.android.ext.android.inject
 /**
  * Main entry point for the application
  */
-class MainActivity : ComponentActivity() {
+class MainActivity : BaseActivity() {
   private val appearancePreferences by inject<AppearancePreferences>()
   private val networkRepository by inject<NetworkRepository>()
   

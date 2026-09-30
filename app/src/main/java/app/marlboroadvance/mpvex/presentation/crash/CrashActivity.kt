@@ -7,7 +7,7 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import app.marlboroadvance.mpvex.presentation.BaseActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -77,7 +77,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 
-class CrashActivity : ComponentActivity() {
+class CrashActivity : BaseActivity() {
   private val clipboardManager by lazy { getSystemService(CLIPBOARD_SERVICE) as ClipboardManager }
   private var logcat: String = ""
   private var crashLog: String = ""

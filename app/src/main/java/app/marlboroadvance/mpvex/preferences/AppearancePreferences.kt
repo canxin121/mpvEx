@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.AppLocale
 import app.marlboroadvance.mpvex.preferences.preference.PreferenceStore
 import app.marlboroadvance.mpvex.preferences.preference.getEnum
 import app.marlboroadvance.mpvex.ui.theme.AppTheme
@@ -28,6 +29,15 @@ class AppearancePreferences(
   val showUnplayedOldVideoLabel = preferenceStore.getBoolean("show_unplayed_old_video_label", true)
   val unplayedOldVideoDays = preferenceStore.getInt("unplayed_old_video_days", 7)
   val seekbarStyle = preferenceStore.getEnum("seekbar_style", SeekbarStyle.Thick)
+
+  /**
+   * The chosen interface language as a BCP-47 tag; empty means "follow the system".
+   *
+   * On API 33+ the framework's per-app locale is the real store - see
+   * [app.marlboroadvance.mpvex.i18n.AppLocale] - and this key only mirrors what the picker
+   * wrote, so backups and older devices still carry the choice.
+   */
+  val appLanguage = preferenceStore.getString(AppLocale.KEY, AppLocale.SYSTEM)
 
   val topLeftControls =
     preferenceStore.getString(

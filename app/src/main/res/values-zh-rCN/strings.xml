@@ -202,7 +202,7 @@
   <string name="pref_advanced_mpv_conf">编辑 mpv.conf</string>
   <string name="pref_advanced_input_conf">编辑 input.conf</string>
   <string name="shortcut_settings_title">自定义快捷键</string>
-  <string name="shortcut_settings_summary">为每个按钮指定 mpv 按键，并在 input.conf 中绑定该按键。例如，可将 Ctrl+Alt+s 设为截图。按钮可从播放器的“更多”菜单触发，也可添加到播放控件布局。修改 input.conf 后请重新打开播放器。</string>
+  <string name="shortcut_settings_summary">为每条快捷键指定 mpv 按键，并在 input.conf 中绑定该按键。快捷键可以随意添加、排序和删除。控制布局里的编号按钮按列表顺序对应前四条快捷键，其余快捷键可从播放器的“更多”菜单使用。修改 input.conf 后请重新打开播放器。</string>
   <string name="shortcut_controls_summary">配置用于触发 input.conf 快捷键的按钮</string>
   <string name="shortcut_not_configured">未指定按键</string>
   <string name="shortcut_key_summary">按键：%1$s</string>
@@ -1082,4 +1082,13 @@
   <string name="pref_advanced_native_logs_title">捕获原生输出</string>
   <string name="pref_advanced_native_logs_summary">重定向进程控制台，使 C 插件与库的输出也能写入日志</string>
   <string name="ui_fork_notice">mpvExtended 的 fork 版本，上游仓库 %1$s</string>
+  <string name="shortcut_add">添加快捷键</string>
+  <string name="shortcut_settings_empty">还没有快捷键。添加一条即可开始。</string>
+  <string name="shortcut_delete_title">删除快捷键？</string>
+  <string name="shortcut_reset_message">这会移除所有自定义快捷键。</string>
+  <string name="ui_move_up">上移</string>
+  <string name="ui_move_down">下移</string>
+  <string name="pref_language_title">语言</string>
+  <string name="pref_language_summary">界面语言。“跟随系统”会使用设备的语言。</string>
+  <string name="pref_language_system_default">跟随系统</string>
 </resources>

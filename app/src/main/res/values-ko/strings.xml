@@ -202,7 +202,7 @@
   <string name="pref_advanced_mpv_conf">mpv.conf 편집</string>
   <string name="pref_advanced_input_conf">input.conf 편집</string>
   <string name="shortcut_settings_title">사용자 지정 단축키</string>
-  <string name="shortcut_settings_summary">각 버튼에 mpv 키를 지정하고 input.conf에서 해당 키에 동작을 연결하세요. 예를 들어 Ctrl+Alt+s를 스크린샷으로 설정할 수 있습니다. 버튼은 플레이어의 더보기 메뉴에서 사용하거나 재생 컨트롤에 추가할 수 있습니다. input.conf를 변경한 뒤 플레이어를 다시 여세요.</string>
+  <string name="shortcut_settings_summary">각 단축키에 mpv 키를 지정하고 input.conf에서 해당 키에 동작을 연결하세요. 단축키는 자유롭게 추가, 정렬, 삭제할 수 있습니다. 재생 컨트롤의 번호 버튼은 목록 순서대로 처음 네 개에 대응하며, 나머지는 플레이어의 더보기 메뉴에서 사용할 수 있습니다. input.conf를 변경한 뒤 플레이어를 다시 여세요.</string>
   <string name="shortcut_controls_summary">input.conf 키를 보내는 버튼 설정</string>
   <string name="shortcut_not_configured">키가 지정되지 않음</string>
   <string name="shortcut_key_summary">키: %1$s</string>
@@ -1082,4 +1082,13 @@
   <string name="pref_advanced_native_logs_title">네이티브 출력 캡처</string>
   <string name="pref_advanced_native_logs_summary">프로세스 콘솔을 리디렉션하여 C 플러그인과 라이브러리의 출력도 기록합니다</string>
   <string name="ui_fork_notice">mpvExtended의 포크 빌드입니다. 업스트림 저장소는 %1$s</string>
+  <string name="shortcut_add">단축키 추가</string>
+  <string name="shortcut_settings_empty">단축키가 없습니다. 하나를 추가해 시작하세요.</string>
+  <string name="shortcut_delete_title">단축키를 삭제할까요?</string>
+  <string name="shortcut_reset_message">모든 사용자 지정 단축키를 삭제합니다.</string>
+  <string name="ui_move_up">위로 이동</string>
+  <string name="ui_move_down">아래로 이동</string>
+  <string name="pref_language_title">언어</string>
+  <string name="pref_language_summary">인터페이스 언어입니다. \'시스템 기본\'은 기기 언어를 따릅니다.</string>
+  <string name="pref_language_system_default">시스템 기본</string>
 </resources>

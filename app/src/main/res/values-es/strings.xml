@@ -202,7 +202,7 @@
   <string name="pref_advanced_mpv_conf">Editar mpv.conf</string>
   <string name="pref_advanced_input_conf">Editar input.conf</string>
   <string name="shortcut_settings_title">Atajos personalizados</string>
-  <string name="shortcut_settings_summary">Asigna una tecla de mpv a cada botón y vincúlala en input.conf. Por ejemplo, Ctrl+Alt+s puede hacer una captura. Usa los botones desde el menú Más del reproductor o añádelos a los controles. Tras cambiar input.conf, vuelve a abrir el reproductor.</string>
+  <string name="shortcut_settings_summary">Asigna una tecla de mpv a cada atajo y vincúlala en input.conf. Los atajos pueden añadirse, reordenarse y eliminarse libremente. Los botones numerados de los controles corresponden a los cuatro primeros atajos en el orden de la lista; el resto están en el menú Más del reproductor. Tras cambiar input.conf, vuelve a abrir el reproductor.</string>
   <string name="shortcut_controls_summary">Configura botones que envían teclas definidas en input.conf</string>
   <string name="shortcut_not_configured">Ninguna tecla asignada</string>
   <string name="shortcut_key_summary">Tecla: %1$s</string>
@@ -1108,4 +1108,13 @@
   <string name="pref_advanced_native_logs_title">Capturar salida nativa</string>
   <string name="pref_advanced_native_logs_summary">Redirige la consola del proceso para registrar también la salida de plugins y bibliotecas en C</string>
   <string name="ui_fork_notice">Versión derivada (fork) de mpvExtended, repositorio original en %1$s</string>
+  <string name="shortcut_add">Añadir atajo</string>
+  <string name="shortcut_settings_empty">Aún no hay atajos. Añade uno para empezar.</string>
+  <string name="shortcut_delete_title">¿Eliminar el atajo?</string>
+  <string name="shortcut_reset_message">Esto elimina todos los atajos personalizados.</string>
+  <string name="ui_move_up">Subir</string>
+  <string name="ui_move_down">Bajar</string>
+  <string name="pref_language_title">Idioma</string>
+  <string name="pref_language_summary">Idioma de la interfaz. «Predeterminado del sistema» usa el idioma del dispositivo.</string>
+  <string name="pref_language_system_default">Predeterminado del sistema</string>
 </resources>

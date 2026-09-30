@@ -25,7 +25,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -189,7 +188,7 @@ object PlayerControlsPreferencesScreen : Screen {
           item {
             PreferenceSectionHeader(title = stringResource(R.string.shortcut_settings_title))
             PreferenceCard {
-              ListItem(
+              PreferenceListItem(
                 headlineContent = { Text(stringResource(R.string.shortcut_settings_title)) },
                 supportingContent = { Text(stringResource(R.string.shortcut_controls_summary)) },
                 leadingContent = { Icon(Icons.Outlined.Keyboard, contentDescription = null) },
@@ -208,7 +207,7 @@ object PlayerControlsPreferencesScreen : Screen {
             
             PreferenceCard {
               SeekbarStyle.entries.forEachIndexed { index, style ->
-                ListItem(
+                PreferenceListItem(
                   headlineContent = {
                     Text(text = style.name)
                   },
@@ -218,9 +217,6 @@ object PlayerControlsPreferencesScreen : Screen {
                       onClick = null
                     )
                   },
-                  colors = androidx.compose.material3.ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                  ),
                   modifier = Modifier
                     .clickable { appearancePrefs.seekbarStyle.set(style) }
                 )

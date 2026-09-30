@@ -202,7 +202,7 @@
   <string name="pref_advanced_mpv_conf">Editar mpv.conf</string>
   <string name="pref_advanced_input_conf">Editar input.conf</string>
   <string name="shortcut_settings_title">Atalhos personalizados</string>
-  <string name="shortcut_settings_summary">Atribua uma tecla do mpv a cada botão e defina sua ação no input.conf. Por exemplo, Ctrl+Alt+s pode tirar uma captura de tela. Use os botões no menu Mais do reprodutor ou adicione-os aos controles. Reabra o reprodutor após alterar o input.conf.</string>
+  <string name="shortcut_settings_summary">Atribua uma tecla do mpv a cada atalho e defina sua ação no input.conf. Os atalhos podem ser adicionados, reordenados e excluídos livremente. Os botões numerados dos controles correspondem aos quatro primeiros atalhos na ordem da lista; os demais ficam no menu Mais do reprodutor. Reabra o reprodutor após alterar o input.conf.</string>
   <string name="shortcut_controls_summary">Configure botões que enviam teclas definidas no input.conf</string>
   <string name="shortcut_not_configured">Nenhuma tecla atribuída</string>
   <string name="shortcut_key_summary">Tecla: %1$s</string>
@@ -1108,4 +1108,13 @@
   <string name="pref_advanced_native_logs_title">Capturar saída nativa</string>
   <string name="pref_advanced_native_logs_summary">Redireciona o console do processo para registrar também a saída de plugins e bibliotecas em C</string>
   <string name="ui_fork_notice">Versão derivada (fork) do mpvExtended, repositório original em %1$s</string>
+  <string name="shortcut_add">Adicionar atalho</string>
+  <string name="shortcut_settings_empty">Ainda não há atalhos. Adicione um para começar.</string>
+  <string name="shortcut_delete_title">Excluir o atalho?</string>
+  <string name="shortcut_reset_message">Isso remove todos os atalhos personalizados.</string>
+  <string name="ui_move_up">Mover para cima</string>
+  <string name="ui_move_down">Mover para baixo</string>
+  <string name="pref_language_title">Idioma</string>
+  <string name="pref_language_summary">Idioma da interface. “Padrão do sistema” segue o idioma do dispositivo.</string>
+  <string name="pref_language_system_default">Padrão do sistema</string>
 </resources>

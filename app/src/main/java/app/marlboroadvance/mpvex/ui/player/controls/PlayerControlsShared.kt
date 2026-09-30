@@ -81,7 +81,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.preferences.PlayerButton
 import app.marlboroadvance.mpvex.preferences.ShortcutPreferences
-import app.marlboroadvance.mpvex.preferences.shortcutSlot
+import app.marlboroadvance.mpvex.preferences.displayLabel
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.ui.player.Panels
 import app.marlboroadvance.mpvex.ui.player.PlayerActivity
@@ -609,19 +609,21 @@ fun RenderPlayerButton(
       )
     }
 
+    // The numbered buttons do not name a fixed shortcut; each one stands for the nth entry
+    // of the user's shortcut list, in list order. Fewer than n shortcuts configured (or the
+    // nth one left without a key) means the button is not rendered at all.
     PlayerButton.SHORTCUT_1,
     PlayerButton.SHORTCUT_2,
     PlayerButton.SHORTCUT_3,
     PlayerButton.SHORTCUT_4 -> {
-      val slot = requireNotNull(button.shortcutSlot())
-      val shortcuts = koinInject<ShortcutPreferences>()
-      val label by shortcuts.label(slot).collectAsState()
-      val key by shortcuts.key(slot).collectAsState()
-      if (key.isNotBlank()) {
+      val index = requireNotNull(button.shortcutIndex)
+      val shortcuts by koinInject<ShortcutPreferences>().shortcuts.collectAsState()
+      val entry = shortcuts.getOrNull(index - 1)
+      if (entry != null && entry.key.isNotBlank()) {
         ControlsButton(
           icon = button.icon,
-          onClick = { pressShortcutKey(key) },
-          title = label,
+          onClick = { pressShortcutKey(entry.key) },
+          title = displayLabel(entry.label, index),
           color = if (hideBackground) controlColor else MaterialTheme.colorScheme.onSurface,
           modifier = Modifier.size(buttonSize),
         )

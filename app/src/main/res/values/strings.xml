@@ -24,6 +24,9 @@
   <string name="pref_appearance_hide_player_buttons_background_title">Hide player buttons background</string>
   <string name="pref_appearance_hide_player_buttons_background_summary">Hide the background of all player control buttons</string>
   <string name="pref_appearance_category_file_browser">File Browser</string>
+  <string name="pref_language_title">Language</string>
+  <string name="pref_language_summary">Interface language. “System default” follows your device language.</string>
+  <string name="pref_language_system_default">System default</string>
   <string name="pref_appearance_show_unplayed_old_video_label_title">Show label for new unplayed videos</string>
   <string name="pref_appearance_show_unplayed_old_video_label_summary">Display a \"New\" label on videos added within specified days that have never been played</string>
   <string name="pref_appearance_unplayed_old_video_days_title">Days threshold for new video label</string>
@@ -238,7 +241,7 @@
   <string name="environment_variable_hide_value">Hide</string>
   <string name="environment_variable_delete">Delete</string>
   <string name="shortcut_settings_title">Custom shortcuts</string>
-  <string name="shortcut_settings_summary">Assign an mpv key to each button, then bind that key in input.conf. Example: Ctrl+Alt+s screenshot. Shortcuts are available in the player’s More menu; you can also add individual buttons to the control layout. Reopen the player after changing input.conf.</string>
+  <string name="shortcut_settings_summary">Assign an mpv key to each shortcut, then bind that key in input.conf. Shortcuts can be added, reordered and deleted freely. The numbered buttons in the control layout use the first four shortcuts in list order; every shortcut is also available in the player’s More menu. Reopen the player after changing input.conf.</string>
   <string name="shortcut_controls_summary">Configure buttons that send keys from input.conf</string>
   <string name="shortcut_not_configured">No key assigned</string>
   <string name="shortcut_key_summary">Key: %1$s</string>
@@ -247,6 +250,12 @@
   <string name="shortcut_key">mpv key</string>
   <string name="shortcut_key_example">Example: Ctrl+Alt+s. Leave empty to hide this shortcut.</string>
   <string name="shortcut_sheet_empty">Assign a key in Settings → Player layout → Custom shortcuts.</string>
+  <string name="shortcut_add">Add shortcut</string>
+  <string name="shortcut_settings_empty">No shortcuts yet. Add one to get started.</string>
+  <string name="shortcut_delete_title">Delete shortcut?</string>
+  <string name="shortcut_reset_message">This removes every custom shortcut.</string>
+  <string name="ui_move_up">Move up</string>
+  <string name="ui_move_down">Move down</string>
   <string name="pref_advanced_dump_logs_title">Dump logs</string>
   <string name="pref_advanced_dump_logs_summary">Dumps and copies the logs to be shared with the developers</string>
   <string name="pref_advanced_verbose_logging_title">Verbose logging</string>

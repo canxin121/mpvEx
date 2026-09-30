@@ -202,7 +202,7 @@
   <string name="pref_advanced_mpv_conf">Bearbeiten Sie mpv.conf</string>
   <string name="pref_advanced_input_conf">Bearbeiten Sie input.conf</string>
   <string name="shortcut_settings_title">Benutzerdefinierte Kurzbefehle</string>
-  <string name="shortcut_settings_summary">Weisen Sie jeder Schaltfläche eine mpv-Taste zu und legen Sie deren Aktion in input.conf fest. Zum Beispiel kann Ctrl+Alt+s einen Screenshot erstellen. Die Schaltflächen sind im Menü „Mehr“ verfügbar und können zur Steuerung hinzugefügt werden. Öffnen Sie den Player nach Änderungen an input.conf erneut.</string>
+  <string name="shortcut_settings_summary">Weisen Sie jedem Kurzbefehl eine mpv-Taste zu und legen Sie deren Aktion in input.conf fest. Kurzbefehle lassen sich frei hinzufügen, umsortieren und löschen. Die nummerierten Steuerungsschaltflächen entsprechen den ersten vier Kurzbefehlen in Listenreihenfolge; alle weiteren sind im Menü „Mehr“ des Players verfügbar. Öffnen Sie den Player nach Änderungen an input.conf erneut.</string>
   <string name="shortcut_controls_summary">Schaltflächen für Tasten aus input.conf einrichten</string>
   <string name="shortcut_not_configured">Keine Taste zugewiesen</string>
   <string name="shortcut_key_summary">Taste: %1$s</string>
@@ -1095,4 +1095,13 @@
   <string name="pref_advanced_native_logs_title">Native-Ausgabe erfassen</string>
   <string name="pref_advanced_native_logs_summary">Leitet die Prozesskonsole um, damit auch die Ausgabe von C-Plugins und Bibliotheken protokolliert wird</string>
   <string name="ui_fork_notice">Ein Fork von mpvExtended, Ursprungs-Repository: %1$s</string>
+  <string name="shortcut_add">Kurzbefehl hinzufügen</string>
+  <string name="shortcut_settings_empty">Noch keine Kurzbefehle. Fügen Sie einen hinzu, um zu beginnen.</string>
+  <string name="shortcut_delete_title">Kurzbefehl löschen?</string>
+  <string name="shortcut_reset_message">Dies entfernt alle benutzerdefinierten Kurzbefehle.</string>
+  <string name="ui_move_up">Nach oben</string>
+  <string name="ui_move_down">Nach unten</string>
+  <string name="pref_language_title">Sprache</string>
+  <string name="pref_language_summary">Sprache der Oberfläche. „Systemstandard“ folgt der Sprache Ihres Geräts.</string>
+  <string name="pref_language_system_default">Systemstandard</string>
 </resources>

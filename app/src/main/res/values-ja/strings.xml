@@ -202,7 +202,7 @@
   <string name="pref_advanced_mpv_conf">mpv.conf を編集する</string>
   <string name="pref_advanced_input_conf">input.conf を編集する</string>
   <string name="shortcut_settings_title">カスタムショートカット</string>
-  <string name="shortcut_settings_summary">各ボタンに mpv のキーを割り当て、input.conf にそのキーの動作を設定します。たとえば Ctrl+Alt+s にスクリーンショットを割り当てられます。ボタンはプレーヤーの「その他」メニューや操作ボタンの配置から使えます。input.conf の変更後はプレーヤーを開き直してください。</string>
+  <string name="shortcut_settings_summary">各ショートカットに mpv のキーを割り当て、input.conf にそのキーの動作を設定します。ショートカットは自由に追加・並べ替え・削除できます。操作ボタンの番号付きボタンはリストの順に最初の 4 件に対応し、それ以降はプレーヤーの「その他」メニューから使えます。input.conf の変更後はプレーヤーを開き直してください。</string>
   <string name="shortcut_controls_summary">input.conf のキーを送るボタンを設定</string>
   <string name="shortcut_not_configured">キーが未設定</string>
   <string name="shortcut_key_summary">キー：%1$s</string>
@@ -1082,4 +1082,13 @@
   <string name="pref_advanced_native_logs_title">ネイティブ出力を取得</string>
   <string name="pref_advanced_native_logs_summary">プロセスのコンソールをリダイレクトし、C プラグインやライブラリの出力もログに記録します</string>
   <string name="ui_fork_notice">mpvExtended のフォーク版です。上流リポジトリは %1$s</string>
+  <string name="shortcut_add">ショートカットを追加</string>
+  <string name="shortcut_settings_empty">ショートカットはまだありません。追加して始めましょう。</string>
+  <string name="shortcut_delete_title">ショートカットを削除しますか？</string>
+  <string name="shortcut_reset_message">すべてのカスタムショートカットを削除します。</string>
+  <string name="ui_move_up">上へ移動</string>
+  <string name="ui_move_down">下へ移動</string>
+  <string name="pref_language_title">言語</string>
+  <string name="pref_language_summary">表示言語です。「システムに従う」を選ぶと端末の言語を使用します。</string>
+  <string name="pref_language_system_default">システムに従う</string>
 </resources>

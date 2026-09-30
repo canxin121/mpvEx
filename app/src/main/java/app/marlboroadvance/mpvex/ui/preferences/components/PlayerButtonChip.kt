@@ -93,16 +93,26 @@ fun PlayerButtonChip(
               Icon(
                 imageVector = button.icon,
                 contentDescription = label,
-                modifier = Modifier.size(24.dp), 
+                modifier = Modifier.size(24.dp),
               )
               Text(
                 text = localizedString(R.string.ui_1_06_chapter_1), // TODO: strings
-                fontSize = 15.sp, 
+                fontSize = 15.sp,
                 textAlign = TextAlign.Center,
                 lineHeight = 14.sp,
                 modifier = Modifier.padding(start = 8.dp),
               )
             }
+          }
+          PlayerButton.SHORTCUTS -> {
+            // The keyboard glyph alone does not say what the button opens, so this chip
+            // shows its name the way the other text-carrying buttons do.
+            Text(
+              text = label,
+              fontSize = 15.sp,
+              textAlign = TextAlign.Center,
+              lineHeight = 14.sp,
+            )
           }
           else -> {
             // Default: Icon only

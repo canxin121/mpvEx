@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -16,7 +15,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -97,29 +95,25 @@ object EnvironmentVariablesScreen : Screen {
           )
         }
         item {
-          Text(
-            text = stringResource(R.string.environment_variables_built_in_header),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-          )
-        }
-        items(builtInVariables) { (name, labelRes, value) ->
-          ListItem(
-            overlineContent = { Text(stringResource(labelRes)) },
-            headlineContent = { Text(name) },
-            supportingContent = {
-              SelectionContainer {
-                Text(value ?: stringResource(R.string.environment_variable_config_unavailable))
-              }
-            },
-          )
+          PreferenceSectionHeader(title = stringResource(R.string.environment_variables_built_in_header))
         }
         item {
-          Text(
-            text = stringResource(R.string.environment_variables_custom_header),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-          )
+          PreferenceCard {
+            builtInVariables.forEach { (name, labelRes, value) ->
+              PreferenceListItem(
+                overlineContent = { Text(stringResource(labelRes)) },
+                headlineContent = { Text(name) },
+                supportingContent = {
+                  SelectionContainer {
+                    Text(value ?: stringResource(R.string.environment_variable_config_unavailable))
+                  }
+                },
+              )
+            }
+          }
+        }
+        item {
+          PreferenceSectionHeader(title = stringResource(R.string.environment_variables_custom_header))
         }
         if (variables.isEmpty()) {
           item {
@@ -130,22 +124,26 @@ object EnvironmentVariablesScreen : Screen {
             )
           }
         }
-        items(variables.keys.sorted()) { name ->
-          ListItem(
-            headlineContent = { Text(name) },
-            supportingContent = {
-              Column {
-                Text(stringResource(R.string.environment_variable_value_hidden))
-                referenceErrors[name].orEmpty().forEach { error ->
-                  Text(
-                    text = stringResource(error.reason.messageResource(), error.reference),
-                    color = MaterialTheme.colorScheme.error,
-                  )
-                }
-              }
-            },
-            modifier = Modifier.clickable { editingName = name },
-          )
+        item {
+          PreferenceCard {
+            variables.keys.sorted().forEach { name ->
+              PreferenceListItem(
+                headlineContent = { Text(name) },
+                supportingContent = {
+                  Column {
+                    Text(stringResource(R.string.environment_variable_value_hidden))
+                    referenceErrors[name].orEmpty().forEach { error ->
+                      Text(
+                        text = stringResource(error.reason.messageResource(), error.reference),
+                        color = MaterialTheme.colorScheme.error,
+                      )
+                    }
+                  }
+                },
+                modifier = Modifier.clickable { editingName = name },
+              )
+            }
+          }
         }
         item {
           TextButton(

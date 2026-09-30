@@ -9,7 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.widget.Toast
-import androidx.activity.ComponentActivity
+import app.marlboroadvance.mpvex.presentation.BaseActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -75,7 +75,7 @@ import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 import java.io.File
 
-class MediaInfoActivity : ComponentActivity() {
+class MediaInfoActivity : BaseActivity() {
   private val appearancePreferences by inject<AppearancePreferences>()
   private val TAG = "MediaInfoActivity"
   private val currentIntent = mutableStateOf<Intent?>(null)

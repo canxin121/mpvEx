@@ -202,7 +202,7 @@
   <string name="pref_advanced_mpv_conf">Редактировать mpv.conf</string>
   <string name="pref_advanced_input_conf">Редактировать input.conf</string>
   <string name="shortcut_settings_title">Пользовательские команды</string>
-  <string name="shortcut_settings_summary">Назначьте каждой кнопке клавишу mpv и задайте действие для неё в input.conf. Например, Ctrl+Alt+s может делать снимок экрана. Кнопки доступны в меню «Ещё», их также можно добавить на панель управления. После изменения input.conf заново откройте плеер.</string>
+  <string name="shortcut_settings_summary">Назначьте каждой команде клавишу mpv и задайте действие для неё в input.conf. Команды можно свободно добавлять, менять местами и удалять. Нумерованные кнопки на панели управления соответствуют первым четырём командам в порядке списка, остальные доступны в меню «Ещё» плеера. После изменения input.conf заново откройте плеер.</string>
   <string name="shortcut_controls_summary">Настройте кнопки для команд из input.conf</string>
   <string name="shortcut_not_configured">Клавиша не назначена</string>
   <string name="shortcut_key_summary">Клавиша: %1$s</string>
@@ -1121,4 +1121,13 @@
   <string name="pref_advanced_native_logs_title">Захват встроенного вывода</string>
   <string name="pref_advanced_native_logs_summary">Перенаправляет консоль процесса, чтобы вывод C-плагинов и библиотек тоже попадал в журнал</string>
   <string name="ui_fork_notice">Форк mpvExtended, исходный репозиторий: %1$s</string>
+  <string name="shortcut_add">Добавить команду</string>
+  <string name="shortcut_settings_empty">Команд пока нет. Добавьте одну, чтобы начать.</string>
+  <string name="shortcut_delete_title">Удалить команду?</string>
+  <string name="shortcut_reset_message">Это удалит все пользовательские команды.</string>
+  <string name="ui_move_up">Вверх</string>
+  <string name="ui_move_down">Вниз</string>
+  <string name="pref_language_title">Язык</string>
+  <string name="pref_language_summary">Язык интерфейса. «Как в системе» использует язык устройства.</string>
+  <string name="pref_language_system_default">Как в системе</string>
 </resources>

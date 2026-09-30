@@ -39,6 +39,7 @@ import app.marlboroadvance.mpvex.databinding.PlayerLayoutBinding
 import app.marlboroadvance.mpvex.domain.playbackstate.repository.PlaybackStateRepository
 import app.marlboroadvance.mpvex.environment.MpvExEnvironment
 import app.marlboroadvance.mpvex.environment.UserEnvironmentVariables
+import app.marlboroadvance.mpvex.i18n.AppLocale
 import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
 import app.marlboroadvance.mpvex.preferences.AudioPreferences
 import app.marlboroadvance.mpvex.preferences.BrowserPreferences
@@ -438,17 +439,20 @@ class PlayerActivity :
     }
 
     val originalConfiguration = newBase.resources.configuration
+    // The interface language and the fixed font scale are applied in the same configuration,
+    // so only one context is built and neither override can undo the other.
     val contextToUse =
-      if (originalConfiguration.fontScale == 1f) {
-        newBase
-      } else {
-        val updatedConfiguration = Configuration(originalConfiguration).apply { fontScale = 1f }
-        val configurationContext = newBase.createConfigurationContext(updatedConfiguration)
-        val configurationDisplayMetrics = configurationContext.resources.displayMetrics
-        @Suppress("DEPRECATION")
-        configurationDisplayMetrics.scaledDensity = updatedConfiguration.fontScale * configurationDisplayMetrics.density
-        configurationContext
+      AppLocale.wrap(newBase) {
+        if (originalConfiguration.fontScale != 1f) {
+          fontScale = 1f
+        }
       }
+
+    if (contextToUse.resources.configuration.fontScale != 1f) {
+      val configurationDisplayMetrics = contextToUse.resources.displayMetrics
+      @Suppress("DEPRECATION")
+      configurationDisplayMetrics.scaledDensity = configurationDisplayMetrics.density
+    }
 
     super.attachBaseContext(contextToUse)
   }

@@ -1,12 +1,14 @@
 package app.marlboroadvance.mpvex
 
 import android.app.Application
+import android.content.Context
 import app.marlboroadvance.mpvex.database.repository.VideoMetadataCacheRepository
 import app.marlboroadvance.mpvex.di.DatabaseModule
 import app.marlboroadvance.mpvex.di.FileManagerModule
 import app.marlboroadvance.mpvex.di.PreferencesModule
 import app.marlboroadvance.mpvex.environment.MpvExEnvironment
 import app.marlboroadvance.mpvex.environment.UserEnvironmentVariables
+import app.marlboroadvance.mpvex.i18n.AppLocale
 import app.marlboroadvance.mpvex.preferences.AdvancedPreferences
 import app.marlboroadvance.mpvex.plugins.EnvironmentVariablesCodec
 import app.marlboroadvance.mpvex.presentation.crash.CrashActivity
@@ -37,6 +39,17 @@ class App : Application() {
   private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
   private val metadataCache: VideoMetadataCacheRepository by inject()
   private val advancedPreferences: AdvancedPreferences by inject()
+
+  /**
+   * Runs before Koin starts, so everything afterwards - including every `localizedString`
+   * call and every activity - sees the chosen language. The preference is read straight from
+   * the default SharedPreferences because the preference graph does not exist yet.
+   */
+  public override fun attachBaseContext(newBase: Context) {
+    val wrapped = AppLocale.wrap(newBase)
+    super.attachBaseContext(wrapped)
+    AppLocale.resourcesContext = wrapped
+  }
 
   override fun onCreate() {
     super.onCreate()

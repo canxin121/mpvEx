@@ -1,5 +1,7 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,21 +9,30 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.R
+import app.marlboroadvance.mpvex.i18n.AppLocale
 import app.marlboroadvance.mpvex.preferences.AppearancePreferences
 import app.marlboroadvance.mpvex.preferences.BrowserPreferences
 import app.marlboroadvance.mpvex.preferences.GesturePreferences
@@ -55,6 +66,14 @@ object AppearancePreferencesScreen : Screen {
 
         val darkMode by preferences.darkMode.collectAsState()
         val appTheme by preferences.appTheme.collectAsState()
+
+        val context = LocalContext.current
+        val activity = LocalActivity.current
+        var showLanguageDialog by remember { mutableStateOf(false) }
+
+        // The framework's per-app locale is authoritative on API 33+, so the current value is
+        // read back from it rather than trusted from the preference alone.
+        var selectedLanguage by remember { mutableStateOf(AppLocale.selectedTag(context)) }
 
         // Determine if we're in dark mode for theme preview
         val isDarkMode = when (darkMode) {
@@ -142,9 +161,31 @@ object AppearancePreferencesScreen : Screen {
                     }
 
                     item {
-                        PreferenceSectionHeader(title = stringResource(id = R.string.pref_appearance_category_file_browser))
+                        PreferenceSectionHeader(title = stringResource(id = R.string.pref_language_title))
+                    }
+                    item {
+                        PreferenceCard {
+                            PreferenceListItem(
+                                headlineContent = { Text(stringResource(id = R.string.pref_language_title)) },
+                                supportingContent = {
+                                    Text(
+                                        text = if (selectedLanguage.isBlank()) {
+                                            stringResource(id = R.string.pref_language_system_default)
+                                        } else {
+                                            AppLocale.displayName(selectedLanguage)
+                                        },
+                                        color = MaterialTheme.colorScheme.outline,
+                                    )
+                                },
+                                leadingContent = { Icon(Icons.Outlined.Language, contentDescription = null) },
+                                modifier = Modifier.clickable { showLanguageDialog = true },
+                            )
+                        }
                     }
 
+                    item {
+                        PreferenceSectionHeader(title = stringResource(id = R.string.pref_appearance_category_file_browser))
+                    }
                     item {
                         PreferenceCard {
                             val unlimitedNameLines by preferences.unlimitedNameLines.collectAsState()
@@ -269,5 +310,65 @@ object AppearancePreferencesScreen : Screen {
                 }
             }
         }
+
+        if (showLanguageDialog) {
+            LanguageDialog(
+                selected = selectedLanguage,
+                onSelect = { tag ->
+                    selectedLanguage = tag
+                    val changed = AppLocale.set(context, tag)
+                    showLanguageDialog = false
+                    // Rebuild the activity so the new language is visible right away rather
+                    // than on the next launch.
+                    if (changed) activity?.recreate()
+                },
+                onDismiss = { showLanguageDialog = false },
+            )
+        }
     }
+}
+
+/**
+ * Picks the interface language. The choice is applied immediately by [AppLocale.set], so the
+ * dialog only closes and lets the rebuilt activities show the new language.
+ */
+@Composable
+private fun LanguageDialog(
+    selected: String,
+    onSelect: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val options = remember { listOf(AppLocale.SYSTEM) + AppLocale.supportedLocales }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(id = R.string.pref_language_title)) },
+        text = {
+            // The list is longer than the dialog, so it scrolls rather than clipping the
+            // languages at the bottom.
+            LazyColumn {
+                items(count = options.size, key = { options[it] }) { index ->
+                    val tag = options[index]
+                    PreferenceListItem(
+                        headlineContent = {
+                            Text(
+                                if (tag == AppLocale.SYSTEM) {
+                                    stringResource(id = R.string.pref_language_system_default)
+                                } else {
+                                    AppLocale.displayName(tag)
+                                },
+                            )
+                        },
+                        trailingContent = {
+                            RadioButton(selected = tag == selected, onClick = null)
+                        },
+                        modifier = Modifier.clickable { onSelect(tag) },
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(id = R.string.generic_cancel)) }
+        },
+    )
 }

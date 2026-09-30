@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.preferences
 
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Segment
@@ -38,9 +39,15 @@ import app.marlboroadvance.mpvex.R
 /**
  * Represents a customizable button in the player controls.
  * Now includes an icon for the preference UI.
+ *
+ * [shortcutIndex] marks the numbered shortcut buttons: they do not name a fixed shortcut,
+ * they stand for the nth entry of the user's shortcut list (1-based). The index is an
+ * explicit argument rather than the enum's ordinal so that reordering this enum can never
+ * silently point a button at a different shortcut.
  */
 enum class PlayerButton(
   val icon: ImageVector,
+  val shortcutIndex: Int? = null,
 ) {
   BACK_ARROW(Icons.AutoMirrored.Outlined.ArrowBack),
   VIDEO_TITLE(Icons.Outlined.Title),
@@ -65,10 +72,10 @@ enum class PlayerButton(
   CUSTOM_SKIP(Icons.Outlined.FastForward),
   BACKGROUND_PLAYBACK(Icons.Outlined.Headset),
   SHORTCUTS(Icons.Outlined.Keyboard),
-  SHORTCUT_1(Icons.Outlined.LooksOne),
-  SHORTCUT_2(Icons.Outlined.LooksTwo),
-  SHORTCUT_3(Icons.Outlined.Looks3),
-  SHORTCUT_4(Icons.Outlined.Looks4),
+  SHORTCUT_1(Icons.Outlined.LooksOne, shortcutIndex = 1),
+  SHORTCUT_2(Icons.Outlined.LooksTwo, shortcutIndex = 2),
+  SHORTCUT_3(Icons.Outlined.Looks3, shortcutIndex = 3),
+  SHORTCUT_4(Icons.Outlined.Looks4, shortcutIndex = 4),
   NONE(Icons.Outlined.Bookmarks),
 }
 
@@ -85,36 +92,42 @@ val allPlayerButtons =
 
 /** Gets the localized label for a player button. */
 @Composable
-fun getPlayerButtonLabel(button: PlayerButton): String =
-  stringResource(
-    when (button) {
-      PlayerButton.BACK_ARROW -> R.string.button_back_arrow
-      PlayerButton.VIDEO_TITLE -> R.string.ui_video_title
-      PlayerButton.BOOKMARKS_CHAPTERS -> R.string.button_chapters_bookmarks
-      PlayerButton.PLAYBACK_SPEED -> R.string.ui_playback_speed
-      PlayerButton.DECODER -> R.string.pref_decoder
-      PlayerButton.SCREEN_ROTATION -> R.string.button_screen_rotation
-      PlayerButton.FRAME_NAVIGATION -> R.string.player_sheets_frame_navigation_title
-      PlayerButton.VIDEO_ZOOM -> R.string.player_sheets_zoom_slider_label
-      PlayerButton.PICTURE_IN_PICTURE -> R.string.button_picture_in_picture
-      PlayerButton.ASPECT_RATIO -> R.string.ui_aspect_ratio
-      PlayerButton.LOCK_CONTROLS -> R.string.button_lock_controls
-      PlayerButton.AUDIO_TRACK -> R.string.button_audio_track
-      PlayerButton.SUBTITLES -> R.string.pref_subtitles
-      PlayerButton.MORE_OPTIONS -> R.string.button_more_options
-      PlayerButton.CURRENT_CHAPTER -> R.string.button_current_chapter
-      PlayerButton.REPEAT_MODE -> R.string.button_repeat_mode
-      PlayerButton.SHUFFLE -> R.string.button_shuffle
-      PlayerButton.MIRROR -> R.string.button_horizontal_flip
-      PlayerButton.VERTICAL_FLIP -> R.string.ui_vertical_flip
-      PlayerButton.AB_LOOP -> R.string.button_ab_loop
-      PlayerButton.CUSTOM_SKIP -> R.string.button_custom_skip
-      PlayerButton.BACKGROUND_PLAYBACK -> R.string.button_background_playback
-      PlayerButton.SHORTCUTS -> R.string.ui_shortcuts
-      PlayerButton.SHORTCUT_1 -> R.string.button_shortcut_1
-      PlayerButton.SHORTCUT_2 -> R.string.button_shortcut_2
-      PlayerButton.SHORTCUT_3 -> R.string.button_shortcut_3
-      PlayerButton.SHORTCUT_4 -> R.string.button_shortcut_4
-      PlayerButton.NONE -> R.string.filter_preset_none_title
-    },
-  )
+fun getPlayerButtonLabel(button: PlayerButton): String = stringResource(playerButtonLabelRes(button))
+
+/**
+ * The label resource behind [getPlayerButtonLabel], split out so it can be checked in a
+ * plain unit test: the saved control layouts identify buttons by enum name, and the
+ * numbered shortcut buttons have to keep both their names and their labels.
+ */
+@StringRes
+fun playerButtonLabelRes(button: PlayerButton): Int =
+  when (button) {
+    PlayerButton.BACK_ARROW -> R.string.button_back_arrow
+    PlayerButton.VIDEO_TITLE -> R.string.ui_video_title
+    PlayerButton.BOOKMARKS_CHAPTERS -> R.string.button_chapters_bookmarks
+    PlayerButton.PLAYBACK_SPEED -> R.string.ui_playback_speed
+    PlayerButton.DECODER -> R.string.pref_decoder
+    PlayerButton.SCREEN_ROTATION -> R.string.button_screen_rotation
+    PlayerButton.FRAME_NAVIGATION -> R.string.player_sheets_frame_navigation_title
+    PlayerButton.VIDEO_ZOOM -> R.string.player_sheets_zoom_slider_label
+    PlayerButton.PICTURE_IN_PICTURE -> R.string.button_picture_in_picture
+    PlayerButton.ASPECT_RATIO -> R.string.ui_aspect_ratio
+    PlayerButton.LOCK_CONTROLS -> R.string.button_lock_controls
+    PlayerButton.AUDIO_TRACK -> R.string.button_audio_track
+    PlayerButton.SUBTITLES -> R.string.pref_subtitles
+    PlayerButton.MORE_OPTIONS -> R.string.button_more_options
+    PlayerButton.CURRENT_CHAPTER -> R.string.button_current_chapter
+    PlayerButton.REPEAT_MODE -> R.string.button_repeat_mode
+    PlayerButton.SHUFFLE -> R.string.button_shuffle
+    PlayerButton.MIRROR -> R.string.button_horizontal_flip
+    PlayerButton.VERTICAL_FLIP -> R.string.ui_vertical_flip
+    PlayerButton.AB_LOOP -> R.string.button_ab_loop
+    PlayerButton.CUSTOM_SKIP -> R.string.button_custom_skip
+    PlayerButton.BACKGROUND_PLAYBACK -> R.string.button_background_playback
+    PlayerButton.SHORTCUTS -> R.string.ui_shortcuts
+    PlayerButton.SHORTCUT_1 -> R.string.button_shortcut_1
+    PlayerButton.SHORTCUT_2 -> R.string.button_shortcut_2
+    PlayerButton.SHORTCUT_3 -> R.string.button_shortcut_3
+    PlayerButton.SHORTCUT_4 -> R.string.button_shortcut_4
+    PlayerButton.NONE -> R.string.filter_preset_none_title
+  }

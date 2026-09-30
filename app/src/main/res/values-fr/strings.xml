@@ -202,7 +202,7 @@
   <string name="pref_advanced_mpv_conf">Modifier mpv.conf</string>
   <string name="pref_advanced_input_conf">Modifier input.conf</string>
   <string name="shortcut_settings_title">Raccourcis personnalisés</string>
-  <string name="shortcut_settings_summary">Attribuez une touche mpv à chaque bouton et définissez son action dans input.conf. Par exemple, Ctrl+Alt+s peut prendre une capture d’écran. Utilisez les boutons depuis le menu Plus du lecteur ou ajoutez-les aux commandes. Après toute modification d’input.conf, rouvrez le lecteur.</string>
+  <string name="shortcut_settings_summary">Attribuez une touche mpv à chaque raccourci et définissez son action dans input.conf. Les raccourcis peuvent être ajoutés, réordonnés et supprimés librement. Les boutons numérotés des commandes correspondent aux quatre premiers raccourcis dans l’ordre de la liste ; les autres restent accessibles depuis le menu Plus du lecteur. Après toute modification d’input.conf, rouvrez le lecteur.</string>
   <string name="shortcut_controls_summary">Configurez les boutons qui envoient les touches définies dans input.conf</string>
   <string name="shortcut_not_configured">Aucune touche attribuée</string>
   <string name="shortcut_key_summary">Touche : %1$s</string>
@@ -1108,4 +1108,13 @@
   <string name="pref_advanced_native_logs_title">Capturer la sortie native</string>
   <string name="pref_advanced_native_logs_summary">Redirige la console du processus afin d\'enregistrer aussi la sortie des plugins et bibliothèques C</string>
   <string name="ui_fork_notice">Version dérivée (fork) de mpvExtended, dépôt d\'origine : %1$s</string>
+  <string name="shortcut_add">Ajouter un raccourci</string>
+  <string name="shortcut_settings_empty">Aucun raccourci pour le moment. Ajoutez-en un pour commencer.</string>
+  <string name="shortcut_delete_title">Supprimer le raccourci ?</string>
+  <string name="shortcut_reset_message">Cela supprime tous les raccourcis personnalisés.</string>
+  <string name="ui_move_up">Monter</string>
+  <string name="ui_move_down">Descendre</string>
+  <string name="pref_language_title">Langue</string>
+  <string name="pref_language_summary">Langue de l’interface. « Système » suit la langue de votre appareil.</string>
+  <string name="pref_language_system_default">Système</string>
 </resources>

@@ -66,6 +66,13 @@ object SearchablePreferences {
                 categoryRes = R.string.pref_appearance_title,
                 screen = AppearancePreferencesScreen,
             ))
+            add(SearchablePreference(
+                titleRes = R.string.pref_language_title,
+                summaryRes = R.string.pref_language_summary,
+                keywords = listOf("language", "locale", "translation", "interface", "region"),
+                categoryRes = R.string.pref_appearance_title,
+                screen = AppearancePreferencesScreen,
+            ))
 
             // Layout preferences
             add(SearchablePreference(
@@ -111,6 +118,13 @@ object SearchablePreferences {
                 keywords = listOf("time", "hide", "controls", "disappear", "timeout", "ms"),
                 categoryRes = R.string.pref_appearance_title,
                 screen = PlayerControlsPreferencesScreen,
+            ))
+            add(SearchablePreference(
+                titleRes = R.string.shortcut_settings_title,
+                summaryRes = R.string.shortcut_controls_summary,
+                keywords = listOf("shortcut", "key", "input.conf", "mpv", "hotkey", "bind"),
+                categoryRes = R.string.pref_layout_title,
+                screen = ShortcutPreferencesScreen,
             ))
 
             // Player preferences

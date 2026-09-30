@@ -1,5 +1,6 @@
 package app.marlboroadvance.mpvex.ui.preferences
 
+import app.marlboroadvance.mpvex.i18n.AppLocale
 import app.marlboroadvance.mpvex.i18n.localizedString
 import android.content.Intent
 import android.widget.Toast
@@ -124,6 +125,12 @@ object AdvancedPreferencesScreen : Screen {
               onSuccess = { stats ->
                 importStats = stats
                 showImportDialog = true
+                // A restored backup may carry a different interface language, which would
+                // otherwise sit in the preferences without ever being applied.
+                val stored = AppLocale.storedTag(context)
+                if (stored != AppLocale.selectedTag(context)) {
+                  AppLocale.set(context, stored)
+                }
               },
               onFailure = { error ->
                 Toast.makeText(

@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import app.marlboroadvance.mpvex.R
 import app.marlboroadvance.mpvex.preferences.ShortcutPreferences
 import app.marlboroadvance.mpvex.preferences.displayLabel
-import app.marlboroadvance.mpvex.preferences.ShortcutSlot
 import app.marlboroadvance.mpvex.preferences.preference.collectAsState
 import app.marlboroadvance.mpvex.ui.player.pressShortcutKey
 import org.koin.compose.koinInject
@@ -57,8 +56,8 @@ fun ShortcutsPanel(onDismissRequest: () -> Unit) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ShortcutActionButtons() {
-  val preferences = koinInject<ShortcutPreferences>()
-  val configured = ShortcutSlot.entries.filter { preferences.key(it).get().isNotBlank() }
+  val shortcuts by koinInject<ShortcutPreferences>().shortcuts.collectAsState()
+  val configured = shortcuts.withIndex().filter { it.value.key.isNotBlank() }
 
   if (configured.isEmpty()) {
     Text(
@@ -74,16 +73,16 @@ fun ShortcutActionButtons() {
     horizontalArrangement = Arrangement.spacedBy(8.dp),
     verticalArrangement = Arrangement.spacedBy(8.dp),
   ) {
-    configured.forEach { slot ->
-      val label by preferences.label(slot).collectAsState()
-      val key by preferences.key(slot).collectAsState()
+    configured.forEach { (index, shortcut) ->
       OutlinedButton(
-        onClick = { pressShortcutKey(key) },
+        onClick = { pressShortcutKey(shortcut.key) },
         modifier = Modifier.widthIn(max = 260.dp),
       ) {
         Icon(Icons.Outlined.Keyboard, contentDescription = null)
         Text(
-          slot.displayLabel(label),
+          // The sheet is uncapped, so beyond the numbered layout buttons the name falls
+          // back to the shortcut's current position in the list.
+          displayLabel(shortcut.label, index + 1),
           modifier = Modifier.padding(start = 8.dp),
           maxLines = 1,
           overflow = TextOverflow.Ellipsis,

@@ -30,6 +30,7 @@ private const val PIP_FORWARD = 4
 class MPVPipHelper(
   private val activity: AppCompatActivity,
   private val mpvView: MPVView,
+  private val seekBy: (Int) -> Unit,
 ) : KoinComponent {
   private val playerPreferences: PlayerPreferences by inject()
   private var pipReceiver: BroadcastReceiver? = null
@@ -50,15 +51,12 @@ class MPVPipHelper(
           context: Context?,
           intent: Intent?,
         ) {
-          // Use precise seeking for videos shorter than 2 minutes (120 seconds) or if preference is enabled
-          val duration = MPVLib.getPropertyInt("duration") ?: 0
-          val shouldUsePreciseSeeking = playerPreferences.usePreciseSeeking.get() || duration < 120
-          val seekMode = if (shouldUsePreciseSeeking) "relative+exact" else "relative+keyframes"
+          if (activity.isFinishing || activity.isDestroyed || mpvView.isExiting) return
           when (intent?.getIntExtra(PIP_INTENT_ACTION, 0)) {
             PIP_PLAY -> MPVLib.setPropertyBoolean("pause", false)
             PIP_PAUSE -> MPVLib.setPropertyBoolean("pause", true)
-            PIP_REWIND -> MPVLib.command("seek", "-10", seekMode)
-            PIP_FORWARD -> MPVLib.command("seek", "10", seekMode)
+            PIP_REWIND -> seekBy(-10)
+            PIP_FORWARD -> seekBy(10)
           }
           updatePictureInPictureParams()
         }

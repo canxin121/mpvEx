@@ -64,6 +64,7 @@ import `is`.xyz.mpv.MPVLib
 import `is`.xyz.mpv.MPVNode
 import `is`.xyz.mpv.Utils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -233,6 +234,8 @@ class PlayerActivity :
   private var isManualBackgroundPlayback = false // Track manual background playback trigger
   private var noisyReceiverRegistered = false
   private var mpvInitialized = false // Track MPV initialization state
+  override val isMpvActive: Boolean
+    get() = mpvSession.isOwner(this) && mpvInitialized && !player.isExiting && !isFinishing && !isDestroyed
   private var savePlaybackStateJob: kotlinx.coroutines.Job? = null // Track ongoing save job
   private var wasPlayingBeforePause = false // Track if video was playing before pause
 
@@ -514,7 +517,7 @@ class PlayerActivity :
    * Initializes the Picture-in-Picture helper.
    */
   private fun setupPipHelper() {
-    pipHelper = MPVPipHelper(activity = this, mpvView = player)
+    pipHelper = MPVPipHelper(activity = this, mpvView = player, seekBy = viewModel::seekBy)
   }
 
   private fun setupAudio() {
@@ -583,9 +586,10 @@ class PlayerActivity :
     runCatching {
       // OPTIMIZATION: Prevent any further UI updates or callbacks
       isReady = false
+      viewModel.stopPlaybackUpdates()
 
       // Only stop the service if we're not doing manual background playback
-      if ((isUserFinishing || isFinishing) && !isManualBackgroundPlayback) {
+      if (mpvInitialized && (isUserFinishing || isFinishing) && !isManualBackgroundPlayback) {
         if (serviceBound) {
           runCatching { unbindService(serviceConnection) }
           serviceBound = false
@@ -622,41 +626,37 @@ class PlayerActivity :
 
   private fun cleanupMPV() {
     if (!mpvInitialized) return
+    if (!isFinishing || isManualBackgroundPlayback) return
+    mpvSession.release(this)
+  }
 
+  private fun releaseMpvSession() {
+    if (!mpvInitialized) return
+    isReady = false
     player.isExiting = true
+    viewModel.stopPlaybackUpdates()
+    // onPause captures the native properties before saving to the database.
+    // Finish that save, then discard callbacks from this Activity before a new
+    // Activity is allowed to initialize the process-wide JNI handle.
+    kotlinx.coroutines.runBlocking { savePlaybackStateJob?.join() }
+    lifecycleScope.coroutineContext.cancelChildren()
 
     // Stop media notification service when activity is destroyed
     endBackgroundPlayback()
-
-    // Don't cleanup MPV if we're doing manual background playback
-    if (!isFinishing || isManualBackgroundPlayback) return
 
     runCatching {
       MPVLib.removeObserver(playerObserver)
       LoggingSetup.mpvBridge.stop()
 
-      if (isReady) {
-        // Pause playback first to reduce thread activity
-        MPVLib.setPropertyBoolean("pause", true)
-
-        // Send quit command to gracefully shut down MPV
-        MPVLib.command("quit")
-
-        // Wait briefly for MPV to process quit and clean up internal threads
-        // This prevents race conditions where hardware UI threads try to access
-        // mutexes/queues that are destroyed by MPVLib.destroy()
-        // We use a short blocking wait here as onDestroy is already on the main thread
-        // and this ensures proper cleanup before activity destruction
-        Thread.sleep(100)
-      }
-
-      // Now safe to destroy MPV as internal threads have had time to shut down
-      MPVLib.destroy()
+      // BaseMPVView removes SurfaceHolder callbacks before terminating libmpv.
+      // Calling MPVLib.destroy() directly left callbacks using a destroyed handle.
+      // Native destroy already joins its event thread; a sleep cannot replace that.
+      player.destroy()
       mpvInitialized = false
       MpvExLog.i(TAG, "libmpv destroyed")
     }.onFailure { e ->
       MpvExLog.e(TAG, e, "Error cleaning up MPV")
-    }
+    }.getOrThrow()
   }
 
   override fun abandonAudioFocus() {
@@ -682,6 +682,7 @@ class PlayerActivity :
   @RequiresApi(Build.VERSION_CODES.P)
   override fun onPause() {
     runCatching {
+      if (!mpvInitialized) return@runCatching
       val isInPip = isInPictureInPictureMode
       val shouldPause = (!audioPreferences.automaticBackgroundPlayback.get() && !isManualBackgroundPlayback) || 
                         (isUserFinishing && !isManualBackgroundPlayback)
@@ -715,6 +716,7 @@ class PlayerActivity :
 
   @RequiresApi(Build.VERSION_CODES.P)
   override fun finish() {
+    viewModel.cancelPendingSeeks()
     runCatching {
       // Don't restore UI during normal finish to prevent flickering
       // System will handle UI restoration automatically
@@ -735,6 +737,7 @@ class PlayerActivity :
 
   // finishAndRemoveTask() was added in API 21, but since our minSdk is 26, it's always available
   override fun finishAndRemoveTask() {
+    viewModel.cancelPendingSeeks()
     runCatching {
       // Don't restore UI during normal finish to prevent flickering
       // System will handle UI restoration automatically
@@ -882,6 +885,7 @@ class PlayerActivity :
    * Initializes the MPV player with the necessary paths and observers.
    */
   private fun setupMPV() {
+    mpvSession.acquire(this, ::releaseMpvSession)
     // Copy essential files FIRST, before MPV initialization
     runCatching {
       Utils.copyAssets(this@PlayerActivity)
@@ -895,6 +899,7 @@ class PlayerActivity :
 
     // NOW initialize MPV - it will find and load the scripts we just copied
     player.initialize(filesDir.path, cacheDir.path)
+    player.isExiting = false
     mpvInitialized = true
     MpvExLog.d(TAG, "MPV initialized")
 
@@ -1735,7 +1740,22 @@ class PlayerActivity :
    * @param isEof true if end of file reached
    */
   private fun handleEndOfFile(isEof: Boolean) {
-    if (isEof) {
+    if (isEof && isMpvActive) {
+      // EOF events cross from the native thread to the UI thread. A newer seek
+      // may already have cleared EOF, or an interrupted HTTP read may have ended
+      // well before the actual duration. Neither should close/advance the player.
+      val currentEof = MPVLib.getPropertyBoolean("eof-reached") == true
+      val seeking = viewModel.hasPendingSeek || MPVLib.getPropertyBoolean("seeking") == true
+      val position = MPVLib.getPropertyDouble("time-pos")
+      val duration = MPVLib.getPropertyDouble("duration")
+      if (!isPlaybackComplete(currentEof, seeking, position, duration)) {
+        if (currentEof && !seeking) {
+          MpvExLog.w(TAG, "Premature EOF at $position / $duration; keeping player open for retry")
+          viewModel.onPrematureEof()
+          viewModel.showControls()
+        }
+        return
+      }
       // Check if we should repeat the current file
       if (viewModel.shouldRepeatCurrentFile()) {
         MPVLib.command("seek", "0", "absolute")
@@ -1843,14 +1863,18 @@ class PlayerActivity :
    * @param eventId The MPV event ID
    */
   internal fun event(eventId: Int) {
+    if (!isMpvActive) return
     when (eventId) {
+      MPVLib.MpvEvent.MPV_EVENT_START_FILE -> {
+        viewModel.cancelPendingSeeks()
+        isReady = false
+      }
       MPVLib.MpvEvent.MPV_EVENT_FILE_LOADED -> {
-        handleFileLoaded()
         isReady = true
+        handleFileLoaded()
       }
 
       MPVLib.MpvEvent.MPV_EVENT_PLAYBACK_RESTART -> {
-        player.isExiting = false
         if (!isReady) {
           isReady = true
         }
@@ -2186,7 +2210,7 @@ class PlayerActivity :
    *               Essential during onPause when finishing so the state is written before MainActivity resumes.
    */
   private fun saveVideoPlaybackState(mediaTitle: String, isSync: Boolean = false) {
-    if (mediaIdentifier.isBlank()) return
+    if (!mpvInitialized || mediaIdentifier.isBlank()) return
 
     // Cancel any previous pending save operation
     savePlaybackStateJob?.cancel()
@@ -2504,6 +2528,7 @@ class PlayerActivity :
    * @param intent The new intent
    */
   override fun onNewIntent(intent: Intent) {
+    viewModel.cancelPendingSeeks()
     super.onNewIntent(intent)
 
     // Update the intent first so getFileName uses the new intent data
@@ -3221,6 +3246,7 @@ class PlayerActivity :
    * Load a playlist item by index
    */
   private fun loadPlaylistItem(index: Int) {
+    viewModel.cancelPendingSeeks()
     // All items are loaded - just validate index and load directly
     if (index < 0 || index >= playlist.size) {
       MpvExLog.e(TAG, "Invalid playlist index: $index (playlist size: ${playlist.size})")
@@ -3816,6 +3842,7 @@ class PlayerActivity :
 
 
   companion object {
+    private val mpvSession = PlaybackSessionOwner()
     /**
      * Intent action used to return playback result data to the calling activity.
      */

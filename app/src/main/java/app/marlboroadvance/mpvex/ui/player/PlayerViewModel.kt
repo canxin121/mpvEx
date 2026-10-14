@@ -30,8 +30,8 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -118,24 +118,19 @@ class PlayerViewModel(
   private val volumeBoostCap by MPVLib.propInt["volume-max"].collectAsState(viewModelScope)
 
   init {
-    // Poll precise position only when playing
+    // Observe the precise position instead of blocking the UI on a native read
+    // every 42 ms, especially while HTTP seeks are waiting for data.
     viewModelScope.launch {
-      while (isActive) {
-        val time = MPVLib.getPropertyDouble("time-pos")
-        if (time != null) {
+      MPVLib.propDouble["time-pos"].collect { time ->
+        if (time != null && time.isFinite()) {
           _precisePosition.value = time.toFloat()
         }
-        delay(42) // ~24fps updates
       }
     }
 
-    // Update precise duration when the integer duration changes (avoid polling)
     viewModelScope.launch {
-      MPVLib.propInt["duration"].collect { _ ->
-        val dur = MPVLib.getPropertyDouble("duration")
-        if (dur != null && dur > 0) {
-            _preciseDuration.value = dur.toFloat()
-        }
+      MPVLib.propDouble["duration"].collect { dur ->
+        _preciseDuration.value = dur?.takeIf { it.isFinite() && it > 0 }?.toFloat() ?: 0f
       }
     }
   }
@@ -322,13 +317,38 @@ class PlayerViewModel(
     host.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
   }
 
-  // Seek coalescing for smooth performance
-  private var pendingSeekOffset: Int = 0
-  private var seekCoalesceJob: Job? = null
+  private var retryAfterPrematureEof = false
+
+  private val seekCoordinator = SeekCoordinator(
+    scope = viewModelScope,
+    readState = {
+      if (!host.isMpvActive) null else SeekState(
+        position = MPVLib.getPropertyDouble("time-pos") ?: Double.NaN,
+        duration = MPVLib.getPropertyDouble("duration") ?: Double.NaN,
+        seekable = MPVLib.getPropertyBoolean("seekable") == true,
+        precise = playerPreferences.usePreciseSeeking.get(),
+        loopA = _abLoopA.value,
+        loopB = _abLoopB.value,
+      )
+    },
+    seek = { position, exact ->
+      val retry = retryAfterPrematureEof
+      if (retry) {
+        // After a truncated HTTP response, mpv may cache a false EOF and satisfy
+        // every later seek from that incomplete range. Clear those packets and
+        // the cached EOF before retrying, without changing the user's cache mode.
+        MPVLib.command("drop-buffers")
+        retryAfterPrematureEof = false
+      }
+      MPVLib.command("seek", position.toString(), if (exact || retry) "absolute+exact" else "absolute+keyframes")
+    },
+  )
+
+  internal val hasPendingSeek: Boolean
+    get() = seekCoordinator.hasPendingSeek
 
   private companion object {
     const val TAG = "PlayerViewModel"
-    const val SEEK_COALESCE_DELAY_MS = 60L
     val VALID_SUBTITLE_EXTENSIONS =
       setOf(
         // Common & modern
@@ -686,30 +706,33 @@ class PlayerViewModel(
   // ==================== Playback Control ====================
 
   fun pauseUnpause() {
-    viewModelScope.launch(Dispatchers.IO) {
+    viewModelScope.launch {
+      if (!host.isMpvActive) return@launch
       val isPaused = MPVLib.getPropertyBoolean("pause") ?: false
       if (isPaused) {
         // We are about to unpause, so request focus
-        withContext(Dispatchers.Main) { host.requestAudioFocus() }
+        host.requestAudioFocus()
         MPVLib.setPropertyBoolean("pause", false)
       } else {
         // We are about to pause
         MPVLib.setPropertyBoolean("pause", true)
-        withContext(Dispatchers.Main) { host.abandonAudioFocus() }
+        host.abandonAudioFocus()
       }
     }
   }
 
   fun pause() {
-    viewModelScope.launch(Dispatchers.IO) {
+    viewModelScope.launch {
+      if (!host.isMpvActive) return@launch
       MPVLib.setPropertyBoolean("pause", true)
-      withContext(Dispatchers.Main) { host.abandonAudioFocus() }
+      host.abandonAudioFocus()
     }
   }
 
   fun unpause() {
-    viewModelScope.launch(Dispatchers.IO) {
-      withContext(Dispatchers.Main) { host.requestAudioFocus() }
+    viewModelScope.launch {
+      if (!host.isMpvActive) return@launch
+      host.requestAudioFocus()
       MPVLib.setPropertyBoolean("pause", false)
     }
   }
@@ -785,60 +808,33 @@ class PlayerViewModel(
   // ==================== Seeking ====================
 
   fun seekBy(offset: Int) {
-    coalesceSeek(offset)
-  }
-
-  fun seekTo(position: Int) {
-    viewModelScope.launch(Dispatchers.IO) {
-      val maxDuration = MPVLib.getPropertyInt("duration") ?: 0
-      var clampedPosition = position.coerceIn(0, maxDuration)
-
-      // Clamp within AB loop if active
-      val loopA = _abLoopA.value
-      val loopB = _abLoopB.value
-      if (loopA != null && loopB != null) {
-        val min = minOf(loopA.toInt(), loopB.toInt())
-        val max = maxOf(loopA.toInt(), loopB.toInt())
-        clampedPosition = clampedPosition.coerceIn(min, max)
-      }
-
-      if (clampedPosition !in 0..maxDuration) return@launch
-
-      // Cancel pending relative seek before absolute seek
-      seekCoalesceJob?.cancel()
-      pendingSeekOffset = 0
-      
-      // Use precise seeking for videos shorter than 2 minutes (120 seconds) or if preference is enabled
-      val shouldUsePreciseSeeking = playerPreferences.usePreciseSeeking.get() || maxDuration < 120
-      val seekMode = if (shouldUsePreciseSeeking) "absolute+exact" else "absolute+keyframes"
-      MPVLib.command("seek", clampedPosition.toString(), seekMode)
+    viewModelScope.launch {
+      if (host.isMpvActive) seekCoordinator.seekBy(offset.toDouble())
     }
   }
 
-  private fun coalesceSeek(offset: Int) {
-    pendingSeekOffset += offset
-    seekCoalesceJob?.cancel()
-    seekCoalesceJob =
-      viewModelScope.launch(Dispatchers.IO) {
-        delay(SEEK_COALESCE_DELAY_MS)
-        val toApply = pendingSeekOffset
-        pendingSeekOffset = 0
-        
-        if (toApply != 0) {
-          val duration = MPVLib.getPropertyInt("duration") ?: 0
-          val currentPos = MPVLib.getPropertyInt("time-pos") ?: 0
-          
-          if (duration > 0 && currentPos + toApply >= duration) {
-              // If seeking past the end, force seek to 100% absolute to ensure EOF is triggered
-              MPVLib.command("seek", "100", "absolute-percent+exact")
-          } else {
-              // Use precise seeking for videos shorter than 2 minutes (120 seconds) or if preference is enabled
-              val shouldUsePreciseSeeking = playerPreferences.usePreciseSeeking.get() || duration < 120
-              val seekMode = if (shouldUsePreciseSeeking) "relative+exact" else "relative+keyframes"
-              MPVLib.command("seek", toApply.toString(), seekMode)
-          }
-        }
-      }
+  fun seekTo(position: Int) {
+    viewModelScope.launch {
+      if (host.isMpvActive) seekCoordinator.seekTo(position.toDouble())
+    }
+  }
+
+  fun finishSeeking() {
+    seekCoordinator.flush()
+  }
+
+  internal fun cancelPendingSeeks() {
+    seekCoordinator.cancel()
+    retryAfterPrematureEof = false
+  }
+
+  internal fun onPrematureEof() {
+    retryAfterPrematureEof = true
+  }
+
+  internal fun stopPlaybackUpdates() {
+    seekCoordinator.close()
+    viewModelScope.cancel()
   }
 
   fun leftSeek() {
@@ -1790,6 +1786,7 @@ class PlayerViewModel(
   }
 
   override fun onCleared() {
+    seekCoordinator.close()
     super.onCleared()
   }
 }

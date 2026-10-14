@@ -14,6 +14,7 @@ interface PlayerHost {
   val context: Context
   val windowInsetsController: WindowInsetsControllerCompat
   val audioManager: AudioManager
+  val isMpvActive: Boolean
 
   // Host OS primitives with non-conflicting names
   val hostWindow: Window

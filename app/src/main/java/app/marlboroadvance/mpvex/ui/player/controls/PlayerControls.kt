@@ -910,11 +910,14 @@ fun PlayerControls(
               viewModel.seekTo(it.toInt())
             },
             onValueChangeFinished = {
-              isSeeking = false
-              resetControlsTimestamp = System.currentTimeMillis()
-              // Unpause if it wasn't paused before seeking
-              if (!wasPlayerAlreadyPaused) {
-                viewModel.unpause()
+              if (isSeeking) {
+                viewModel.finishSeeking()
+                isSeeking = false
+                resetControlsTimestamp = System.currentTimeMillis()
+                // A cancelled gesture with no value change must not unpause playback.
+                if (!wasPlayerAlreadyPaused) {
+                  viewModel.unpause()
+                }
               }
               viewModel.showControls()
             },

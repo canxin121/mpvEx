@@ -891,6 +891,8 @@ fun GestureHandler(
             } else if (pointerCount > 1) {
               // Multi-finger detected, cancel horizontal seek
               if (hasStartedSeeking) {
+                viewModel.finishSeeking()
+                if (!wasPlayerAlreadyPaused) viewModel.unpause()
                 hasStartedSeeking = false
                 // Clean up seeking state without showing controls
                 viewModel.playerUpdate.update { PlayerUpdates.None }
@@ -902,6 +904,7 @@ fun GestureHandler(
 
           // Apply the final seek when gesture ends
           if (hasStartedSeeking) {
+            viewModel.finishSeeking()
             // Unpause if it wasn't paused before seeking
             if (!wasPlayerAlreadyPaused) {
               viewModel.unpause()

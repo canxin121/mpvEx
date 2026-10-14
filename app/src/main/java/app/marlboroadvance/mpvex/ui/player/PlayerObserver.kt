@@ -6,6 +6,13 @@ import `is`.xyz.mpv.MPVNode
 class PlayerObserver(
   private val activity: PlayerActivity,
 ) : MPVLib.EventObserver {
+  private fun dispatch(action: () -> Unit) {
+    activity.runOnUiThread {
+      // Recheck when the queued callback executes, not on the native event thread.
+      if (activity.isMpvActive) action()
+    }
+  }
+
   override fun eventProperty(property: String) {
     // No property without a value is currently observed.
   }
@@ -14,16 +21,14 @@ class PlayerObserver(
     property: String,
     value: Long,
   ) {
-    if (activity.player.isExiting) return
-    activity.runOnUiThread { activity.onObserverEvent(property, value) }
+    dispatch { activity.onObserverEvent(property, value) }
   }
 
   override fun eventProperty(
     property: String,
     value: Boolean,
   ) {
-    if (activity.player.isExiting) return
-    activity.runOnUiThread { activity.onObserverEvent(property, value) }
+    dispatch { activity.onObserverEvent(property, value) }
   }
 
   override fun eventProperty(
@@ -37,8 +42,7 @@ class PlayerObserver(
     property: String,
     value: Double,
   ) {
-    if (activity.player.isExiting) return
-    activity.runOnUiThread { activity.onObserverEvent(property, value) }
+    dispatch { activity.onObserverEvent(property, value) }
   }
 
   @Suppress("EmptyFunctionBlock")
@@ -46,12 +50,10 @@ class PlayerObserver(
     property: String,
     value: MPVNode,
   ) {
-    if (activity.player.isExiting) return
-    activity.runOnUiThread { activity.onObserverEvent(property, value) }
+    dispatch { activity.onObserverEvent(property, value) }
   }
 
   override fun event(eventId: Int, data: MPVNode) {
-    if (activity.player.isExiting) return
-    activity.runOnUiThread { activity.event(eventId) }
+    dispatch { activity.event(eventId) }
   }
 }

@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
@@ -86,6 +87,12 @@ fun SeekbarWithTimers(
   var isUserInteracting by remember { mutableStateOf(false) }
   var userPosition by remember { mutableFloatStateOf(position) }
 
+  // pointerInput(Unit) survives recomposition; it must not retain the initial
+  // duration or pause/seek callbacks while a network video is still loading.
+  val currentDuration by rememberUpdatedState(duration.takeIf { it.isFinite() && it > 0 } ?: 0f)
+  val currentOnValueChange by rememberUpdatedState(onValueChange)
+  val currentOnValueChangeFinished by rememberUpdatedState(onValueChangeFinished)
+
   // Animated position for smooth transitions
   val animatedPosition = remember { Animatable(position) }
   val scope = rememberCoroutineScope()
@@ -93,16 +100,10 @@ fun SeekbarWithTimers(
   // Only animate position updates when user is not interacting
   LaunchedEffect(position, isUserInteracting) {
     if (!isUserInteracting && position != animatedPosition.value) {
-      scope.launch {
-        animatedPosition.animateTo(
-          targetValue = position,
-          animationSpec =
-            tween(
-              durationMillis = 200,
-              easing = LinearEasing,
-            ),
-        )
-      }
+      animatedPosition.animateTo(
+        targetValue = position,
+        animationSpec = tween(durationMillis = 200, easing = LinearEasing),
+      )
     }
   }
 
@@ -137,17 +138,15 @@ fun SeekbarWithTimers(
           .height(64.dp) // Larger touch area
           .pointerInput(Unit) {
             detectTapGestures(
-              onTap = { offset ->
-                val newPosition = (offset.x / size.width) * duration
+              onTap = tap@{ offset ->
+                if (size.width <= 0 || currentDuration <= 0f) return@tap
+                val newPosition = (offset.x / size.width) * currentDuration
                 if (!isUserInteracting) isUserInteracting = true
-                userPosition = newPosition.coerceIn(0f, duration)
-                onValueChange(userPosition)
-                scope.launch { 
-                  // Snap to user position immediately to prevent jumping
-                  animatedPosition.snapTo(userPosition)
-                  isUserInteracting = false
-                  onValueChangeFinished()
-                }
+                userPosition = newPosition.coerceIn(0f, currentDuration)
+                currentOnValueChange(userPosition)
+                scope.launch { animatedPosition.snapTo(userPosition) }
+                isUserInteracting = false
+                currentOnValueChangeFinished()
               }
             )
           }
@@ -156,28 +155,23 @@ fun SeekbarWithTimers(
               onDragStart = { 
                 isUserInteracting = true 
               },
-              onDragEnd = { 
-                scope.launch { 
-                  // Allow a tiny window for mpv/viewModel to sync back before releasing control
-                  delay(50) 
-                  animatedPosition.snapTo(userPosition)
-                  isUserInteracting = false
-                  onValueChangeFinished()
-                }
+              onDragEnd = {
+                scope.launch { animatedPosition.snapTo(userPosition) }
+                isUserInteracting = false
+                currentOnValueChangeFinished()
               },
-              onDragCancel = { 
-                scope.launch { 
-                  delay(50)
-                  animatedPosition.snapTo(userPosition)
-                  isUserInteracting = false
-                  onValueChangeFinished()
-                }
+              onDragCancel = {
+                scope.launch { animatedPosition.snapTo(userPosition) }
+                isUserInteracting = false
+                currentOnValueChangeFinished()
               },
             ) { change, _ ->
               change.consume()
-              val newPosition = (change.position.x / size.width) * duration
-              userPosition = newPosition.coerceIn(0f, duration)
-              onValueChange(userPosition)
+              if (size.width > 0 && currentDuration > 0f) {
+                val newPosition = (change.position.x / size.width) * currentDuration
+                userPosition = newPosition.coerceIn(0f, currentDuration)
+                currentOnValueChange(userPosition)
+              }
             }
           }
       )
